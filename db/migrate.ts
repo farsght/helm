@@ -1,13 +1,13 @@
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
-import Database from 'better-sqlite3';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { migrate } from 'drizzle-orm/neon-http/migrator';
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
 
-const sqlite = new Database('./db/data.db');
-const db = drizzle(sqlite);
+const sql = neon(process.env.DATABASE_URL!);
+const db = drizzle(sql);
 
 async function main() {
   console.log('Running migrations...');
-  migrate(db, { migrationsFolder: './db/migrations' });
+  await migrate(db, { migrationsFolder: './db/migrations' });
   console.log('Migrations complete!');
 }
 

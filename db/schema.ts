@@ -1,4 +1,3 @@
-import { sql } from 'drizzle-orm';
 import { pgTable, text, integer, real, serial, timestamp, boolean } from 'drizzle-orm/pg-core';
 
 // Campaigns
