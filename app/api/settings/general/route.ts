@@ -65,7 +65,7 @@ export async function PUT(request: Request) {
     const body = await request.json();
 
     for (const [key, value] of Object.entries(body)) {
-      await setSetting(key, value);
+      await setSetting(key, value as SettingsValue);
     }
 
     return NextResponse.json({ success: true });

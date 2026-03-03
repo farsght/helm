@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",
+    "@neondatabase/serverless": "^1.0.2",
     "@types/better-sqlite3": "^7.6.13",
     "@xyflow/react": "^12.10.1",
     "better-sqlite3": "^12.6.2",
@@ -26,6 +27,7 @@
     "next": "16.1.6",
     "nodemailer": "^8.0.1",
     "openai": "^6.25.0",
+    "postgres": "^3.4.8",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",

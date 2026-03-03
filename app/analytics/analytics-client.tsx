@@ -241,7 +241,10 @@ export function AnalyticsClient() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={(entry: { industry: string; replyRate: number; count: number }) => `${entry.industry}: ${entry.replyRate.toFixed(1)}%`}
+                  label={(entry) => {
+                    const data = entry as unknown as { industry: string; replyRate: number };
+                    return `${data.industry}: ${data.replyRate.toFixed(1)}%`;
+                  }}
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="count"
@@ -299,7 +302,7 @@ export function AnalyticsClient() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-7 gap-2">
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, dayIndex) => (
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
                 <div key={day} className="text-center">
                   <p className="text-xs text-gray-400 mb-2">{day}</p>
                   <div className="space-y-1">

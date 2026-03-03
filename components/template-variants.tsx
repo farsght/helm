@@ -38,11 +38,7 @@ export function TemplateVariants({ templateId, channel }: TemplateVariantsProps)
     body: '',
   });
 
-  useEffect(() => {
-    loadVariants();
-  }, [templateId]);
-
-  const loadVariants = async () => {
+  const loadVariants = useCallback(async () => {
     try {
       const response = await fetch(`/api/templates/${templateId}/variants`);
       if (!response.ok) throw new Error('Failed to load variants');
@@ -53,7 +49,11 @@ export function TemplateVariants({ templateId, channel }: TemplateVariantsProps)
     } finally {
       setLoading(false);
     }
-  };
+  }, [templateId]);
+
+  useEffect(() => {
+    loadVariants();
+  }, [loadVariants]);
 
   const handleCreate = () => {
     setEditingVariant(null);

@@ -8,10 +8,17 @@ AI-powered Sales Development Representative tool that automates multi-channel ou
 # Install dependencies
 npm install
 
-# Set up database
-npm run db:generate  # Generate migrations
-npm run db:migrate   # Run migrations
-npm run db:seed      # Seed sample data
+# Create .env.local file
+cat > .env.local << EOF
+DATABASE_URL=postgresql://neondb_owner:npg_iFkGE6L9AwPu@ep-hidden-tree-adj0hhxt-pooler.c-2.us-east-1.aws.neon.tech/ai_sdr?sslmode=require
+OPENAI_API_KEY=your-openai-api-key-here
+EOF
+
+# Push schema to database
+npx drizzle-kit push
+
+# Seed sample data
+npm run db:seed
 
 # Start development server
 npm run dev          # Runs on http://localhost:3010
@@ -26,7 +33,7 @@ npm start
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **UI**: shadcn/ui (new-york), Tailwind CSS v4
-- **Database**: SQLite + Drizzle ORM
+- **Database**: Neon Postgres + Drizzle ORM
 - **Canvas**: React Flow (@xyflow/react)
 - **Icons**: Lucide React
 
@@ -217,6 +224,36 @@ Next: Phase 2 (Messaging & AI)
 - LinkedIn integration
 - Conversation management
 - Reply suggestions
+
+## 🚀 Deployment (Vercel)
+
+This app is configured to deploy to Vercel.
+
+### Environment Variables
+
+Set these in your Vercel project settings:
+
+```bash
+DATABASE_URL=postgresql://neondb_owner:npg_iFkGE6L9AwPu@ep-hidden-tree-adj0hhxt-pooler.c-2.us-east-1.aws.neon.tech/ai_sdr?sslmode=require
+OPENAI_API_KEY=your-openai-api-key-here
+```
+
+### Deploy
+
+```bash
+# Link to Vercel project (first time)
+npx vercel link
+
+# Deploy to production
+npx vercel --prod
+
+# Or push to main branch for auto-deploy
+git push origin main
+```
+
+### Database Setup
+
+The Neon Postgres database (`ai_sdr`) is already created and ready to use. Schema is automatically applied via Drizzle migrations.
 
 ## 📄 License
 
