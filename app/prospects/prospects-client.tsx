@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -100,7 +100,7 @@ export function ProspectsClient({ initialProspects }: { initialProspects: Prospe
       const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
       const prospects = lines.slice(1).map(line => {
         const values = line.split(',').map(v => v.trim());
-        const prospect: any = {};
+        const prospect: Record<string, string> = {};
         
         headers.forEach((header, i) => {
           const cleanHeader = header.replace(/['"]/g, '');
@@ -262,7 +262,7 @@ export function ProspectsClient({ initialProspects }: { initialProspects: Prospe
           <DialogHeader>
             <DialogTitle>Add New Prospect</DialogTitle>
             <DialogDescription className="text-gray-400">
-              Enter the prospect's information below
+              Enter the prospect&apos;s information below
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
