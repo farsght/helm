@@ -15,9 +15,7 @@
   "dependencies": {
     "@libsql/client": "^0.17.0",
     "@neondatabase/serverless": "^1.0.2",
-    "@types/better-sqlite3": "^7.6.13",
     "@xyflow/react": "^12.10.1",
-    "better-sqlite3": "^12.6.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
