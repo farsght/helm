@@ -134,7 +134,10 @@ export const templateVariants = sqliteTable('template_variants', {
   subject: text('subject'),
   body: text('body').notNull(),
   sendCount: integer('send_count').default(0),
+  openCount: integer('open_count').default(0),
   replyCount: integer('reply_count').default(0),
+  clickCount: integer('click_count').default(0),
+  isWinner: integer('is_winner', { mode: 'boolean' }).default(false),
 });
 
 // Connected Accounts
@@ -159,4 +162,12 @@ export const prospectTags = sqliteTable('prospect_tags', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   prospectId: integer('prospect_id').notNull().references(() => prospects.id, { onDelete: 'cascade' }),
   tagId: integer('tag_id').notNull().references(() => tags.id, { onDelete: 'cascade' }),
+});
+
+// Settings (key-value store)
+export const settings = sqliteTable('settings', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  key: text('key').notNull().unique(),
+  value: text('value').notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 });

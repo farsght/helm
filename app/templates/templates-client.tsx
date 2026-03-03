@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -123,35 +124,37 @@ export function TemplatesClient({ initialTemplates }: TemplatesClientProps) {
         <div className="grid gap-6 md:grid-cols-2">
           {templates.map((template) => (
             <Card key={template.id} className="bg-[#25252A] border-[#3A3A40] hover:border-[#266DF0] transition-colors">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      {template.channel === 'email' ? (
-                        <Mail className="h-4 w-4 text-blue-400" />
-                      ) : (
-                        <Linkedin className="h-4 w-4 text-purple-400" />
+              <Link href={`/templates/${template.id}`}>
+                <CardHeader className="cursor-pointer">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        {template.channel === 'email' ? (
+                          <Mail className="h-4 w-4 text-blue-400" />
+                        ) : (
+                          <Linkedin className="h-4 w-4 text-purple-400" />
+                        )}
+                        <CardTitle className="text-white">{template.name}</CardTitle>
+                      </div>
+                      {template.subject && (
+                        <CardDescription className="text-gray-400 text-sm">
+                          Subject: {template.subject}
+                        </CardDescription>
                       )}
-                      <CardTitle className="text-white">{template.name}</CardTitle>
                     </div>
-                    {template.subject && (
-                      <CardDescription className="text-gray-400 text-sm">
-                        Subject: {template.subject}
-                      </CardDescription>
-                    )}
+                    <Badge
+                      variant="secondary"
+                      className={
+                        template.channel === 'email'
+                          ? 'bg-blue-500/10 text-blue-400'
+                          : 'bg-purple-500/10 text-purple-400'
+                      }
+                    >
+                      {template.channel}
+                    </Badge>
                   </div>
-                  <Badge
-                    variant="secondary"
-                    className={
-                      template.channel === 'email'
-                        ? 'bg-blue-500/10 text-blue-400'
-                        : 'bg-purple-500/10 text-purple-400'
-                    }
-                  >
-                    {template.channel}
-                  </Badge>
-                </div>
-              </CardHeader>
+                </CardHeader>
+              </Link>
               <CardContent className="space-y-4">
                 <div className="text-sm text-gray-400 line-clamp-3 bg-[#1B1B1F] p-3 rounded-md border border-[#3A3A40]">
                   {template.body}

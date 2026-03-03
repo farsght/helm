@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowLeft, Play, Pause, Mail, Linkedin, Loader2 } from "lucide-react";
 import { CampaignCanvas } from "@/components/campaign-canvas";
+import { CampaignAnalytics } from "@/components/campaign-analytics";
 
 interface Campaign {
   id: number;
@@ -320,31 +321,8 @@ export function CampaignDetailClient({
             </div>
           </TabsContent>
 
-          <TabsContent value="analytics" className="flex-1 overflow-auto p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Analytics</h2>
-            <div className="grid gap-4 md:grid-cols-3 mb-6">
-              <Card className="bg-[#25252A] border-[#3A3A40] p-4">
-                <p className="text-sm text-gray-400 mb-1">Total Sent</p>
-                <p className="text-2xl font-bold text-white">
-                  {messages.filter(m => m.status === 'sent').length}
-                </p>
-              </Card>
-              <Card className="bg-[#25252A] border-[#3A3A40] p-4">
-                <p className="text-sm text-gray-400 mb-1">Opened</p>
-                <p className="text-2xl font-bold text-white">
-                  {messages.filter(m => m.status === 'opened').length}
-                </p>
-              </Card>
-              <Card className="bg-[#25252A] border-[#3A3A40] p-4">
-                <p className="text-sm text-gray-400 mb-1">Replied</p>
-                <p className="text-2xl font-bold text-white">
-                  {messages.filter(m => m.status === 'replied').length}
-                </p>
-              </Card>
-            </div>
-            <Card className="bg-[#25252A] border-[#3A3A40] p-6">
-              <p className="text-gray-400">Detailed analytics coming soon...</p>
-            </Card>
+          <TabsContent value="analytics" className="flex-1 overflow-auto">
+            <CampaignAnalytics campaignId={campaign.id} />
           </TabsContent>
 
           <TabsContent value="settings" className="flex-1 overflow-auto p-6">
