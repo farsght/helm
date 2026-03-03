@@ -97,9 +97,9 @@ export async function POST(request: NextRequest) {
 
 interface Message {
   id: number;
-  subject?: string | null;
-  body: string;
-  bodyHtml?: string | null;
+  subject: string | null;
+  body: string | null;
+  bodyHtml: string | null;
 }
 
 interface Prospect {
@@ -136,12 +136,16 @@ async function sendEmail(message: Message, prospect: Prospect) {
     });
 
     // Send email
+    if (!prospect.email) {
+      throw new Error('Prospect has no email address');
+    }
+    
     await transporter.sendMail({
       from: config.from || process.env.SMTP_FROM,
       to: prospect.email,
-      subject: message.subject,
-      text: message.body,
-      html: message.bodyHtml || message.body,
+      subject: message.subject || '',
+      text: message.body || '',
+      html: message.bodyHtml || message.body || '',
     });
 
     // Update message status

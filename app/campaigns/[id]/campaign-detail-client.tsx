@@ -21,12 +21,16 @@ interface WorkflowNode {
   id: number;
   label: string;
   type: string;
+  positionX: number;
+  positionY: number;
+  configJson: string | null;
 }
 
 interface WorkflowEdge {
   id: number;
   sourceNodeId: number;
   targetNodeId: number;
+  label: string | null;
 }
 
 interface Prospect {
@@ -46,11 +50,11 @@ interface Message {
   id: number;
   channel: string;
   direction: string;
-  subject?: string | null;
-  body: string;
+  subject: string | null;
+  body: string | null;
   status: string;
   prospectId: number;
-  sentAt?: Date | null;
+  sentAt: Date | null;
   createdAt: Date;
 }
 
