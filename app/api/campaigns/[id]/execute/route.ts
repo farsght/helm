@@ -211,7 +211,7 @@ async function executeNode(campaignId: number, campaignProspect: CampaignProspec
 
 async function evaluateCondition(condition: { type: string; value?: unknown }, prospect: Prospect): Promise<boolean> {
   // Evaluate condition based on message status, prospect data, etc.
-  const { type, value } = condition;
+  const { type } = condition;
 
   switch (type) {
     case 'message_opened':
