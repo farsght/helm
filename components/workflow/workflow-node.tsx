@@ -70,7 +70,7 @@ export const WorkflowNode = memo(({ data }: { data: WorkflowNodeData }) => {
         <Icon className="h-4 w-4" />
         <span className="font-medium text-white text-sm">{data.label}</span>
       </div>
-      {data.prospectCount > 0 && (
+      {data.prospectCount && data.prospectCount > 0 && (
         <Badge variant="secondary" className="mt-2 text-xs bg-[#266DF0]/20 text-[#266DF0]">
           {data.prospectCount} prospects
         </Badge>

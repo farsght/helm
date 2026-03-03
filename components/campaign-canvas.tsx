@@ -26,7 +26,7 @@ const nodeTypes = {
   workflow: WorkflowNode,
 };
 
-interface WorkflowNodeData {
+interface WorkflowNodeData extends Record<string, unknown> {
   label: string;
   type: string;
   config: Record<string, unknown>;
@@ -57,7 +57,7 @@ interface CampaignCanvasProps {
 
 export function CampaignCanvas({ initialNodes, initialEdges }: CampaignCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<WorkflowNodeData>>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [selectedNode, setSelectedNode] = useState<Node<WorkflowNodeData> | null>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<{
     screenToFlowPosition: (position: { x: number; y: number }) => { x: number; y: number };
