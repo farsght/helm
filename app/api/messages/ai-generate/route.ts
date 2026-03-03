@@ -28,8 +28,14 @@ export async function POST(request: NextRequest) {
     const body: GenerateRequest = await request.json();
     const { prospectData, template, campaignContext, tone = 'professional', variantCount = 2, channel } = body;
 
+    // Graceful fallback when OpenAI API key is not configured
     if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
+      const fallbackVariants = generateFallbackTemplates(prospectData, template, channel, variantCount);
+      return NextResponse.json({ 
+        variants: fallbackVariants,
+        fallback: true,
+        message: 'Using template generator (OpenAI API key not configured)'
+      });
     }
 
     const systemPrompt = `You are an expert SDR (Sales Development Representative) writing personalized outreach messages.
@@ -137,4 +143,63 @@ function parseEmailParts(text: string, channel: 'email' | 'linkedin'): { subject
   }
 
   return { body: text.trim() };
+}
+
+function generateFallbackTemplates(
+  prospectData: GenerateRequest['prospectData'], 
+  template: GenerateRequest['template'],
+  channel: 'email' | 'linkedin',
+  variantCount: number
+): Array<{ subject?: string; body: string }> {
+  const { firstName, lastName, company, title } = prospectData;
+  const fullName = `${firstName} ${lastName}`;
+  
+  if (template) {
+    // Use provided template and personalize it
+    const variants = [];
+    for (let i = 0; i < variantCount; i++) {
+      const personalizedBody = template.body
+        .replace(/\{\{firstName\}\}/g, firstName)
+        .replace(/\{\{lastName\}\}/g, lastName)
+        .replace(/\{\{fullName\}\}/g, fullName)
+        .replace(/\{\{company\}\}/g, company || 'your company')
+        .replace(/\{\{title\}\}/g, title || 'your role');
+      
+      variants.push({
+        subject: template.subject?.replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{company\}\}/g, company || 'your company'),
+        body: personalizedBody
+      });
+    }
+    return variants;
+  }
+
+  // Generate basic templates
+  const variants: Array<{ subject?: string; body: string }> = [];
+  
+  if (channel === 'email') {
+    variants.push({
+      subject: `Quick question, ${firstName}`,
+      body: `Hi ${firstName},\n\nI noticed your work as ${title || 'a professional'} at ${company || 'your company'} and thought you might be interested in learning about how we help teams like yours improve their workflow.\n\nWould you be open to a quick 15-minute call this week?\n\nBest regards`
+    });
+    
+    if (variantCount > 1) {
+      variants.push({
+        subject: `${firstName}, thought you'd find this interesting`,
+        body: `Hey ${firstName},\n\nI've been following ${company || 'your company'} and I'm impressed with the work you're doing${title ? ` in ${title}` : ''}.\n\nI'd love to share some insights that could be valuable for your team. Are you available for a brief chat?\n\nThanks,`
+      });
+    }
+  } else {
+    // LinkedIn
+    variants.push({
+      body: `Hi ${firstName}, I came across your profile and was impressed by your work at ${company || 'your company'}. I'd love to connect and share some insights that might be valuable for ${title ? 'someone in your role' : 'you'}. Are you open to connecting?`
+    });
+    
+    if (variantCount > 1) {
+      variants.push({
+        body: `Hey ${firstName}! Noticed we both work in similar spaces. Would be great to connect and exchange ideas about ${company || 'the industry'}. Looking forward to connecting!`
+      });
+    }
+  }
+  
+  return variants;
 }

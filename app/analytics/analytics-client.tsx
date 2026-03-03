@@ -48,11 +48,19 @@ type AnalyticsData = {
 export function AnalyticsClient() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/analytics/cross-campaign')
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to fetch analytics data');
+        return r.json();
+      })
       .then(setData)
+      .catch(err => {
+        console.error('Analytics fetch error:', err);
+        setError(err.message);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -79,6 +87,27 @@ export function AnalyticsClient() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="p-8">
+        <Card className="bg-[#25252A] border-[#3A3A40]">
+          <CardHeader>
+            <CardTitle className="text-white">Error Loading Analytics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-400">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-[#266DF0] text-white rounded hover:bg-[#1e5bc4]"
+            >
+              Retry
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!data) return null;
 
   const COLORS = ['#266DF0', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444'];
@@ -98,7 +127,7 @@ export function AnalyticsClient() {
             <Mail className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{data.summary.totalSent}</div>
+            <div className="text-2xl font-bold text-white">{data?.summary?.totalSent ?? 0}</div>
             <p className="text-xs text-green-500 mt-1">All campaigns</p>
           </CardContent>
         </Card>
@@ -109,7 +138,7 @@ export function AnalyticsClient() {
             <TrendingUp className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{data.summary.openRate.toFixed(1)}%</div>
+            <div className="text-2xl font-bold text-white">{(data?.summary?.openRate ?? 0).toFixed(1)}%</div>
             <p className="text-xs text-green-500 mt-1">+3.2% from last month</p>
           </CardContent>
         </Card>
@@ -120,7 +149,7 @@ export function AnalyticsClient() {
             <BarChart3 className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{data.summary.replyRate.toFixed(1)}%</div>
+            <div className="text-2xl font-bold text-white">{(data?.summary?.replyRate ?? 0).toFixed(1)}%</div>
             <p className="text-xs text-green-500 mt-1">+5.1% from last month</p>
           </CardContent>
         </Card>
@@ -131,9 +160,9 @@ export function AnalyticsClient() {
             <Users className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{data.summary.meetingsBooked}</div>
+            <div className="text-2xl font-bold text-white">{data?.summary?.meetingsBooked ?? 0}</div>
             <p className="text-xs text-green-500 mt-1">
-              {data.summary.totalSent > 0 ? ((data.summary.meetingsBooked / data.summary.totalSent) * 100).toFixed(1) : '0.0'}% conversion
+              {(data?.summary?.totalSent ?? 0) > 0 ? (((data?.summary?.meetingsBooked ?? 0) / (data?.summary?.totalSent ?? 1)) * 100).toFixed(1) : '0.0'}% conversion
             </p>
           </CardContent>
         </Card>
@@ -149,7 +178,7 @@ export function AnalyticsClient() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {data.funnel.map((step) => (
+            {(data?.funnel ?? []).map((step) => (
               <div key={step.step} className="relative">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-white">{step.step}</span>
@@ -183,7 +212,7 @@ export function AnalyticsClient() {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data.trendsChart}>
+            <LineChart data={data?.trendsChart ?? []}>
               <CartesianGrid strokeDasharray="3 3" stroke="#3A3A40" />
               <XAxis dataKey="date" stroke="#6B7280" />
               <YAxis stroke="#6B7280" />
@@ -211,7 +240,7 @@ export function AnalyticsClient() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data.topTemplates} layout="vertical">
+              <BarChart data={data?.topTemplates ?? []} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#3A3A40" />
                 <XAxis type="number" stroke="#6B7280" />
                 <YAxis dataKey="name" type="category" stroke="#6B7280" width={100} />
@@ -237,7 +266,7 @@ export function AnalyticsClient() {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={data.replyRateByIndustry}
+                  data={data?.replyRateByIndustry ?? []}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -249,7 +278,7 @@ export function AnalyticsClient() {
                   fill="#8884d8"
                   dataKey="count"
                 >
-                  {data.replyRateByIndustry.map((_, index) => (
+                  {(data?.replyRateByIndustry ?? []).map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -274,7 +303,7 @@ export function AnalyticsClient() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {data.replyRateByTitle.map((item, index) => (
+              {(data?.replyRateByTitle ?? []).map((item, index) => (
                 <div key={item.title} className="flex items-center justify-between p-3 rounded-lg bg-[#1B1B1F]">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[#266DF0]/10 text-[#266DF0] text-xs font-bold">
@@ -307,7 +336,7 @@ export function AnalyticsClient() {
                   <p className="text-xs text-gray-400 mb-2">{day}</p>
                   <div className="space-y-1">
                     {[9, 12, 15, 18].map((hour) => {
-                      const dataPoint = data.sendingTimeHeatmap.find(
+                      const dataPoint = (data?.sendingTimeHeatmap ?? []).find(
                         d => d.day === day && d.hour === hour
                       );
                       const intensity = dataPoint ? Math.min(dataPoint.count / 20, 1) : 0;

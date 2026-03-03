@@ -48,11 +48,19 @@ type DashboardData = {
 export default function DashboardClient() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/analytics/dashboard')
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to fetch dashboard data');
+        return r.json();
+      })
       .then(setData)
+      .catch(err => {
+        console.error('Dashboard fetch error:', err);
+        setError(err.message);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -79,30 +87,51 @@ export default function DashboardClient() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="p-8">
+        <Card className="bg-[#25252A] border-[#3A3A40]">
+          <CardHeader>
+            <CardTitle className="text-white">Error Loading Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-400">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-[#266DF0] text-white rounded hover:bg-[#1e5bc4]"
+            >
+              Retry
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!data) return null;
 
   const metrics = [
     {
       name: "Total Prospects",
-      value: data.metrics.totalProspects,
+      value: data?.metrics?.totalProspects ?? 0,
       icon: Users,
       change: "+12%",
     },
     {
       name: "Active Campaigns",
-      value: data.metrics.activeCampaigns,
+      value: data?.metrics?.activeCampaigns ?? 0,
       icon: BarChart3,
       change: "+8%",
     },
     {
       name: "Reply Rate",
-      value: `${data.metrics.replyRate}%`,
+      value: `${data?.metrics?.replyRate ?? 0}%`,
       icon: MessageSquare,
       change: "+15%",
     },
     {
       name: "Meetings Booked",
-      value: `${data.metrics.meetingRate}%`,
+      value: `${data?.metrics?.meetingRate ?? 0}%`,
       icon: Calendar,
       change: "+23%",
     },

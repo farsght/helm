@@ -11,53 +11,53 @@ export async function GET() {
     const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Total prospects
-    const totalProspects = await db.select({ count: sql<number>`count(*)` }).from(prospects);
+    const totalProspects = await db.select({ count: sql<number>`count(*)::int` }).from(prospects);
 
     // Active campaigns
-    const activeCampaigns = await db.select({ count: sql<number>`count(*)` }).from(campaigns).where(eq(campaigns.status, 'active'));
+    const activeCampaigns = await db.select({ count: sql<number>`count(*)::int` }).from(campaigns).where(eq(campaigns.status, 'active'));
 
     // Messages today, week, month
-    const messagesToday = await db.select({ count: sql<number>`count(*)` })
+    const messagesToday = await db.select({ count: sql<number>`count(*)::int` })
       .from(messages)
       .where(and(
         eq(messages.direction, 'outbound'),
-        sql`${messages.sentAt} >= ${Math.floor(today.getTime() / 1000)}`
+        sql`${messages.sentAt} >= ${today}`
       ));
 
-    const messagesWeek = await db.select({ count: sql<number>`count(*)` })
+    const messagesWeek = await db.select({ count: sql<number>`count(*)::int` })
       .from(messages)
       .where(and(
         eq(messages.direction, 'outbound'),
-        sql`${messages.sentAt} >= ${Math.floor(weekAgo.getTime() / 1000)}`
+        sql`${messages.sentAt} >= ${weekAgo}`
       ));
 
-    const messagesMonth = await db.select({ count: sql<number>`count(*)` })
+    const messagesMonth = await db.select({ count: sql<number>`count(*)::int` })
       .from(messages)
       .where(and(
         eq(messages.direction, 'outbound'),
-        sql`${messages.sentAt} >= ${Math.floor(monthAgo.getTime() / 1000)}`
+        sql`${messages.sentAt} >= ${monthAgo}`
       ));
 
     // Reply rate, open rate
-    const totalSent = await db.select({ count: sql<number>`count(*)` })
+    const totalSent = await db.select({ count: sql<number>`count(*)::int` })
       .from(messages)
       .where(eq(messages.direction, 'outbound'));
 
-    const totalOpened = await db.select({ count: sql<number>`count(*)` })
+    const totalOpened = await db.select({ count: sql<number>`count(*)::int` })
       .from(messages)
       .where(and(
         eq(messages.direction, 'outbound'),
         sql`${messages.openedAt} IS NOT NULL`
       ));
 
-    const totalReplied = await db.select({ count: sql<number>`count(*)` })
+    const totalReplied = await db.select({ count: sql<number>`count(*)::int` })
       .from(messages)
       .where(and(
         eq(messages.direction, 'outbound'),
         sql`${messages.repliedAt} IS NOT NULL`
       ));
 
-    const meetingsBooked = await db.select({ count: sql<number>`count(*)` })
+    const meetingsBooked = await db.select({ count: sql<number>`count(*)::int` })
       .from(conversations)
       .where(eq(conversations.status, 'meeting_booked'));
 
@@ -70,22 +70,21 @@ export async function GET() {
     const chartData = [];
     for (let i = 29; i >= 0; i--) {
       const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-      const dayStart = Math.floor(date.getTime() / 1000);
-      const dayEnd = dayStart + 86400;
+      const dayEnd = new Date(date.getTime() + 24 * 60 * 60 * 1000);
 
-      const sent = await db.select({ count: sql<number>`count(*)` })
+      const sent = await db.select({ count: sql<number>`count(*)::int` })
         .from(messages)
         .where(and(
           eq(messages.direction, 'outbound'),
-          sql`${messages.sentAt} >= ${dayStart}`,
+          sql`${messages.sentAt} >= ${date}`,
           sql`${messages.sentAt} < ${dayEnd}`
         ));
 
-      const replied = await db.select({ count: sql<number>`count(*)` })
+      const replied = await db.select({ count: sql<number>`count(*)::int` })
         .from(messages)
         .where(and(
           eq(messages.direction, 'outbound'),
-          sql`${messages.repliedAt} >= ${dayStart}`,
+          sql`${messages.repliedAt} >= ${date}`,
           sql`${messages.repliedAt} < ${dayEnd}`
         ));
 
@@ -100,14 +99,14 @@ export async function GET() {
     const allCampaigns = await db.select().from(campaigns).where(eq(campaigns.status, 'active')).limit(5);
     const campaignPerformance = await Promise.all(
       allCampaigns.map(async (campaign) => {
-        const sent = await db.select({ count: sql<number>`count(*)` })
+        const sent = await db.select({ count: sql<number>`count(*)::int` })
           .from(messages)
           .where(and(
             eq(messages.campaignId, campaign.id),
             eq(messages.direction, 'outbound')
           ));
 
-        const opened = await db.select({ count: sql<number>`count(*)` })
+        const opened = await db.select({ count: sql<number>`count(*)::int` })
           .from(messages)
           .where(and(
             eq(messages.campaignId, campaign.id),
@@ -115,7 +114,7 @@ export async function GET() {
             sql`${messages.openedAt} IS NOT NULL`
           ));
 
-        const replied = await db.select({ count: sql<number>`count(*)` })
+        const replied = await db.select({ count: sql<number>`count(*)::int` })
           .from(messages)
           .where(and(
             eq(messages.campaignId, campaign.id),
@@ -169,7 +168,7 @@ export async function GET() {
     // Active campaigns with prospect counts
     const campaignsWithCounts = await Promise.all(
       allCampaigns.map(async (campaign) => {
-        const prospectCount = await db.select({ count: sql<number>`count(*)` })
+        const prospectCount = await db.select({ count: sql<number>`count(*)::int` })
           .from(campaignProspects)
           .where(eq(campaignProspects.campaignId, campaign.id));
 

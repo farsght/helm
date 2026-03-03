@@ -9,25 +9,25 @@ export async function GET() {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     // Summary metrics
-    const totalSent = await db.select({ count: sql<number>`count(*)` })
+    const totalSent = await db.select({ count: sql<number>`count(*)::int` })
       .from(messages)
       .where(eq(messages.direction, 'outbound'));
 
-    const totalOpened = await db.select({ count: sql<number>`count(*)` })
+    const totalOpened = await db.select({ count: sql<number>`count(*)::int` })
       .from(messages)
       .where(and(
         eq(messages.direction, 'outbound'),
         sql`${messages.openedAt} IS NOT NULL`
       ));
 
-    const totalReplied = await db.select({ count: sql<number>`count(*)` })
+    const totalReplied = await db.select({ count: sql<number>`count(*)::int` })
       .from(messages)
       .where(and(
         eq(messages.direction, 'outbound'),
         sql`${messages.repliedAt} IS NOT NULL`
       ));
 
-    const meetingsBooked = await db.select({ count: sql<number>`count(*)` })
+    const meetingsBooked = await db.select({ count: sql<number>`count(*)::int` })
       .from(conversations)
       .where(eq(conversations.status, 'meeting_booked'));
 
@@ -43,12 +43,12 @@ export async function GET() {
     };
 
     // Overall funnel
-    const totalProspects = await db.select({ count: sql<number>`count(*)` }).from(prospects);
-    const contacted = await db.select({ count: sql<number>`count(DISTINCT ${messages.prospectId})` })
+    const totalProspects = await db.select({ count: sql<number>`count(*)::int` }).from(prospects);
+    const contacted = await db.select({ count: sql<number>`count(DISTINCT ${messages.prospectId})::int` })
       .from(messages)
       .where(eq(messages.direction, 'outbound'));
 
-    const interested = await db.select({ count: sql<number>`count(*)` })
+    const interested = await db.select({ count: sql<number>`count(*)::int` })
       .from(conversations)
       .where(eq(conversations.status, 'interested'));
 
@@ -85,30 +85,29 @@ export async function GET() {
     const trendsChart = [];
     for (let i = 29; i >= 0; i--) {
       const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-      const dayStart = Math.floor(date.getTime() / 1000);
-      const dayEnd = dayStart + 86400;
+      const dayEnd = new Date(date.getTime() + 24 * 60 * 60 * 1000);
 
-      const sent = await db.select({ count: sql<number>`count(*)` })
+      const sent = await db.select({ count: sql<number>`count(*)::int` })
         .from(messages)
         .where(and(
           eq(messages.direction, 'outbound'),
-          sql`${messages.sentAt} >= ${dayStart}`,
+          sql`${messages.sentAt} >= ${date}`,
           sql`${messages.sentAt} < ${dayEnd}`
         ));
 
-      const opened = await db.select({ count: sql<number>`count(*)` })
+      const opened = await db.select({ count: sql<number>`count(*)::int` })
         .from(messages)
         .where(and(
           eq(messages.direction, 'outbound'),
-          sql`${messages.openedAt} >= ${dayStart}`,
+          sql`${messages.openedAt} >= ${date}`,
           sql`${messages.openedAt} < ${dayEnd}`
         ));
 
-      const replied = await db.select({ count: sql<number>`count(*)` })
+      const replied = await db.select({ count: sql<number>`count(*)::int` })
         .from(messages)
         .where(and(
           eq(messages.direction, 'outbound'),
-          sql`${messages.repliedAt} >= ${dayStart}`,
+          sql`${messages.repliedAt} >= ${date}`,
           sql`${messages.repliedAt} < ${dayEnd}`
         ));
 
