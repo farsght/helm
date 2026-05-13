@@ -197,6 +197,7 @@ describe('PUT /api/prospects/[id]', () => {
 
 describe('DELETE /api/prospects/[id]', () => {
   it('deletes the prospect and returns { success: true }', async () => {
+    vi.mocked(db.select).mockReturnValueOnce(q([{ id: 1 }]) as ReturnType<typeof db.select>)
     vi.mocked(db.delete).mockReturnValue(q(undefined) as ReturnType<typeof db.delete>)
 
     const req = new NextRequest('http://localhost/api/prospects/1', { method: 'DELETE' })

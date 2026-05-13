@@ -78,6 +78,7 @@ describe('POST /api/lists', () => {
 describe('PUT /api/lists/[id]', () => {
   it('updates the list name and returns the updated record', async () => {
     const updated = { id: 1, name: 'Renamed List' }
+    vi.mocked(db.select).mockReturnValueOnce(q([{ id: 1, name: 'Old List', userId: 'test-user-id' }]) as ReturnType<typeof db.select>)
     vi.mocked(db.update).mockReturnValue(q([updated]) as ReturnType<typeof db.update>)
 
     const req = new NextRequest('http://localhost/api/lists/1', {
@@ -97,6 +98,7 @@ describe('PUT /api/lists/[id]', () => {
 
 describe('DELETE /api/lists/[id]', () => {
   it('deletes list members first (cascade) then the list, returns success', async () => {
+    vi.mocked(db.select).mockReturnValueOnce(q([{ id: 1, name: 'List', userId: 'test-user-id' }]) as ReturnType<typeof db.select>)
     vi.mocked(db.delete).mockReturnValue(q(undefined) as ReturnType<typeof db.delete>)
 
     const req = new NextRequest('http://localhost/api/lists/1', { method: 'DELETE' })

@@ -114,6 +114,7 @@ describe('GET /api/templates/[id]', () => {
 describe('PUT /api/templates/[id]', () => {
   it('updates the template and returns it', async () => {
     const updated = { id: 1, name: 'Updated', channel: 'email', body: 'New body' }
+    vi.mocked(db.select).mockReturnValueOnce(q([{ id: 1, name: 'Cold Email', userId: 'test-user-id' }]) as ReturnType<typeof db.select>)
     vi.mocked(db.update).mockReturnValue(q([updated]) as ReturnType<typeof db.update>)
 
     const req = new NextRequest('http://localhost/api/templates/1', {
@@ -129,7 +130,7 @@ describe('PUT /api/templates/[id]', () => {
   })
 
   it('returns 404 when template does not exist', async () => {
-    vi.mocked(db.update).mockReturnValue(q([]) as ReturnType<typeof db.update>)
+    vi.mocked(db.select).mockReturnValueOnce(q([]) as ReturnType<typeof db.select>)
 
     const req = new NextRequest('http://localhost/api/templates/9999', {
       method: 'PUT',
@@ -146,6 +147,7 @@ describe('PUT /api/templates/[id]', () => {
 
 describe('DELETE /api/templates/[id]', () => {
   it('deletes the template and returns success', async () => {
+    vi.mocked(db.select).mockReturnValueOnce(q([{ id: 1, name: 'Cold Email', userId: 'test-user-id' }]) as ReturnType<typeof db.select>)
     vi.mocked(db.delete).mockReturnValue(q(undefined) as ReturnType<typeof db.delete>)
 
     const req = new NextRequest('http://localhost/api/templates/1', { method: 'DELETE' })
@@ -165,6 +167,7 @@ describe('POST /api/templates/[id]/variants', () => {
       id: 5, templateId: 1, name: 'Variant A', body: 'Alt body',
       sendCount: 0, openCount: 0, replyCount: 0, clickCount: 0, isWinner: false,
     }
+    vi.mocked(db.select).mockReturnValueOnce(q([{ id: 1, name: 'Cold Email', userId: 'test-user-id' }]) as ReturnType<typeof db.select>)
     vi.mocked(db.insert).mockReturnValue(q([variant]) as ReturnType<typeof db.insert>)
 
     const req = new NextRequest('http://localhost/api/templates/1/variants', {
