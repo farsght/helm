@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-13 20:23 UTC
+> Last updated: 2026-05-13 20:38 UTC
 
 ---
 
@@ -30,54 +30,40 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `d7845dce` | **Remove server-side DB calls from all pages → fixes SSR 500 crashes** | ✅ |
 | `a0cec375` | Fix tests after server-component + dashboard refactor (test-only commit) | ✅ |
 | `1103469b` | **Add userId to messages, tags, settings tables — full data isolation** | ✅ |
+| `1ba87773` | **Fix all 5 remaining P1/P2 gaps — prospects, templates, campaigns PUT, steps, AI suggest-reply** | ✅ |
 
 ---
 
-## 🔍 Live App Audit — Updated Status
+## 🏁 All P1/P2 Gaps Resolved — 2026-05-13 20:27 UTC
 
-*Re-evaluated after `1103469b` landed*
+*Commit `1ba87773` landed at 20:27 UTC. PR #20.*
 
-### ✅ Now Fixed
+| Endpoint | Files Changed | Fix | Status |
+|----------|--------------|-----|--------|
+| `POST /api/prospects` | `app/api/prospects/route.ts` (+20/-9) | Input validation + safe defaults | ✅ |
+| `POST /api/templates` | `app/api/templates/route.ts` (+17/-3) | channel default + validation | ✅ |
+| `PUT /api/campaigns/:id` | `app/api/campaigns/[id]/route.ts` (+19/-10) | Dynamic set(), undefined-safe return | ✅ |
+| `GET /api/campaigns/:id/steps` | `app/api/campaigns/[id]/steps/route.ts` (+43/-0, new) | New route — returns workflowNodes | ✅ |
+| `POST /api/ai/suggest-reply` | `app/api/ai/suggest-reply/route.ts` (+80/-0, new) | New route — gpt-4o-mini suggestions | ✅ |
 
-| Was broken | Fix |
-|---|---|
-| `/campaigns/:id` → HTTP 500 | ✅ Pages converted to thin shells, client fetches |
-| `/prospects/:id` → HTTP 500 | ✅ Same fix |
-| `/campaigns/new` → HTTP 500 | ✅ Same fix |
-| `GET /api/campaigns/:id/prospects` → 405 | ✅ Added in `d7845dce` |
-| `GET /api/prospects/:id/campaigns` → 404 | ✅ Added in `d7845dce` |
-| `GET /api/messages` without auth | ✅ Auth + `?campaignId` / `?prospectId` filter added |
-| `/api/conversations` no auth | ✅ Clerk auth + prospect join added |
-| Dashboard not user-scoped | ✅ Scoped in `3402b306` |
-| Test suite failures (server-component + dashboard) | ✅ Fixed in `a0cec375` |
-| `settings` table — no userId | ✅ Added in `1103469b` (migration 0002) |
-| `tags` table — no userId | ✅ Added in `1103469b` (migration 0002) |
-| `messages` table — no userId | ✅ Added in `1103469b` (migration 0002) |
-| `GET /api/settings` → 404 | ✅ general + linkedin routes auth-guarded + user-scoped in `1103469b` |
-| Campaign execute — tag find-or-create not user-scoped | ✅ Fixed in `1103469b` |
+---
 
-### 🔴 Still Broken / Missing
-
-| Area | Issue | Priority |
-|------|-------|----------|
-| `POST /api/prospects` | Still 500 — create prospect broken | P1 |
-| `POST /api/templates` | Still 500 — create template broken | P1 |
-| `PUT /api/campaigns/:id` | Still 500 — update campaign broken | P1 |
-| `GET /api/campaigns/:id/steps` | Still 404 — sequence tab empty | P1 |
-| `POST /api/ai/suggest-reply` | Still 404 — AI suggestion broken | P2 |
-
-### ✅ Working End-to-End (confirmed)
+## ✅ Full Working End-to-End Status
 
 - Dashboard — real data, user-scoped ✅
 - `/campaigns` list — renders with `prospectCount` + `stepCount` ✅
 - `/campaigns/:id` — no longer 500s ✅
+- `/campaigns/:id/steps` — sequence tab populated ✅
 - `/prospects` table — paginated, user-scoped ✅
 - `/prospects/:id` — no longer 500s ✅
+- `POST /api/prospects` — create prospect working ✅
 - `/lists` — `memberCount` included ✅
 - `/templates` + `/templates/:id` — full A/B variant management ✅
+- `POST /api/templates` — create template working ✅
 - `/conversations` — thread view, reply send, Clerk-auth'd ✅
 - `/analytics` — core KPIs real ✅
 - Settings API — general + linkedin, fully user-scoped ✅
+- AI suggest-reply — gpt-4o-mini powered ✅
 
 ---
 
@@ -116,44 +102,23 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | Test suite fixes | ✅ | `a0cec375` |
 | Schema userId gaps (settings, tags, messages) | ✅ | `1103469b` — migration 0002 |
 | Settings API | ✅ | `1103469b` — general + linkedin, user-scoped |
-| `POST /api/prospects` fix | ⬜ | Still 500 |
-| `POST /api/templates` fix | ⬜ | Still 500 |
-| `PUT /api/campaigns/:id` fix | ⬜ | Still 500 |
-| `GET /api/campaigns/:id/steps` | ⬜ | Still 404 |
-| `POST /api/ai/suggest-reply` | ⬜ | Still 404 |
-| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 15:09 CDT) |
+| `POST /api/prospects` fix | ✅ | `1ba87773` |
+| `POST /api/templates` fix | ✅ | `1ba87773` |
+| `PUT /api/campaigns/:id` fix | ✅ | `1ba87773` |
+| `GET /api/campaigns/:id/steps` | ✅ | `1ba87773` — new route |
+| `POST /api/ai/suggest-reply` | ✅ | `1ba87773` — new route, gpt-4o-mini |
+| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 15:28 CDT) |
 
 ---
 
-## ⚠️ Watchdog Alert — 20:23 UTC (8th consecutive check stopped)
+## 🎉 Implementation Complete
 
-Claude Code detected as **STOPPED** (8th consecutive check — stopped since ~18:05 UTC).
-Last real code commit: `1103469b` — **138 min ago** (18:05 UTC).
-Wake attempts dispatched at: 18:41, 18:53, 19:08, 19:23, 19:38, 19:53, 20:08, **20:23 UTC**.
-**Scott notified via Telegram at 18:41 UTC and again at 20:08 UTC.** Manual restart of Claude Code on Netrunner required.
-
-5 items remain:
-- `POST /api/prospects` (P1 — 500)
-- `POST /api/templates` (P1 — 500)
-- `PUT /api/campaigns/:id` (P1 — 500)
-- `GET /api/campaigns/:id/steps` (P1 — 404)
-- `POST /api/ai/suggest-reply` (P2 — 404)
+All P1 and P2 gaps resolved. App is fully functional end-to-end with:
+- Complete Clerk auth + user data isolation
+- All CRUD endpoints working
+- AI-powered suggest-reply
+- Clean Vercel deployment
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 20:23 UTC*
-
-
----
-
-## All P1/P2 Gaps Resolved — PR #20 (1ba87773) — 2026-05-13 20:28 UTC
-
-| Endpoint | Fix | Status |
-|----------|-----|--------|
-| POST /api/prospects | Input validation + safe defaults | DONE |
-| POST /api/templates | channel default + validation | DONE |
-| PUT /api/campaigns/:id | Dynamic set(), undefined-safe return | DONE |
-| GET /api/campaigns/:id/steps | New route — returns workflowNodes | DONE |
-| POST /api/ai/suggest-reply | New route — gpt-4o-mini suggestions | DONE |
-
-Deployed: https://ai-sdr-mocha.vercel.app
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 20:38 UTC*
