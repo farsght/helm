@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-13 21:38 UTC
+> Last updated: 2026-05-13 21:53 UTC
 
 ---
 
@@ -130,7 +130,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `POST /api/ai/suggest-reply` | ✅ | `1ba87773` — new route, gpt-4o-mini |
 | Error surfacing (all clients) | ✅ | `c80526c6` — polish pass |
 | Health check endpoint | ✅ | `c80526c6` — `/api/health` |
-| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 16:25 CDT) |
+| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 16:39 CDT) |
 
 ---
 
@@ -142,8 +142,8 @@ All P1 and P2 gaps resolved. App is fully functional end-to-end with:
 - AI-powered suggest-reply
 - Health check endpoint
 - Clean error surfacing in all client components
-- Clean Vercel deployment
+- Clean Vercel deployment (latest: `ai-qu4ykijs2-farsght.vercel.app` READY)
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 21:38 UTC (impl complete — Claude stopped, last commit 13 min ago)*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 21:53 UTC (impl complete — Claude stopped as expected, no pending work)*
