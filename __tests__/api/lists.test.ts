@@ -31,8 +31,8 @@ beforeEach(() => {
 describe('GET /api/lists', () => {
   it('returns all lists', async () => {
     const mockLists = [
-      { id: 1, name: 'VIP Prospects', type: 'static' },
-      { id: 2, name: 'Warm Leads', type: 'static' },
+      { id: 1, name: 'VIP Prospects', type: 'static', memberCount: 0 },
+      { id: 2, name: 'Warm Leads', type: 'static', memberCount: 0 },
     ]
     vi.mocked(db.select).mockReturnValue(q(mockLists) as ReturnType<typeof db.select>)
 

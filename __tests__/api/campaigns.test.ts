@@ -31,8 +31,8 @@ beforeEach(() => {
 describe('GET /api/campaigns', () => {
   it('returns an array of campaigns from the database (filtered by userId)', async () => {
     const mockCampaigns = [
-      { id: 1, name: 'Camp A', status: 'draft' },
-      { id: 2, name: 'Camp B', status: 'active' },
+      { id: 1, name: 'Camp A', status: 'draft', prospectCount: 0, stepCount: 0 },
+      { id: 2, name: 'Camp B', status: 'active', prospectCount: 0, stepCount: 0 },
     ]
     vi.mocked(db.select).mockReturnValue(q(mockCampaigns) as ReturnType<typeof db.select>)
     const res = await GET()

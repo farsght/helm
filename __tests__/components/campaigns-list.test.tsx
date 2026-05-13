@@ -37,18 +37,32 @@ const activeCampaign = {
 }
 
 describe('CampaignsClient', () => {
-  it('renders campaign cards for all initial campaigns', () => {
-    render(<CampaignsClient initialCampaigns={[draftCampaign, activeCampaign]} />)
+  it('renders campaign cards for all initial campaigns', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => [draftCampaign, activeCampaign],
+    } as Response)
 
-    expect(screen.getByText('Cold Outreach')).toBeInTheDocument()
-    expect(screen.getByText('Active Campaign')).toBeInTheDocument()
+    render(<CampaignsClient />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Cold Outreach')).toBeInTheDocument()
+      expect(screen.getByText('Active Campaign')).toBeInTheDocument()
+    })
   })
 
-  it('renders status badges correctly', () => {
-    render(<CampaignsClient initialCampaigns={[draftCampaign, activeCampaign]} />)
+  it('renders status badges correctly', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => [draftCampaign, activeCampaign],
+    } as Response)
 
-    expect(screen.getByText('draft')).toBeInTheDocument()
-    expect(screen.getByText('active')).toBeInTheDocument()
+    render(<CampaignsClient />)
+
+    await waitFor(() => {
+      expect(screen.getByText('draft')).toBeInTheDocument()
+      expect(screen.getByText('active')).toBeInTheDocument()
+    })
   })
 
   it('"New Campaign" button calls POST /api/campaigns and redirects to campaign page', async () => {
@@ -58,7 +72,7 @@ describe('CampaignsClient', () => {
       json: async () => ({ id: newCampaignId, name: 'New Campaign', status: 'draft' }),
     } as Response)
 
-    render(<CampaignsClient initialCampaigns={[]} />)
+    render(<CampaignsClient />)
 
     // Empty state has "Create Campaign" button
     const button = screen.getAllByRole('button').find(b => b.textContent?.includes('Campaign'))
@@ -72,15 +86,20 @@ describe('CampaignsClient', () => {
   })
 
   it('"Start" button calls POST /api/campaigns/[id]/activate and shows "active" badge', async () => {
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      json: async () => ({ success: true, campaign: { ...draftCampaign, status: 'active' } }),
-    } as Response)
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [draftCampaign],
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, campaign: { ...draftCampaign, status: 'active' } }),
+      } as Response)
 
-    render(<CampaignsClient initialCampaigns={[draftCampaign]} />)
+    render(<CampaignsClient />)
 
-    // Draft campaign shows a "Start" button
-    const startBtn = screen.getByRole('button', { name: /start/i })
+    // Wait for campaign to load, then find the Start button
+    const startBtn = await screen.findByRole('button', { name: /start/i })
     fireEvent.click(startBtn)
 
     await waitFor(() => {
@@ -97,14 +116,19 @@ describe('CampaignsClient', () => {
   })
 
   it('"Pause" button calls POST /api/campaigns/[id]/pause and shows "paused" badge', async () => {
-    vi.mocked(fetch).mockResolvedValue({
-      ok: true,
-      json: async () => ({ success: true, campaign: { ...activeCampaign, status: 'paused' } }),
-    } as Response)
+    vi.mocked(fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [activeCampaign],
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, campaign: { ...activeCampaign, status: 'paused' } }),
+      } as Response)
 
-    render(<CampaignsClient initialCampaigns={[activeCampaign]} />)
+    render(<CampaignsClient />)
 
-    const pauseBtn = screen.getByRole('button', { name: /pause/i })
+    const pauseBtn = await screen.findByRole('button', { name: /pause/i })
     fireEvent.click(pauseBtn)
 
     await waitFor(() => {
@@ -119,8 +143,16 @@ describe('CampaignsClient', () => {
     })
   })
 
-  it('shows empty state with "No campaigns yet" when no campaigns provided', () => {
-    render(<CampaignsClient initialCampaigns={[]} />)
-    expect(screen.getByText(/no campaigns yet/i)).toBeInTheDocument()
+  it('shows empty state with "No campaigns yet" when no campaigns provided', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => [],
+    } as Response)
+
+    render(<CampaignsClient />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/no campaigns yet/i)).toBeInTheDocument()
+    })
   })
 })

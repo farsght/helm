@@ -47,22 +47,24 @@ describe('GET /api/analytics/dashboard', () => {
       [{ count: opened }],              // totalOpened
       [{ count: replied }],             // totalReplied
       [{ count: meetings }],            // meetingsBooked
+      // Chart data is now via db.execute (single SQL query) — no per-day selects
+      [],                               // allCampaigns (active campaigns for performance section)
+      [],                               // recentConvos
     ]
-    // 30 days of chart data: each day needs 2 selects (sent + replied)
-    for (let i = 0; i < 30; i++) {
-      selectResponses.push([{ count: 0 }]) // sent
-      selectResponses.push([{ count: 0 }]) // replied
-    }
-    // Campaign performance: no active campaigns returned
-    selectResponses.push([]) // allCampaigns
-    // Recent conversations
-    selectResponses.push([]) // recentConvos
 
     vi.mocked(db.select).mockImplementation(() => {
       const val = selectResponses[idx] ?? []
       idx++
       return q(val) as ReturnType<typeof db.select>
     })
+
+    // Chart data returned by the single raw SQL execute query
+    const chartRows = Array.from({ length: 30 }, (_, i) => ({
+      date: `01/${String(i + 1).padStart(2, '0')}`,
+      sent: 0,
+      replied: 0,
+    }))
+    vi.mocked(db.execute).mockResolvedValue({ rows: chartRows } as ReturnType<typeof db.execute> extends Promise<infer T> ? T : never)
   }
 
   it('returns real aggregated counts — not hardcoded zeros', async () => {
