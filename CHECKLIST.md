@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-13 18:23 UTC
+> Last updated: 2026-05-13 18:38 UTC
 
 ---
 
@@ -121,8 +121,16 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `PUT /api/campaigns/:id` fix | ⬜ | Still 500 |
 | `GET /api/campaigns/:id/steps` | ⬜ | Still 404 |
 | `POST /api/ai/suggest-reply` | ⬜ | Still 404 |
-| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 13:05 CDT) |
+| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 13:24 CDT) |
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 18:23 UTC*
+## ⚠️ Watchdog Alert — 18:38 UTC
+
+Claude Code detected as **STOPPED**. Last real commit `1103469b` was 33 min ago.
+Wake attempt via `openclaw gateway event` failed — command not available on this OpenClaw version.
+**Scott notified via Telegram.** Manual restart of Claude Code on Netrunner required.
+
+---
+
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 18:38 UTC*
