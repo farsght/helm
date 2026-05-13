@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { campaigns } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
-    const allCampaigns = await db.select().from(campaigns);
+    const allCampaigns = await db.select().from(campaigns).where(eq(campaigns.userId, userId));
     return NextResponse.json(allCampaigns);
   } catch (err) {
     console.error('Fetch campaigns error:', err);
@@ -13,9 +18,13 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const [campaign] = await db.insert(campaigns).values({
+      userId,
       name: body.name,
       description: body.description,
       status: body.status || 'draft',

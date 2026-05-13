@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { templates } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
-    const allTemplates = await db.select().from(templates);
+    const allTemplates = await db.select().from(templates).where(eq(templates.userId, userId));
     return NextResponse.json(allTemplates);
   } catch (err) {
     console.error('Fetch templates error:', err);
@@ -13,9 +18,13 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const [template] = await db.insert(templates).values({
+      userId,
       name: body.name,
       channel: body.channel,
       subject: body.subject,

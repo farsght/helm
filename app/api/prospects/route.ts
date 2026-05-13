@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { prospects } from '@/db/schema';
-import { or, ilike, sql } from 'drizzle-orm';
+import { or, ilike, sql, and, eq } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { searchParams } = new URL(request.url);
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
@@ -11,25 +15,27 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     const offset = (page - 1) * limit;
 
-    let query = db.select().from(prospects);
+    const conditions = [eq(prospects.userId, userId)];
 
     if (search) {
-      query = query.where(
+      conditions.push(
         or(
           ilike(prospects.firstName, `%${search}%`),
           ilike(prospects.lastName, `%${search}%`),
           ilike(prospects.email, `%${search}%`),
           ilike(prospects.company, `%${search}%`)
-        )
-      ) as typeof query;
+        ) as ReturnType<typeof eq>
+      );
     }
 
-    const allProspects = await query.limit(limit).offset(offset);
+    const whereClause = and(...conditions);
 
-    // Get total count
+    const allProspects = await db.select().from(prospects).where(whereClause).limit(limit).offset(offset);
+
     const totalResult = await db
       .select({ count: sql<number>`count(*)::int` })
-      .from(prospects);
+      .from(prospects)
+      .where(whereClause);
     const total = totalResult[0]?.count || 0;
 
     return NextResponse.json({
@@ -46,9 +52,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const [prospect] = await db.insert(prospects).values({
+      userId,
       firstName: body.firstName,
       lastName: body.lastName,
       email: body.email,

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { UserButton } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   Target,
@@ -126,15 +127,16 @@ export function Sidebar() {
           })}
         </nav>
 
-        {!collapsed && (
-          <div className="p-4 border-t border-[#3A3A40]">
+        <div className={cn("p-4 border-t border-[#3A3A40] flex items-center", collapsed ? "justify-center" : "gap-3")}>
+          <UserButton />
+          {!collapsed && (
             <div className="text-xs text-gray-500">
               <p className="mb-1">Keyboard Shortcuts:</p>
               <p><kbd className="text-gray-400">⌘K</kbd> Search</p>
               <p><kbd className="text-gray-400">Esc</kbd> Close panels</p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Search Dialog */}

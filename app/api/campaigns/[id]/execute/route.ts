@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { campaigns, campaignProspects, workflowNodes, workflowEdges, messages, prospects, prospectTags, tags, tasks } from '@/db/schema';
 import { eq, and, isNotNull } from 'drizzle-orm';
@@ -10,12 +11,15 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { id } = await params;
     const campaignId = parseInt(id);
 
-    // Get campaign
-    const [campaign] = await db.select().from(campaigns).where(eq(campaigns.id, campaignId));
+    // Get campaign (scoped to userId)
+    const [campaign] = await db.select().from(campaigns).where(and(eq(campaigns.id, campaignId), eq(campaigns.userId, userId)));
     if (!campaign) {
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
     }

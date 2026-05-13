@@ -1,17 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
-import { campaignProspects, listMembers } from '@/db/schema';
+import { campaigns, campaignProspects, listMembers } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
+
+async function verifyCampaignOwnership(campaignId: number, userId: string) {
+  const [campaign] = await db.select().from(campaigns).where(and(eq(campaigns.id, campaignId), eq(campaigns.userId, userId)));
+  return campaign ?? null;
+}
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { id } = await params;
     const campaignId = parseInt(id);
-    const body = await request.json();
+    if (!await verifyCampaignOwnership(campaignId, userId)) {
+      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    }
 
+    const body = await request.json();
     let prospectIds: number[] = body.prospectIds || [];
 
     // If listId provided, get all prospects from that list
@@ -60,9 +72,16 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { id } = await params;
     const campaignId = parseInt(id);
+    if (!await verifyCampaignOwnership(campaignId, userId)) {
+      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    }
+
     const body = await request.json();
     const prospectId = body.prospectId;
 

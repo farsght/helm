@@ -1,16 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
-import { workflowNodes, workflowEdges } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { campaigns, workflowNodes, workflowEdges } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
+
+async function verifyCampaignOwnership(campaignId: number, userId: string) {
+  const [campaign] = await db.select().from(campaigns).where(and(eq(campaigns.id, campaignId), eq(campaigns.userId, userId)));
+  return campaign ?? null;
+}
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { id } = await params;
     const campaignId = parseInt(id);
-    
+    if (!await verifyCampaignOwnership(campaignId, userId)) {
+      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    }
+
     const nodes = await db.select().from(workflowNodes).where(eq(workflowNodes.campaignId, campaignId));
     const edges = await db.select().from(workflowEdges).where(eq(workflowEdges.campaignId, campaignId));
-    
+
     return NextResponse.json({ nodes, edges });
   } catch (err) {
     console.error('Fetch workflow error:', err);
@@ -19,15 +31,22 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { id } = await params;
     const campaignId = parseInt(id);
+    if (!await verifyCampaignOwnership(campaignId, userId)) {
+      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    }
+
     const { nodes, edges } = await request.json();
-    
+
     // Delete existing nodes and edges
     await db.delete(workflowNodes).where(eq(workflowNodes.campaignId, campaignId));
     await db.delete(workflowEdges).where(eq(workflowEdges.campaignId, campaignId));
-    
+
     // Insert new nodes one-by-one to build reactFlowId → dbId map
     const nodeIdMap: Record<string, number> = {};
     if (nodes && Array.isArray(nodes) && nodes.length > 0) {
@@ -70,7 +89,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         }))
       );
     }
-    
+
     return NextResponse.json({ success: true, nodes: newNodes });
   } catch (error) {
     console.error('Workflow save error:', error);
