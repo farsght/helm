@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { lists } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
-    const allLists = await db.select().from(lists);
+    const allLists = await db.select().from(lists).where(eq(lists.userId, userId));
     return NextResponse.json(allLists);
   } catch (err) {
     console.error('Fetch lists error:', err);
@@ -13,9 +18,13 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const [list] = await db.insert(lists).values({
+      userId,
       name: body.name,
       description: body.description,
       type: body.type || 'static',

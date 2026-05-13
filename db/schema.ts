@@ -3,6 +3,7 @@ import { pgTable, text, integer, real, serial, timestamp, boolean } from 'drizzl
 // Campaigns
 export const campaigns = pgTable('campaigns', {
   id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
   name: text('name').notNull(),
   description: text('description'),
   status: text('status').notNull().default('draft'), // draft, active, paused, completed, archived
@@ -38,6 +39,7 @@ export const workflowEdges = pgTable('workflow_edges', {
 // Lists
 export const lists = pgTable('lists', {
   id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
   name: text('name').notNull(),
   description: text('description'),
   type: text('type').notNull().default('static'), // static, dynamic
@@ -49,6 +51,7 @@ export const lists = pgTable('lists', {
 // Prospects
 export const prospects = pgTable('prospects', {
   id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
   email: text('email'),
@@ -107,6 +110,7 @@ export const messages = pgTable('messages', {
 // Conversations
 export const conversations = pgTable('conversations', {
   id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
   prospectId: integer('prospect_id').notNull().references(() => prospects.id, { onDelete: 'cascade' }),
   campaignId: integer('campaign_id').references(() => campaigns.id, { onDelete: 'set null' }),
   status: text('status').notNull().default('new'), // new, in_progress, interested, meeting_booked, not_interested, unsubscribed
@@ -117,6 +121,7 @@ export const conversations = pgTable('conversations', {
 // Templates
 export const templates = pgTable('templates', {
   id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
   name: text('name').notNull(),
   channel: text('channel').notNull(), // email, linkedin
   subject: text('subject'),
@@ -143,6 +148,7 @@ export const templateVariants = pgTable('template_variants', {
 // Connected Accounts
 export const connectedAccounts = pgTable('connected_accounts', {
   id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
   type: text('type').notNull(), // email, linkedin
   name: text('name').notNull(),
   configJson: text('config_json'),

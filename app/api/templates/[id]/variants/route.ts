@@ -1,15 +1,27 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
-import { templateVariants } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { templates, templateVariants } from '@/db/schema';
+import { eq, and } from 'drizzle-orm';
+
+async function verifyTemplateOwnership(templateId: number, userId: string) {
+  const [template] = await db.select().from(templates).where(and(eq(templates.id, templateId), eq(templates.userId, userId)));
+  return template ?? null;
+}
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { id } = await params;
     const templateId = parseInt(id, 10);
+    if (!await verifyTemplateOwnership(templateId, userId)) {
+      return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+    }
     const variants = await db.select().from(templateVariants).where(eq(templateVariants.templateId, templateId));
     return NextResponse.json(variants);
   } catch (err) {
@@ -22,9 +34,15 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const { id } = await params;
     const templateId = parseInt(id, 10);
+    if (!await verifyTemplateOwnership(templateId, userId)) {
+      return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+    }
     const body = await request.json();
 
     const result = await db.insert(templateVariants).values({
