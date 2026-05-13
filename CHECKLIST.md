@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-13 21:23 UTC
+> Last updated: 2026-05-13 21:38 UTC
 
 ---
 
@@ -31,6 +31,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `a0cec375` | Fix tests after server-component + dashboard refactor (test-only commit) | ✅ |
 | `1103469b` | **Add userId to messages, tags, settings tables — full data isolation** | ✅ |
 | `1ba87773` | **Fix all 5 remaining P1/P2 gaps — prospects, templates, campaigns PUT, steps, AI suggest-reply** | ✅ |
+| `c80526c6` | **Proper error surfacing in all client components + health check endpoint** | ✅ |
 
 ---
 
@@ -45,6 +46,24 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `PUT /api/campaigns/:id` | `app/api/campaigns/[id]/route.ts` (+19/-10) | Dynamic set(), undefined-safe return | ✅ |
 | `GET /api/campaigns/:id/steps` | `app/api/campaigns/[id]/steps/route.ts` (+43/-0, new) | New route — returns workflowNodes | ✅ |
 | `POST /api/ai/suggest-reply` | `app/api/ai/suggest-reply/route.ts` (+80/-0, new) | New route — gpt-4o-mini suggestions | ✅ |
+
+---
+
+## 🔧 Post-P1/P2 Polish (c80526c6 — 21:25 UTC)
+
+| File | Change | Notes |
+|------|--------|-------|
+| `app/api/health/route.ts` | +14 (new) | Health check endpoint added |
+| `app/campaigns/[id]/campaign-detail-client.tsx` | +14/-17 | Better error surfacing |
+| `app/campaigns/campaigns-client.tsx` | +7/-8 | Error handling cleanup |
+| `app/conversations/conversations-client.tsx` | +11/-22 | Error surfacing |
+| `app/lists/lists-client.tsx` | +12/-18 | Error surfacing |
+| `app/prospects/prospects-client.tsx` | +14/-20 | Error surfacing |
+| `app/settings/settings-client.tsx` | +10/-12 | Error surfacing |
+| `app/templates/[id]/template-detail-client.tsx` | +4/-6 | Error surfacing |
+| `app/templates/templates-client.tsx` | +8/-20 | Error surfacing |
+| `lib/api.ts` | +12 | API utility additions |
+| `proxy.ts` | +1 | Minor update |
 
 ---
 
@@ -64,6 +83,8 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 - `/analytics` — core KPIs real ✅
 - Settings API — general + linkedin, fully user-scoped ✅
 - AI suggest-reply — gpt-4o-mini powered ✅
+- Health check endpoint — `/api/health` ✅
+- Error surfacing — all client components ✅
 
 ---
 
@@ -107,7 +128,9 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `PUT /api/campaigns/:id` fix | ✅ | `1ba87773` |
 | `GET /api/campaigns/:id/steps` | ✅ | `1ba87773` — new route |
 | `POST /api/ai/suggest-reply` | ✅ | `1ba87773` — new route, gpt-4o-mini |
-| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 15:28 CDT) |
+| Error surfacing (all clients) | ✅ | `c80526c6` — polish pass |
+| Health check endpoint | ✅ | `c80526c6` — `/api/health` |
+| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 16:25 CDT) |
 
 ---
 
@@ -117,8 +140,10 @@ All P1 and P2 gaps resolved. App is fully functional end-to-end with:
 - Complete Clerk auth + user data isolation
 - All CRUD endpoints working
 - AI-powered suggest-reply
+- Health check endpoint
+- Clean error surfacing in all client components
 - Clean Vercel deployment
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 21:23 UTC (impl complete — watchdog standing down)
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 21:38 UTC (impl complete — Claude stopped, last commit 13 min ago)*
