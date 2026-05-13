@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-13 18:38 UTC
+> Last updated: 2026-05-13 18:53 UTC
 
 ---
 
@@ -121,16 +121,25 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `PUT /api/campaigns/:id` fix | ⬜ | Still 500 |
 | `GET /api/campaigns/:id/steps` | ⬜ | Still 404 |
 | `POST /api/ai/suggest-reply` | ⬜ | Still 404 |
-| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 13:24 CDT) |
+| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 13:41 CDT) |
 
 ---
 
-## ⚠️ Watchdog Alert — 18:38 UTC
+## ⚠️ Watchdog Alert — 18:53 UTC
 
-Claude Code detected as **STOPPED**. Last real commit `1103469b` was 33 min ago.
-Wake attempt via `openclaw gateway event` failed — command not available on this OpenClaw version.
-**Scott notified via Telegram.** Manual restart of Claude Code on Netrunner required.
+Claude Code detected as **STOPPED** (2nd consecutive check).
+Last real code commit: `1103469b` — 48 min ago (18:05 UTC).
+`openclaw gateway event` not available on this version.
+Wake attempt via `openclaw agent --agent main` dispatched to Netrunner.
+**Scott notified via Telegram.** Manual restart of Claude Code on Netrunner likely required.
+
+5 items remain:
+- `POST /api/prospects` (P1 — 500)
+- `POST /api/templates` (P1 — 500)
+- `PUT /api/campaigns/:id` (P1 — 500)
+- `GET /api/campaigns/:id/steps` (P1 — 404)
+- `POST /api/ai/suggest-reply` (P2 — 404)
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 18:38 UTC*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 18:53 UTC*
