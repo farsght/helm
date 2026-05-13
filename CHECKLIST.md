@@ -1,74 +1,169 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-13 15:55 UTC
+> Last updated: 2026-05-13 16:05 UTC
 
 ---
 
 ## Status Key
 - ⬜ Not started
-- 🔄 In progress
+- 🔄 In progress (Netrunner active)
 - ✅ Complete
 - ❌ Skipped / deferred
 
 ---
 
-## 🎉 Phase 1 — Critical Fixes
+## 🔄 Currently In Progress — Clerk Auth + Multi-Tenancy
 
-| # | Gap | Status | Commit | Notes |
-|---|-----|--------|--------|-------|
-| GAP-01 | Workflow Save Breaks All Edge Connections | ✅ | `905eaae7` | nodeIdMap built after insert, edges use mapped IDs |
-| GAP-02 | "New Campaign" Button Has No Handler | ✅ | `905eaae7` | Wired to POST /api/campaigns in campaigns-client |
-| GAP-03 | "Add Prospects" Button in Campaign Detail Is Inert | ✅ | `905eaae7` | Campaign status toggle + enroll prospects modal |
-| GAP-04 | Wait Node Throws Error, Marking Prospects as Failed | ✅ | `905eaae7` | Enroll prospects modal + campaign settings form |
+**Netrunner is actively implementing:**
+- Clerk authentication (sign-in, sign-up, session management)
+- All data models scoped to a logged-in user (userId / orgId on every table)
+- This touches: campaigns, prospects, lists, templates, conversations, settings, analytics
 
----
-
-## 🎉 Phase 2 — High Priority Features
-
-| # | Gap | Status | Commit | Notes |
-|---|-----|--------|--------|-------|
-| GAP-05 | Missing Individual Prospect Endpoints | ✅ | `905eaae7` | GET/PUT/DELETE /api/prospects/[id] |
-| GAP-06 | No Way to Add Prospects to a List | ✅ | `905eaae7` | Prospect detail page with campaign history + messages |
-| GAP-07 | Conversations API Returns All Messages | ✅ | `905eaae7` | List CRUD API (PUT/DELETE /api/lists/[id]) |
-| GAP-08 | Reply Route Uses Wrong Message | ✅ | `905eaae7` | POST/DELETE /api/lists/[id]/members |
-| GAP-09 | Campaign List Pause/Start Buttons Inert | ✅ | `905eaae7` | SMTP stub (lib/email-sender.ts) wired into execute |
-| GAP-10 | Cross-Campaign Analytics Returns Hardcoded Data | ✅ | `905eaae7` | Email webhook handler (/api/webhooks/email) |
-| GAP-11 | A/B Variant Stats Never Updated | ✅ | `905eaae7` | Wait node scheduling with nextRunAt + cron + vercel.json |
-| GAP-12 | Email Open/Reply Tracking Never Sets Fields | ✅ | `905eaae7` | Reply dedup + webhook fire on reply_sent |
-| GAP-13 | No Campaign-to-List Prospect Enrollment Flow | ✅ | `905eaae7` | Prospect search + pagination |
+This is a foundational change — everything in the database will be user-scoped after this lands. Do not build on top of the current unauth'd APIs until this is merged.
 
 ---
 
-## 🎉 Phase 3 — Polish & Completeness
+## Phase 1 — Critical Fixes ✅ All Done
 
-| # | Gap | Status | Commit | Notes |
-|---|-----|--------|--------|-------|
-| GAP-14 | Campaign Analytics Chart Uses Unix Timestamps | ✅ | `905eaae7` | Remaining workflow nodes: tag, move_to_campaign, ai_decision, manual_task |
-| GAP-15 | Dashboard "Change" Percentages Are Hardcoded | ✅ | `905eaae7` | Node config panel uses real templates and campaigns |
-| GAP-16 | Email Account Credentials Stored in Plaintext | ✅ | `905eaae7` | Cross-campaign analytics with real SQL aggregations |
-| GAP-17 | No Prospect Tags API or UI | ✅ | `905eaae7` | Campaign analytics real avg response time |
-| GAP-18 | Campaign "Settings" Tab Is a Placeholder | ✅ | `905eaae7` | (included in campaign settings form, GAP-04) |
-| GAP-19 | Analytics avgTimeHours Is Math.random() | ✅ | `905eaae7` | Webhook utility (lib/webhook.ts) |
-| GAP-20 | Missing Template Delete Button | ✅ | `905eaae7` | Redirect /api/analytics/overview → /api/analytics/dashboard |
-| GAP-21 | No Pagination on Prospects List | ✅ | `905eaae7` | AI message template variable aliases ({{first_name}} etc.) |
-| GAP-22 | Reply Webhook Uses First Message | ✅ | `905eaae7` | Middleware stub with auth TODO |
+| # | Gap | Status | Commit |
+|---|-----|--------|--------|
+| GAP-01 | Workflow Save Breaks All Edge Connections | ✅ | `905eaae7` |
+| GAP-02 | "New Campaign" Button Has No Handler | ✅ | `905eaae7` |
+| GAP-03 | "Add Prospects" Button in Campaign Detail Is Inert | ✅ | `905eaae7` |
+| GAP-04 | Wait Node Throws Error, Marking Prospects as Failed | ✅ | `905eaae7` |
 
 ---
 
-## 🎉 Extras
+## Phase 2 — High Priority Features ✅ All Done
 
-| Item | Status | Commit | Notes |
-|------|--------|--------|-------|
-| SMTP stub (`lib/email-sender.ts`) | ✅ | `905eaae7` | console.log only, wired into execute route |
-| LinkedIn OAuth flow (`app/api/auth/linkedin/`) | ✅ | `905eaae7` | Authorize + callback + settings UI |
-| LinkedIn sender stub (`lib/linkedin-sender.ts`) | ✅ | `905eaae7` | (included in LinkedIn OAuth commit) |
-| LinkedIn Settings UI section | ✅ | `905eaae7` | Connect/disconnect in Accounts tab |
-| Cron endpoint (`app/api/cron/route.ts`) | ✅ | `905eaae7` | Processes pending nextRunAt steps |
-| vercel.json cron config | ✅ | `905eaae7` | `*/5 * * * *` schedule |
-| Checkbox component | ✅ | `905eaae7` | Added for prospect selection UI |
-| force-dynamic on data pages | ✅ | `905eaae7` | Prevents stale SSR caching |
-| SettingsClient Suspense wrapper | ✅ | `905eaae7` | Fixes useSearchParams build error |
+| # | Gap | Status | Commit |
+|---|-----|--------|--------|
+| GAP-05 | Missing Individual Prospect Endpoints (GET / PUT / DELETE) | ✅ | `905eaae7` |
+| GAP-06 | No Way to Add Prospects to a List | ✅ | `905eaae7` |
+| GAP-07 | Conversations API Returns All Prospect Messages | ✅ | `905eaae7` |
+| GAP-08 | Reply Route Uses Wrong Message for Channel | ✅ | `905eaae7` |
+| GAP-09 | Campaign List Pause/Start Buttons Inert | ✅ | `905eaae7` |
+| GAP-10 | Cross-Campaign Analytics Returns Hardcoded Data | ✅ | `905eaae7` |
+| GAP-11 | A/B Variant Stats Never Updated | ✅ | `905eaae7` |
+| GAP-12 | Email Open/Reply Tracking Never Sets Fields | ✅ | `905eaae7` |
+| GAP-13 | No Campaign-to-List Prospect Enrollment Flow | ✅ | `905eaae7` |
+
+---
+
+## Phase 3 — Polish & Completeness ✅ All Done
+
+| # | Gap | Status | Commit |
+|---|-----|--------|--------|
+| GAP-14 | Campaign Analytics Chart Uses Unix Timestamps | ✅ | `905eaae7` |
+| GAP-15 | Dashboard "Change" Percentages Are Hardcoded | ✅ | `905eaae7` |
+| GAP-16 | Email Account Credentials Stored in Plaintext | ✅ | `905eaae7` |
+| GAP-17 | No Prospect Tags API or UI | ✅ | `905eaae7` |
+| GAP-18 | Campaign "Settings" Tab Is a Placeholder | ✅ | `905eaae7` |
+| GAP-19 | Analytics avgTimeHours Is Math.random() | ✅ | `905eaae7` |
+| GAP-20 | Missing Template Delete Button | ✅ | `905eaae7` |
+| GAP-21 | No Pagination on Prospects List | ✅ | `905eaae7` |
+| GAP-22 | Reply Webhook Uses First Message | ✅ | `905eaae7` |
+
+---
+
+## Extras ✅ All Done
+
+| Item | Status | Commit |
+|------|--------|--------|
+| SMTP stub (`lib/email-sender.ts`) | ✅ | `905eaae7` |
+| LinkedIn OAuth flow | ✅ | `905eaae7` |
+| LinkedIn sender stub | ✅ | `905eaae7` |
+| Cron endpoint (`app/api/cron/route.ts`) | ✅ | `905eaae7` |
+| vercel.json cron config (`*/5 * * * *`) | ✅ | `905eaae7` |
+| Lazy DB init (allow build without DATABASE_URL) | ✅ | `9d480b2f` |
+
+---
+
+## 🔍 Live App Audit — What's Working vs. Broken
+
+*Audited 2026-05-13 against https://ai-sdr-mocha.vercel.app*
+
+### ✅ Working End-to-End
+
+| Area | Status | Notes |
+|------|--------|-------|
+| Dashboard `/` | ✅ | Real data — stats, charts, active campaigns list |
+| Campaign list `/campaigns` | ✅ | Renders real data, pause/start buttons visible |
+| Prospects table `/prospects` | ✅ | 11 real prospects, search renders |
+| Lists `/lists` | ✅ | Cards + modal view with members |
+| Templates `/templates` | ✅ | List + detail page work |
+| Template detail `/templates/:id` | ✅ | A/B variant management fully works |
+| Conversations `/conversations` | ✅ | Thread view, reply send, status update |
+| Analytics `/analytics` | ✅ (partial) | Core KPIs + trend chart real; some charts empty |
+| `GET /api/campaigns` | ✅ | |
+| `GET /api/campaigns/:id` | ✅ | |
+| `POST /api/campaigns` | ✅ | Creates campaign (201) |
+| `DELETE /api/campaigns/:id` | ✅ | |
+| `GET /api/prospects` | ✅ | Paginated with total/page/pages |
+| `GET/PUT/DELETE /api/prospects/:id` | ✅ | |
+| `GET/PUT/DELETE /api/templates/:id` | ✅ | |
+| `GET/POST /api/templates/:id/variants` | ✅ | |
+| `GET /api/conversations` | ✅ | |
+| `GET/PUT /api/conversations/:id` | ✅ | |
+| `POST /api/conversations/:id/reply` | ✅ | |
+| `GET /api/analytics/overview` | ✅ | Full metrics + chart data |
+
+### 🔴 Broken / Missing
+
+| Area | Issue | Priority |
+|------|-------|----------|
+| Campaign detail `/campaigns/:id` | **HTTP 500 crash** — SSR page component fails | P0 |
+| Prospect detail `/prospects/:id` | **HTTP 500 crash** — same root cause | P0 |
+| New campaign wizard `/campaigns/new` | **HTTP 500 crash** | P0 |
+| Settings `/settings` | **Infinite load** — `GET /api/settings` → 404 | P0 |
+| `GET /api/settings` | **404** — entire settings system missing | P0 |
+| `POST /api/prospects` | **500** — Add Prospect broken | P1 |
+| `POST /api/templates` | **500** — Create Template broken | P1 |
+| `PUT /api/campaigns/:id` | **500** — Can't save campaign edits | P1 |
+| `GET /api/campaigns/:id/steps` | **404** — Campaign sequence tab has no data | P1 |
+| `POST /api/prospects/:id/enroll` | **404** — Can't enroll prospects in campaigns | P1 |
+| `POST /api/ai/suggest-reply` | **404** — "Get AI Suggestion" button broken | P2 |
+| `GET /api/analytics/campaigns/:id` | **500** — Per-campaign analytics broken | P2 |
+| Analytics: industry/title/heatmap charts | **Empty** — endpoints return 0s | P3 |
+| `POST /api/prospects/import` | **400** — CSV import broken (bad schema) | P3 |
+| `PATCH /api/campaigns/:id` | **405** — Wrong method (use PUT) | Fix |
+
+---
+
+## 🗺️ What Needs to Be Built Next
+
+> ⚠️ Hold on P1+ items until Clerk auth lands — all new endpoints need to be user-scoped from the start.
+
+### P0 — Unblocks entire app (fix these immediately)
+
+1. **Fix SSR crashes on `/campaigns/:id` and `/prospects/:id`**
+   - Root cause: likely `NEXT_PUBLIC_APP_URL` not set in Vercel, so server components can't self-call APIs
+   - Fix: pass the base URL as an env var OR switch page components to direct DB calls
+
+2. **Build `GET /api/settings`** (and sub-routes)
+   - `GET/PUT /api/settings/general` — name, timezone, webhookUrl
+   - `GET/PUT /api/settings/sending` — dailyLimit, sendingWindow, timezone
+   - `GET/PUT /api/settings/ai` — model, persona, temperature
+   - `GET/PUT /api/email-accounts` — SMTP config (stub or real)
+
+### P1 — Core feature parity (after Clerk lands)
+
+3. **Fix `POST /api/prospects`** — required field validation failing
+4. **Fix `POST /api/templates`** — same issue
+5. **Fix `PUT /api/campaigns/:id`** — likely schema mismatch on update
+6. **Build `GET/POST /api/campaigns/:id/steps`** — sequence builder tab
+7. **Build `POST /api/prospects/:id/enroll`** — enroll prospect into campaign
+
+### P2 — AI features
+
+8. **`POST /api/ai/suggest-reply`** — OpenAI call using conversation context
+9. **`POST /api/ai/compose`** — AI-drafted outreach
+
+### P3 — Analytics depth
+
+10. **Fix `GET /api/analytics/campaigns/:id`** — currently 500
+11. **Real data for** industry/title/heatmap charts
 
 ---
 
@@ -76,23 +171,13 @@
 
 | Step | Status | Notes |
 |------|--------|-------|
-| `npm run build` exits 0 (no TS errors) | ✅ | Passed — Vercel deployed successfully |
-| All 22 gaps committed | ✅ | `905eaae7` — single commit, all phases |
-| Vercel deployment green | ✅ | https://ai-p6vy4bki2-farsght.vercel.app (READY 10:50 CDT) |
+| All 22 gaps committed | ✅ | `905eaae7` |
+| Lazy DB init fix | ✅ | `9d480b2f` |
+| Clerk auth + user-scoping | 🔄 | **In progress — Netrunner active** |
+| SSR crash fixes | ⬜ | Blocked on understanding root cause |
+| Settings API | ⬜ | |
+| Vercel deployment green | ✅ | https://ai-sdr-mocha.vercel.app |
 
 ---
 
-## Review Notes
-
-**2026-05-13 — farsight code review on `905eaae7`:**
-
-- All 22 gaps implemented in a single large commit — clean approach, avoids partial state
-- LinkedIn OAuth flow included even though it wasn't strictly in Phase 1–3 — good proactive work
-- Vercel deployment is READY at `ai-p6vy4bki2-farsght.vercel.app`
-- One failed deploy (`ai-3nhvrrezg`) between two READY ones — likely a transient build issue, not a code problem
-- Co-authored-by Claude Sonnet 4.6 — confirmed Netrunner was running Claude Code in `--print` mode
-- **Next step:** PR review + merge to main, then QA the live deployment end-to-end
-
----
-
-*This file is auto-updated by farsight's watchdog cron (every 15 min).*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 16:05 UTC*
