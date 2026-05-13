@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { ArrowLeft, Mail, Linkedin, Save, Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 import { TemplateVariants } from "@/components/template-variants";
 
 interface Template {
@@ -44,7 +45,7 @@ export function TemplateDetailClient({ id }: { id: string }) {
     if (!template) return;
     setSaving(true);
     try {
-      const response = await fetch(`/api/templates/${template.id}`, {
+      const updated = await apiFetch(`/api/templates/${template.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -54,16 +55,13 @@ export function TemplateDetailClient({ id }: { id: string }) {
           body: formData.body,
         }),
       });
-
-      if (!response.ok) throw new Error('Failed to update template');
-
-      const updated = await response.json();
       setTemplate(updated);
       setFormData({ name: updated.name, subject: updated.subject || '', body: updated.body });
       setEditing(false);
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Save error:', err);
-      alert('Failed to save template');
+      alert(`Failed to save template: ${msg}`);
     } finally {
       setSaving(false);
     }

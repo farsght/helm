@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Plus, Mail, Linkedin, Edit, Trash2 } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 import { TemplateEditor } from "@/components/template-editor";
 
 interface Template {
@@ -51,28 +52,18 @@ export function TemplatesClient() {
   }) => {
     try {
       if (editingTemplate) {
-        // Update existing
-        const response = await fetch(`/api/templates/${editingTemplate.id}`, {
+        const updated = await apiFetch(`/api/templates/${editingTemplate.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
         });
-
-        if (!response.ok) throw new Error('Failed to update template');
-
-        const updated = await response.json();
         setTemplates(prev => prev.map(t => t.id === updated.id ? updated : t));
       } else {
-        // Create new
-        const response = await fetch('/api/templates', {
+        const created = await apiFetch('/api/templates', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
         });
-
-        if (!response.ok) throw new Error('Failed to create template');
-
-        const created = await response.json();
         setTemplates(prev => [created, ...prev]);
       }
 
@@ -80,8 +71,9 @@ export function TemplatesClient() {
       setEditingTemplate(null);
       router.refresh();
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Save error:', err);
-      alert('Failed to save template');
+      alert(`Failed to save template: ${msg}`);
     }
   };
 
@@ -90,17 +82,13 @@ export function TemplatesClient() {
 
     setDeleting(id);
     try {
-      const response = await fetch(`/api/templates/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) throw new Error('Failed to delete template');
-
+      await apiFetch(`/api/templates/${id}`, { method: 'DELETE' });
       setTemplates(prev => prev.filter(t => t.id !== id));
       router.refresh();
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Delete error:', err);
-      alert('Failed to delete template');
+      alert(`Failed to delete template: ${msg}`);
     } finally {
       setDeleting(null);
     }

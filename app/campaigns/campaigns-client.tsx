@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus, Play, Pause, Target, Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 type Campaign = {
   id: number;
@@ -33,17 +34,16 @@ export function CampaignsClient() {
   const handleNewCampaign = async () => {
     setCreating(true);
     try {
-      const response = await fetch('/api/campaigns', {
+      const newCampaign = await apiFetch('/api/campaigns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'New Campaign', status: 'draft' }),
       });
-      if (!response.ok) throw new Error('Failed to create campaign');
-      const newCampaign = await response.json();
       router.push(`/campaigns/${newCampaign.id}`);
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Create campaign error:', err);
-      alert('Failed to create campaign');
+      alert(`Failed to create campaign: ${msg}`);
     } finally {
       setCreating(false);
     }
@@ -53,17 +53,16 @@ export function CampaignsClient() {
     setTogglingId(campaign.id);
     try {
       const endpoint = campaign.status === 'active' ? 'pause' : 'activate';
-      const response = await fetch(`/api/campaigns/${campaign.id}/${endpoint}`, {
+      const data = await apiFetch(`/api/campaigns/${campaign.id}/${endpoint}`, {
         method: 'POST',
       });
-      if (!response.ok) throw new Error('Failed to update status');
-      const data = await response.json();
       setCampaigns(prev =>
         prev.map(c => c.id === campaign.id ? { ...c, status: data.campaign.status } : c)
       );
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Toggle status error:', err);
-      alert('Failed to update campaign status');
+      alert(`Failed to update campaign status: ${msg}`);
     } finally {
       setTogglingId(null);
     }

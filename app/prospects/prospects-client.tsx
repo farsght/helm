@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Plus, Upload, Download, Pencil, Trash2 } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 type Prospect = {
   id: number;
@@ -77,15 +78,11 @@ export function ProspectsClient() {
   const handleAddProspect = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/prospects', {
+      const newProspect = await apiFetch('/api/prospects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-      
-      if (!response.ok) throw new Error('Failed to add prospect');
-      
-      const newProspect = await response.json();
       setProspects([newProspect, ...prospects]);
       setAddDialogOpen(false);
       setFormData({
@@ -97,8 +94,9 @@ export function ProspectsClient() {
         linkedinUrl: '',
       });
     } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error adding prospect:', error);
-      alert('Failed to add prospect');
+      alert(`Failed to add prospect: ${msg}`);
     } finally {
       setLoading(false);
     }
@@ -143,24 +141,21 @@ export function ProspectsClient() {
         return prospect;
       });
       
-      const response = await fetch('/api/prospects/import', {
+      const result = await apiFetch('/api/prospects/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prospects }),
       });
-      
-      if (!response.ok) throw new Error('Failed to import prospects');
-      
-      const result = await response.json();
       alert(`Successfully imported ${result.count} prospects`);
       setImportDialogOpen(false);
       setCsvFile(null);
-      
+
       // Refresh prospects list
       window.location.reload();
     } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error importing CSV:', error);
-      alert('Failed to import CSV');
+      alert(`Failed to import CSV: ${msg}`);
     } finally {
       setLoading(false);
     }
@@ -205,18 +200,17 @@ export function ProspectsClient() {
     if (!editingProspect) return;
     setLoading(true);
     try {
-      const response = await fetch(`/api/prospects/${editingProspect.id}`, {
+      const updated = await apiFetch(`/api/prospects/${editingProspect.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editFormData),
       });
-      if (!response.ok) throw new Error('Failed to update prospect');
-      const updated = await response.json();
       setProspects(prev => prev.map(p => p.id === updated.id ? { ...p, ...updated } : p));
       setEditDialogOpen(false);
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Edit error:', err);
-      alert('Failed to update prospect');
+      alert(`Failed to update prospect: ${msg}`);
     } finally {
       setLoading(false);
     }
@@ -225,12 +219,12 @@ export function ProspectsClient() {
   const handleDeleteProspect = async (id: number) => {
     if (!confirm('Delete this prospect?')) return;
     try {
-      const response = await fetch(`/api/prospects/${id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete');
+      await apiFetch(`/api/prospects/${id}`, { method: 'DELETE' });
       setProspects(prev => prev.filter(p => p.id !== id));
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Delete error:', err);
-      alert('Failed to delete prospect');
+      alert(`Failed to delete prospect: ${msg}`);
     }
   };
 

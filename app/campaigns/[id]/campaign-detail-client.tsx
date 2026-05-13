@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CampaignCanvas } from "@/components/campaign-canvas";
 import { CampaignAnalytics } from "@/components/campaign-analytics";
+import { apiFetch } from "@/lib/api";
 
 interface Campaign {
   id: number;
@@ -87,17 +88,16 @@ function CampaignSettingsForm({ campaign, onUpdate }: { campaign: Campaign; onUp
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch(`/api/campaigns/${campaign.id}`, {
+      const updated = await apiFetch(`/api/campaigns/${campaign.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, description }),
       });
-      if (!res.ok) throw new Error('Failed to save');
-      const updated = await res.json();
       onUpdate(updated);
       alert('Settings saved');
-    } catch {
-      alert('Failed to save settings');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      alert(`Failed to save settings: ${msg}`);
     } finally {
       setSaving(false);
     }
@@ -187,13 +187,12 @@ export function CampaignDetailClient({ id }: { id: string }) {
     setToggling(true);
     try {
       const endpoint = campaign.status === 'active' ? 'pause' : 'activate';
-      const response = await fetch(`/api/campaigns/${campaign.id}/${endpoint}`, { method: 'POST' });
-      if (!response.ok) throw new Error('Failed to toggle status');
-      const data = await response.json();
+      const data = await apiFetch(`/api/campaigns/${campaign.id}/${endpoint}`, { method: 'POST' });
       setCampaign(data.campaign);
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Toggle status error:', err);
-      alert('Failed to update campaign status');
+      alert(`Failed to update campaign status: ${msg}`);
     } finally {
       setToggling(false);
     }
@@ -203,14 +202,13 @@ export function CampaignDetailClient({ id }: { id: string }) {
     if (!campaign) return;
     setExecuting(true);
     try {
-      const response = await fetch(`/api/campaigns/${campaign.id}/execute`, { method: 'POST' });
-      if (!response.ok) throw new Error('Failed to execute campaign');
-      const data = await response.json();
+      const data = await apiFetch(`/api/campaigns/${campaign.id}/execute`, { method: 'POST' });
       alert(`Processed ${data.processed} of ${data.total} prospects`);
       await fetchData();
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Execute error:', err);
-      alert('Failed to execute campaign');
+      alert(`Failed to execute campaign: ${msg}`);
     } finally {
       setExecuting(false);
     }
@@ -235,21 +233,20 @@ export function CampaignDetailClient({ id }: { id: string }) {
       const body = enrollTab === 'lists'
         ? { listId: selectedListId }
         : { prospectIds: selectedProspectIds };
-      const response = await fetch(`/api/campaigns/${campaign.id}/prospects`, {
+      const data = await apiFetch(`/api/campaigns/${campaign.id}/prospects`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (!response.ok) throw new Error('Failed to enroll');
-      const data = await response.json();
       alert(`Enrolled ${data.enrolled} prospects`);
       setEnrollModalOpen(false);
       setSelectedListId(null);
       setSelectedProspectIds([]);
       await fetchData();
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Enroll error:', err);
-      alert('Failed to enroll prospects');
+      alert(`Failed to enroll prospects: ${msg}`);
     } finally {
       setEnrolling(false);
     }

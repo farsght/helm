@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Users, Trash2, UserPlus } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 import {
   Table,
   TableBody,
@@ -70,7 +71,7 @@ export function ListsClient() {
   const handleCreateList = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/lists', {
+      const newList = await apiFetch('/api/lists', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -79,16 +80,13 @@ export function ListsClient() {
           type: 'static',
         }),
       });
-      
-      if (!response.ok) throw new Error('Failed to create list');
-      
-      const newList = await response.json();
       setLists([{ ...newList, memberCount: 0 }, ...lists]);
       setCreateDialogOpen(false);
       setFormData({ name: '', description: '' });
     } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error creating list:', error);
-      alert('Failed to create list');
+      alert(`Failed to create list: ${msg}`);
     } finally {
       setLoading(false);
     }
@@ -98,12 +96,9 @@ export function ListsClient() {
     setSelectedListId(listId);
     setViewDialogOpen(true);
     setLoadingMembers(true);
-    
+
     try {
-      const response = await fetch(`/api/lists/${listId}/members`);
-      if (!response.ok) throw new Error('Failed to fetch list members');
-      
-      const members = await response.json();
+      const members = await apiFetch(`/api/lists/${listId}/members`);
       setListMembers(members);
     } catch (error) {
       console.error('Error fetching list members:', error);
@@ -116,12 +111,12 @@ export function ListsClient() {
   const handleDeleteList = async (id: number) => {
     if (!confirm('Delete this list?')) return;
     try {
-      const response = await fetch(`/api/lists/${id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete');
+      await apiFetch(`/api/lists/${id}`, { method: 'DELETE' });
       setLists(prev => prev.filter(l => l.id !== id));
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Delete list error:', err);
-      alert('Failed to delete list');
+      alert(`Failed to delete list: ${msg}`);
     }
   };
 
@@ -137,19 +132,18 @@ export function ListsClient() {
     if (!selectedListId || selectedProspectIds.length === 0) return;
     setLoading(true);
     try {
-      const response = await fetch(`/api/lists/${selectedListId}/members`, {
+      const data = await apiFetch(`/api/lists/${selectedListId}/members`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prospectIds: selectedProspectIds }),
       });
-      if (!response.ok) throw new Error('Failed to add prospects');
-      const data = await response.json();
       setLists(prev => prev.map(l => l.id === selectedListId ? { ...l, memberCount: l.memberCount + data.added } : l));
       setAddProspectsDialogOpen(false);
       setSelectedProspectIds([]);
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Add prospects error:', err);
-      alert('Failed to add prospects');
+      alert(`Failed to add prospects: ${msg}`);
     } finally {
       setLoading(false);
     }

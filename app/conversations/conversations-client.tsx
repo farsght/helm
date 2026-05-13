@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Mail, Linkedin, Send, Sparkles, Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 interface Message {
   id: number;
@@ -73,12 +74,9 @@ export function ConversationsClient() {
   const loadConversationMessages = async (conversationId: number) => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/conversations/${conversationId}`);
-      if (!response.ok) throw new Error('Failed to load messages');
-      
-      const data = await response.json();
+      const data = await apiFetch(`/api/conversations/${conversationId}`);
       setMessages(data.messages || []);
-      
+
       // If there's an inbound message, generate AI suggestion
       const lastMessage = data.messages?.[data.messages.length - 1];
       if (lastMessage?.direction === 'inbound') {
@@ -94,9 +92,9 @@ export function ConversationsClient() {
   const generateAISuggestion = async (conversationHistory: Message[], prospect: Prospect) => {
     setGeneratingAI(true);
     setAiSuggestion(null);
-    
+
     try {
-      const response = await fetch('/api/messages/ai-reply', {
+      const data = await apiFetch('/api/messages/ai-reply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -114,10 +112,6 @@ export function ConversationsClient() {
           tone,
         }),
       });
-
-      if (!response.ok) throw new Error('Failed to generate AI reply');
-
-      const data = await response.json();
       setAiSuggestion(data.reply);
     } catch (err) {
       console.error('AI generation error:', err);
@@ -128,15 +122,12 @@ export function ConversationsClient() {
 
   const handleStatusChange = async (conversationId: number, newStatus: string) => {
     try {
-      const response = await fetch(`/api/conversations/${conversationId}`, {
+      await apiFetch(`/api/conversations/${conversationId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (!response.ok) throw new Error('Failed to update status');
-
-      // Update local state
       setConversations(prev =>
         prev.map(c =>
           c.conversation.id === conversationId
@@ -152,8 +143,9 @@ export function ConversationsClient() {
         });
       }
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Status update error:', err);
-      alert('Failed to update status');
+      alert(`Failed to update status: ${msg}`);
     }
   };
 
@@ -162,7 +154,7 @@ export function ConversationsClient() {
 
     setSending(true);
     try {
-      const response = await fetch(`/api/conversations/${selectedConversation.conversation.id}/reply`, {
+      await apiFetch(`/api/conversations/${selectedConversation.conversation.id}/reply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -170,16 +162,13 @@ export function ConversationsClient() {
           send: true,
         }),
       });
-
-      if (!response.ok) throw new Error('Failed to send reply');
-
-      // Reload messages
       await loadConversationMessages(selectedConversation.conversation.id);
       setReplyText('');
       setAiSuggestion(null);
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Send reply error:', err);
-      alert('Failed to send reply');
+      alert(`Failed to send reply: ${msg}`);
     } finally {
       setSending(false);
     }

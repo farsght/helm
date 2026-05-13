@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Mail, Linkedin, Trash2, CheckCircle, XCircle, Webhook, AlertCircle } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 type ConnectedAccount = {
@@ -113,7 +114,7 @@ export function SettingsClient() {
         sessionToken: accountForm.linkedinSession,
       };
 
-      const response = await fetch('/api/settings/accounts', {
+      await apiFetch('/api/settings/accounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -123,28 +124,25 @@ export function SettingsClient() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to add account');
-
       setShowAccountDialog(false);
       setAccountForm({ name: '', email: '', password: '', smtpHost: '', smtpPort: '587', linkedinSession: '' });
       loadData();
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Add account error:', err);
-      alert('Failed to add account');
+      alert(`Failed to add account: ${msg}`);
     }
   };
 
   const handleDeleteAccount = async (id: number) => {
     if (!confirm('Delete this account?')) return;
     try {
-      const response = await fetch(`/api/settings/accounts/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to delete account');
+      await apiFetch(`/api/settings/accounts/${id}`, { method: 'DELETE' });
       loadData();
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Delete account error:', err);
-      alert('Failed to delete account');
+      alert(`Failed to delete account: ${msg}`);
     }
   };
 
@@ -152,16 +150,16 @@ export function SettingsClient() {
     if (!settings) return;
     setSaving(true);
     try {
-      const response = await fetch('/api/settings/general', {
+      await apiFetch('/api/settings/general', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),
       });
-      if (!response.ok) throw new Error('Failed to save settings');
       alert('Settings saved successfully!');
     } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
       console.error('Save settings error:', err);
-      alert('Failed to save settings');
+      alert(`Failed to save settings: ${msg}`);
     } finally {
       setSaving(false);
     }
