@@ -142,3 +142,18 @@ Wake attempts dispatched at: 18:41, 18:53, 19:08, 19:23, 19:38, 19:53, 20:08, **
 ---
 
 *Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 20:23 UTC*
+
+
+---
+
+## All P1/P2 Gaps Resolved — PR #20 (1ba87773) — 2026-05-13 20:28 UTC
+
+| Endpoint | Fix | Status |
+|----------|-----|--------|
+| POST /api/prospects | Input validation + safe defaults | DONE |
+| POST /api/templates | channel default + validation | DONE |
+| PUT /api/campaigns/:id | Dynamic set(), undefined-safe return | DONE |
+| GET /api/campaigns/:id/steps | New route — returns workflowNodes | DONE |
+| POST /api/ai/suggest-reply | New route — gpt-4o-mini suggestions | DONE |
+
+Deployed: https://ai-sdr-mocha.vercel.app
