@@ -1,20 +1,28 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { messages, conversations, campaigns, prospects, campaignProspects } from '@/db/schema';
 import { eq, sql, and } from 'drizzle-orm';
 
 export async function GET() {
   try {
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Total prospects
-    const totalProspects = await db.select({ count: sql<number>`count(*)::int` }).from(prospects);
+    const totalProspects = await db.select({ count: sql<number>`count(*)::int` })
+      .from(prospects)
+      .where(eq(prospects.userId, userId));
 
     // Active campaigns
-    const activeCampaigns = await db.select({ count: sql<number>`count(*)::int` }).from(campaigns).where(eq(campaigns.status, 'active'));
+    const activeCampaigns = await db.select({ count: sql<number>`count(*)::int` })
+      .from(campaigns)
+      .where(and(eq(campaigns.status, 'active'), eq(campaigns.userId, userId)));
 
     // Messages today, week, month
     const messagesToday = await db.select({ count: sql<number>`count(*)::int` })
@@ -59,44 +67,54 @@ export async function GET() {
 
     const meetingsBooked = await db.select({ count: sql<number>`count(*)::int` })
       .from(conversations)
-      .where(eq(conversations.status, 'meeting_booked'));
+      .where(and(eq(conversations.status, 'meeting_booked'), eq(conversations.userId, userId)));
 
     const sentCount = totalSent[0]?.count || 0;
     const openRate = sentCount > 0 ? ((totalOpened[0]?.count || 0) / sentCount * 100).toFixed(1) : '0.0';
     const replyRate = sentCount > 0 ? ((totalReplied[0]?.count || 0) / sentCount * 100).toFixed(1) : '0.0';
     const meetingRate = sentCount > 0 ? ((meetingsBooked[0]?.count || 0) / sentCount * 100).toFixed(1) : '0.0';
 
-    // Chart data: messages sent vs replied last 30 days
-    const chartData = [];
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-      const dayEnd = new Date(date.getTime() + 24 * 60 * 60 * 1000);
-
-      const sent = await db.select({ count: sql<number>`count(*)::int` })
-        .from(messages)
-        .where(and(
-          eq(messages.direction, 'outbound'),
-          sql`${messages.sentAt} >= ${date}`,
-          sql`${messages.sentAt} < ${dayEnd}`
-        ));
-
-      const replied = await db.select({ count: sql<number>`count(*)::int` })
-        .from(messages)
-        .where(and(
-          eq(messages.direction, 'outbound'),
-          sql`${messages.repliedAt} >= ${date}`,
-          sql`${messages.repliedAt} < ${dayEnd}`
-        ));
-
-      chartData.push({
-        date: `${date.getMonth() + 1}/${date.getDate()}`,
-        sent: sent[0]?.count || 0,
-        replied: replied[0]?.count || 0,
-      });
-    }
+    // Chart data: messages sent vs replied last 30 days — single aggregated query
+    const chartRows = await db.execute(sql`
+      WITH
+        sent_by_day AS (
+          SELECT date_trunc('day', sent_at)::date AS day, count(*)::int AS sent
+          FROM messages
+          WHERE direction = 'outbound' AND sent_at >= ${monthAgo}
+          GROUP BY 1
+        ),
+        replied_by_day AS (
+          SELECT date_trunc('day', replied_at)::date AS day, count(*)::int AS replied
+          FROM messages
+          WHERE direction = 'outbound' AND replied_at IS NOT NULL AND replied_at >= ${monthAgo}
+          GROUP BY 1
+        ),
+        days AS (
+          SELECT generate_series(
+            date_trunc('day', ${today}::timestamptz - INTERVAL '29 days'),
+            date_trunc('day', ${today}::timestamptz),
+            '1 day'
+          )::date AS day
+        )
+      SELECT
+        to_char(d.day, 'MM/DD') AS date,
+        COALESCE(s.sent, 0) AS sent,
+        COALESCE(r.replied, 0) AS replied
+      FROM days d
+      LEFT JOIN sent_by_day s ON s.day = d.day
+      LEFT JOIN replied_by_day r ON r.day = d.day
+      ORDER BY d.day ASC
+    `);
+    const chartData = (chartRows.rows as Array<{ date: string; sent: number; replied: number }>).map((row) => ({
+      date: row.date,
+      sent: Number(row.sent),
+      replied: Number(row.replied),
+    }));
 
     // Campaign performance comparison
-    const allCampaigns = await db.select().from(campaigns).where(eq(campaigns.status, 'active')).limit(5);
+    const allCampaigns = await db.select().from(campaigns)
+      .where(and(eq(campaigns.status, 'active'), eq(campaigns.userId, userId)))
+      .limit(5);
     const campaignPerformance = await Promise.all(
       allCampaigns.map(async (campaign) => {
         const sent = await db.select({ count: sql<number>`count(*)::int` })
@@ -140,7 +158,7 @@ export async function GET() {
         lastMessageAt: conversations.lastMessageAt,
       })
       .from(conversations)
-      .where(eq(conversations.status, 'new'))
+      .where(and(eq(conversations.status, 'new'), eq(conversations.userId, userId)))
       .orderBy(sql`${conversations.lastMessageAt} DESC`)
       .limit(5);
 
