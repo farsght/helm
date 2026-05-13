@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { settings } from '@/db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const rows = await db.select().from(settings).where(
-      inArray(settings.key, ['linkedinAccessToken', 'linkedinMemberId', 'linkedinName', 'linkedinConnectedAt'])
+      and(eq(settings.userId, userId), inArray(settings.key, ['linkedinAccessToken', 'linkedinMemberId', 'linkedinName', 'linkedinConnectedAt']))
     );
 
     const map: Record<string, string> = {};
@@ -28,9 +32,12 @@ export async function GET() {
 }
 
 export async function DELETE() {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     await db.delete(settings).where(
-      inArray(settings.key, ['linkedinAccessToken', 'linkedinMemberId', 'linkedinName', 'linkedinUserAgent', 'linkedinConnectedAt'])
+      and(eq(settings.userId, userId), inArray(settings.key, ['linkedinAccessToken', 'linkedinMemberId', 'linkedinName', 'linkedinUserAgent', 'linkedinConnectedAt']))
     );
     return NextResponse.json({ success: true });
   } catch (err) {

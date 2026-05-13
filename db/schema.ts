@@ -1,4 +1,4 @@
-import { pgTable, text, integer, real, serial, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, real, serial, timestamp, boolean, uniqueIndex } from 'drizzle-orm/pg-core';
 
 // Campaigns
 export const campaigns = pgTable('campaigns', {
@@ -90,6 +90,7 @@ export const campaignProspects = pgTable('campaign_prospects', {
 // Messages
 export const messages = pgTable('messages', {
   id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
   campaignId: integer('campaign_id').references(() => campaigns.id, { onDelete: 'set null' }),
   prospectId: integer('prospect_id').notNull().references(() => prospects.id, { onDelete: 'cascade' }),
   nodeId: integer('node_id').references(() => workflowNodes.id, { onDelete: 'set null' }),
@@ -159,6 +160,7 @@ export const connectedAccounts = pgTable('connected_accounts', {
 // Tags
 export const tags = pgTable('tags', {
   id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
   name: text('name').notNull(),
   color: text('color').notNull().default('#3b82f6'),
 });
@@ -182,7 +184,10 @@ export const tasks = pgTable('tasks', {
 // Settings (key-value store)
 export const settings = pgTable('settings', {
   id: serial('id').primaryKey(),
-  key: text('key').notNull().unique(),
+  userId: text('user_id').notNull().default(''),
+  key: text('key').notNull(),
   value: text('value').notNull(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-});
+}, (table) => [
+  uniqueIndex('settings_user_id_key_unique').on(table.userId, table.key),
+]);

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { messages, conversations, prospects, connectedAccounts } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -18,6 +19,9 @@ interface SendMessageRequest {
 }
 
 export async function POST(request: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body: SendMessageRequest = await request.json();
     const { 
@@ -41,6 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Create message record
     const [message] = await db.insert(messages).values({
+      userId,
       campaignId: campaignId || null,
       prospectId,
       nodeId: nodeId || null,

@@ -50,7 +50,7 @@ export async function POST(
     // Process each prospect
     for (const { campaignProspect, prospect } of enrolledProspects) {
       try {
-        await processProspectStep(campaignId, campaignProspect, prospect, nodes, edges);
+        await processProspectStep(campaignId, campaign.userId, campaignProspect, prospect, nodes, edges);
         processedCount++;
       } catch (err) {
         console.error(`Error processing prospect ${prospect.id}:`, err);
@@ -107,6 +107,7 @@ interface WorkflowEdge {
 
 async function processProspectStep(
   campaignId: number,
+  userId: string,
   campaignProspect: CampaignProspect,
   prospect: Prospect,
   nodes: WorkflowNode[],
@@ -137,7 +138,7 @@ async function processProspectStep(
 
   // Process the current node
   try {
-    await executeNode(campaignId, campaignProspect, prospect, currentNode);
+    await executeNode(campaignId, userId, campaignProspect, prospect, currentNode);
   } catch (err) {
     if (err instanceof Error && err.message.startsWith('CONDITION_FALSE')) {
       conditionResult = false;
@@ -177,7 +178,7 @@ async function processProspectStep(
   }
 }
 
-async function executeNode(campaignId: number, campaignProspect: CampaignProspect, prospect: Prospect, node: WorkflowNode) {
+async function executeNode(campaignId: number, userId: string, campaignProspect: CampaignProspect, prospect: Prospect, node: WorkflowNode) {
   const config = node.configJson ? JSON.parse(node.configJson) : {};
 
   switch (node.type) {
@@ -186,6 +187,7 @@ async function executeNode(campaignId: number, campaignProspect: CampaignProspec
       const body = replaceVariables(config.body || '', prospect);
       await sendEmail(prospect.email || '', subject, body);
       await db.insert(messages).values({
+        userId,
         campaignId,
         prospectId: prospect.id,
         nodeId: node.id,
@@ -205,6 +207,7 @@ async function executeNode(campaignId: number, campaignProspect: CampaignProspec
       const message = replaceVariables(config.message || config.body || '', prospect);
       await sendLinkedInMessage('stub-member', prospect.linkedinUrl || '', message, 'stub-token', 'stub-ua');
       await db.insert(messages).values({
+        userId,
         campaignId,
         prospectId: prospect.id,
         nodeId: node.id,
@@ -224,6 +227,7 @@ async function executeNode(campaignId: number, campaignProspect: CampaignProspec
       const msg = replaceVariables(config.message || '', prospect);
       await sendLinkedInConnection('stub-member', prospect.linkedinUrl || '', msg, 'stub-token', 'stub-ua');
       await db.insert(messages).values({
+        userId,
         campaignId,
         prospectId: prospect.id,
         nodeId: node.id,
@@ -271,9 +275,9 @@ async function executeNode(campaignId: number, campaignProspect: CampaignProspec
     case 'tag': {
       const tagName = config.tagName || 'untagged';
       // Find or create tag
-      let [tag] = await db.select().from(tags).where(eq(tags.name, tagName)).limit(1);
+      let [tag] = await db.select().from(tags).where(and(eq(tags.userId, userId), eq(tags.name, tagName))).limit(1);
       if (!tag) {
-        [tag] = await db.insert(tags).values({ name: tagName }).returning();
+        [tag] = await db.insert(tags).values({ userId, name: tagName }).returning();
       }
       if (config.action === 'remove') {
         await db.delete(prospectTags).where(and(

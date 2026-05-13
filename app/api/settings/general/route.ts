@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { settings } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 type SettingsValue = string | number | boolean | string[];
 
@@ -19,8 +20,8 @@ const DEFAULT_SETTINGS = {
   webhookUrl: '',
 };
 
-async function getSetting(key: string): Promise<SettingsValue | null> {
-  const result = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
+async function getSetting(userId: string, key: string): Promise<SettingsValue | null> {
+  const result = await db.select().from(settings).where(and(eq(settings.userId, userId), eq(settings.key, key))).limit(1);
   if (result.length === 0) return null;
   try {
     return JSON.parse(result[0].value);
@@ -29,25 +30,28 @@ async function getSetting(key: string): Promise<SettingsValue | null> {
   }
 }
 
-async function setSetting(key: string, value: SettingsValue): Promise<void> {
+async function setSetting(userId: string, key: string, value: SettingsValue): Promise<void> {
   const valueStr = typeof value === 'string' ? value : JSON.stringify(value);
-  const existing = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
-  
+  const existing = await db.select().from(settings).where(and(eq(settings.userId, userId), eq(settings.key, key))).limit(1);
+
   if (existing.length > 0) {
     await db.update(settings)
       .set({ value: valueStr, updatedAt: new Date() })
-      .where(eq(settings.key, key));
+      .where(and(eq(settings.userId, userId), eq(settings.key, key)));
   } else {
-    await db.insert(settings).values({ key, value: valueStr });
+    await db.insert(settings).values({ userId, key, value: valueStr });
   }
 }
 
 export async function GET() {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const settingsData: Record<string, SettingsValue> = { ...DEFAULT_SETTINGS };
 
     for (const key of Object.keys(DEFAULT_SETTINGS)) {
-      const value = await getSetting(key);
+      const value = await getSetting(userId, key);
       if (value !== null) {
         settingsData[key] = value;
       }
@@ -61,11 +65,14 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
 
     for (const [key, value] of Object.entries(body)) {
-      await setSetting(key, value as SettingsValue);
+      await setSetting(userId, key, value as SettingsValue);
     }
 
     return NextResponse.json({ success: true });
