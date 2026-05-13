@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-13 20:08 UTC
+> Last updated: 2026-05-13 20:23 UTC
 
 ---
 
@@ -121,15 +121,15 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `PUT /api/campaigns/:id` fix | ⬜ | Still 500 |
 | `GET /api/campaigns/:id/steps` | ⬜ | Still 404 |
 | `POST /api/ai/suggest-reply` | ⬜ | Still 404 |
-| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 14:55 CDT) |
+| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 15:09 CDT) |
 
 ---
 
-## ⚠️ Watchdog Alert — 20:08 UTC (7th consecutive check stopped)
+## ⚠️ Watchdog Alert — 20:23 UTC (8th consecutive check stopped)
 
-Claude Code detected as **STOPPED** (7th consecutive check — stopped since ~18:05 UTC).
-Last real code commit: `1103469b` — **123 min ago** (18:05 UTC).
-Wake attempts dispatched at: 18:41, 18:53, 19:08, 19:23, 19:38, 19:53, **20:08 UTC**.
+Claude Code detected as **STOPPED** (8th consecutive check — stopped since ~18:05 UTC).
+Last real code commit: `1103469b` — **138 min ago** (18:05 UTC).
+Wake attempts dispatched at: 18:41, 18:53, 19:08, 19:23, 19:38, 19:53, 20:08, **20:23 UTC**.
 **Scott notified via Telegram at 18:41 UTC and again at 20:08 UTC.** Manual restart of Claude Code on Netrunner required.
 
 5 items remain:
@@ -141,4 +141,4 @@ Wake attempts dispatched at: 18:41, 18:53, 19:08, 19:23, 19:38, 19:53, **20:08 U
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 20:08 UTC*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 20:23 UTC*
