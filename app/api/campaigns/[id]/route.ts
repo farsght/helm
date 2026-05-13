@@ -31,20 +31,29 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (!existing) return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
 
     const body = await request.json();
+
+    // Build update object — only include defined values to avoid NOT NULL violations
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updates: Record<string, any> = { updatedAt: new Date() };
+    if (body.name !== undefined) updates.name = body.name;
+    if (body.description !== undefined) updates.description = body.description;
+    if (body.status !== undefined) updates.status = body.status;
+    if (body.listId !== undefined) updates.listId = body.listId;
+    if ('scheduleJson' in body) {
+      updates.scheduleJson = body.scheduleJson ? JSON.stringify(body.scheduleJson) : null;
+    }
+    if ('aiPersonaJson' in body) {
+      updates.aiPersonaJson = body.aiPersonaJson ? JSON.stringify(body.aiPersonaJson) : null;
+    }
+
     const [updated] = await db
       .update(campaigns)
-      .set({
-        name: body.name,
-        description: body.description,
-        status: body.status,
-        scheduleJson: body.scheduleJson ? JSON.stringify(body.scheduleJson) : null,
-        aiPersonaJson: body.aiPersonaJson ? JSON.stringify(body.aiPersonaJson) : null,
-        listId: body.listId,
-        updatedAt: new Date(),
-      })
+      .set(updates)
       .where(and(eq(campaigns.id, parseInt(id)), eq(campaigns.userId, userId)))
       .returning();
-    return NextResponse.json(updated);
+
+    // updated can be undefined if the WHERE didn't match (race condition); fall back to existing
+    return NextResponse.json(updated ?? existing);
   } catch (err) {
     console.error('Update campaign error:', err);
     return NextResponse.json({ error: 'Failed to update campaign' }, { status: 500 });

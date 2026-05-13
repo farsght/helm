@@ -112,13 +112,8 @@ describe('POST /api/prospects', () => {
     expect(body.company).toBe('Acme')
   })
 
-  it('DB error propagates as 500 (missing required fields not validated by route)', async () => {
-    vi.mocked(db.insert).mockReturnValue({
-      then: (_res: unknown, rej: (e: unknown) => void) => rej ? rej(new Error('NOT NULL violation')) : Promise.reject(new Error('NOT NULL violation')),
-      values: vi.fn().mockReturnThis(),
-      returning: vi.fn().mockRejectedValue(new Error('NOT NULL violation')),
-    } as unknown as ReturnType<typeof db.insert>)
-
+  it('returns 400 when firstName is missing (required field validation)', async () => {
+    // No DB mock needed — validation fires before the DB is hit
     const req = new NextRequest('http://localhost/api/prospects', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -126,7 +121,7 @@ describe('POST /api/prospects', () => {
     })
     const res = await POST(req)
 
-    expect(res.status).toBe(500)
+    expect(res.status).toBe(400)
   })
 })
 

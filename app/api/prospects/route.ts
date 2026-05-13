@@ -57,19 +57,30 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
+
+    // Validate required fields before hitting the DB
+    if (!body.firstName || typeof body.firstName !== 'string' || !body.firstName.trim()) {
+      return NextResponse.json({ error: 'firstName is required' }, { status: 400 });
+    }
+
     const [prospect] = await db.insert(prospects).values({
       userId,
-      firstName: body.firstName,
-      lastName: body.lastName,
-      email: body.email,
-      company: body.company,
-      title: body.title,
-      linkedinUrl: body.linkedinUrl,
-      phone: body.phone,
-      industry: body.industry,
-      location: body.location,
+      firstName: body.firstName.trim(),
+      lastName: (body.lastName ?? '').trim(),   // default to '' — column is notNull
+      email: body.email ?? null,
+      company: body.company ?? null,
+      title: body.title ?? null,
+      linkedinUrl: body.linkedinUrl ?? null,
+      phone: body.phone ?? null,
+      industry: body.industry ?? null,
+      location: body.location ?? null,
       customFieldsJson: body.customFields ? JSON.stringify(body.customFields) : null,
     }).returning();
+
+    if (!prospect) {
+      return NextResponse.json({ error: 'Failed to create prospect' }, { status: 500 });
+    }
+
     return NextResponse.json(prospect, { status: 201 });
   } catch (err) {
     console.error('Create prospect error:', err);

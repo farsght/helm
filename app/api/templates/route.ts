@@ -23,14 +23,28 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
+
+    // Validate required fields
+    if (!body.name || typeof body.name !== 'string' || !body.name.trim()) {
+      return NextResponse.json({ error: 'name is required' }, { status: 400 });
+    }
+    if (!body.body || typeof body.body !== 'string') {
+      return NextResponse.json({ error: 'body is required' }, { status: 400 });
+    }
+
     const [template] = await db.insert(templates).values({
       userId,
-      name: body.name,
-      channel: body.channel,
-      subject: body.subject,
+      name: body.name.trim(),
+      channel: body.channel || 'email',   // default to 'email' — column is notNull
+      subject: body.subject ?? null,
       body: body.body,
       variablesJson: body.variables ? JSON.stringify(body.variables) : null,
     }).returning();
+
+    if (!template) {
+      return NextResponse.json({ error: 'Failed to create template' }, { status: 500 });
+    }
+
     return NextResponse.json(template, { status: 201 });
   } catch (err) {
     console.error('Create template error:', err);
