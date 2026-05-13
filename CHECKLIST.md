@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-13 16:05 UTC
+> Last updated: 2026-05-13 16:23 UTC
 
 ---
 
@@ -13,14 +13,12 @@
 
 ---
 
-## 🔄 Currently In Progress — Clerk Auth + Multi-Tenancy
+## 🔄 Currently In Progress — Remaining P0/P1 Fixes
 
-**Netrunner is actively implementing:**
-- Clerk authentication (sign-in, sign-up, session management)
-- All data models scoped to a logged-in user (userId / orgId on every table)
-- This touches: campaigns, prospects, lists, templates, conversations, settings, analytics
-
-This is a foundational change — everything in the database will be user-scoped after this lands. Do not build on top of the current unauth'd APIs until this is merged.
+**Clerk auth + user-scoping is now merged.** Netrunner is working on remaining P0/P1 items:
+- SSR crash fixes (`/campaigns/:id`, `/prospects/:id`, `/campaigns/new`)
+- Settings API build-out
+- `POST /api/prospects`, `POST /api/templates`, `PUT /api/campaigns/:id` fixes
 
 ---
 
@@ -80,15 +78,34 @@ This is a foundational change — everything in the database will be user-scoped
 
 ---
 
+## Phase 4 — Clerk Auth + Multi-Tenancy ✅ Landed
+
+| Item | Status | Commit | Notes |
+|------|--------|--------|-------|
+| Clerk sign-in page (`app/sign-in/[[...sign-in]]/`) | ✅ | `e9b0d57e` | |
+| Clerk sign-up page (`app/sign-up/[[...sign-up]]/`) | ✅ | `e9b0d57e` | |
+| Clerk middleware → proxy (`proxy.ts`) | ✅ | `e9b0d57e` | Renamed from `middleware.ts` |
+| DB migration — userId on all tables | ✅ | `e9b0d57e` | `db/migrations/0001_fair_mother_askani.sql` (+192 lines) |
+| All API routes scoped to userId (ownership checks) | ✅ | `e9b0d57e` | campaigns, prospects, lists, templates, conversations, workflow |
+| Clerk layout wrapper (`app/layout.tsx`) | ✅ | `e9b0d57e` | |
+| `package.json` — Clerk SDK + Vitest added | ✅ | `e9b0d57e` | |
+| Comprehensive test suite (15 files, ~2,500 lines) | ✅ | `e9b0d57e` | Unit + integration coverage across all routes |
+| Test mock fixes (ownership-check select mocks) | ✅ | `d468df16` | |
+| USER_SCOPING_SPEC.md (+181 lines) | ✅ | `8eb1c838` | farsight schema fix spec for userId on settings, tags, messages |
+| Dashboard analytics scoped to userId | ✅ | `3402b306` | `app/api/analytics/dashboard/route.ts` — single-query chart data |
+
+---
+
 ## 🔍 Live App Audit — What's Working vs. Broken
 
 *Audited 2026-05-13 against https://ai-sdr-mocha.vercel.app*
+*Vercel: 3 deployments READY as of 16:21 UTC*
 
 ### ✅ Working End-to-End
 
 | Area | Status | Notes |
 |------|--------|-------|
-| Dashboard `/` | ✅ | Real data — stats, charts, active campaigns list |
+| Dashboard `/` | ✅ | Real data — stats, charts, active campaigns list; now user-scoped |
 | Campaign list `/campaigns` | ✅ | Renders real data, pause/start buttons visible |
 | Prospects table `/prospects` | ✅ | 11 real prospects, search renders |
 | Lists `/lists` | ✅ | Cards + modal view with members |
@@ -108,6 +125,7 @@ This is a foundational change — everything in the database will be user-scoped
 | `GET/PUT /api/conversations/:id` | ✅ | |
 | `POST /api/conversations/:id/reply` | ✅ | |
 | `GET /api/analytics/overview` | ✅ | Full metrics + chart data |
+| `GET /api/analytics/dashboard` | ✅ | Now userId-scoped, single-query |
 
 ### 🔴 Broken / Missing
 
@@ -133,8 +151,6 @@ This is a foundational change — everything in the database will be user-scoped
 
 ## 🗺️ What Needs to Be Built Next
 
-> ⚠️ Hold on P1+ items until Clerk auth lands — all new endpoints need to be user-scoped from the start.
-
 ### P0 — Unblocks entire app (fix these immediately)
 
 1. **Fix SSR crashes on `/campaigns/:id` and `/prospects/:id`**
@@ -147,7 +163,7 @@ This is a foundational change — everything in the database will be user-scoped
    - `GET/PUT /api/settings/ai` — model, persona, temperature
    - `GET/PUT /api/email-accounts` — SMTP config (stub or real)
 
-### P1 — Core feature parity (after Clerk lands)
+### P1 — Core feature parity
 
 3. **Fix `POST /api/prospects`** — required field validation failing
 4. **Fix `POST /api/templates`** — same issue
@@ -173,11 +189,32 @@ This is a foundational change — everything in the database will be user-scoped
 |------|--------|-------|
 | All 22 gaps committed | ✅ | `905eaae7` |
 | Lazy DB init fix | ✅ | `9d480b2f` |
-| Clerk auth + user-scoping | 🔄 | **In progress — Netrunner active** |
-| SSR crash fixes | ⬜ | Blocked on understanding root cause |
-| Settings API | ⬜ | |
-| Vercel deployment green | ✅ | https://ai-sdr-mocha.vercel.app |
+| Clerk auth + user-scoping | ✅ | `e9b0d57e` — fully landed |
+| Comprehensive test suite | ✅ | `e9b0d57e` — 15 test files, ~2,500 lines |
+| Dashboard userId scope | ✅ | `3402b306` |
+| SSR crash fixes | ⬜ | Next up |
+| Settings API | ⬜ | Next up |
+| Vercel deployment green | ✅ | https://ai-sdr-mocha.vercel.app — 3 READY |
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 16:05 UTC*
+## 📝 Review Notes
+
+### `e9b0d57e` — Clerk Auth + Full Test Suite (2026-05-13 16:13)
+- **Massive commit** — Clerk fully wired: `ClerkProvider` in layout, `currentUser()` on every API route, ownership enforcement before any data mutation
+- DB migration adds `userId` column to all tables — ensures multi-tenancy at the data layer
+- `middleware.ts` → `proxy.ts` rename is intentional (avoids Next.js auto-middleware pickup conflicts with Clerk's own middleware)
+- Test suite is thorough: mocks Clerk's `currentUser()`, tests 401 on unauthenticated calls, tests ownership 403 on foreign resources
+- `vitest.config.ts` + `vitest.setup.ts` added — clean Vitest config with jsdom
+
+### `3402b306` — Dashboard userId scope (2026-05-13 16:20)
+- `app/api/analytics/dashboard/route.ts` refactored to single DB query (was N+1)
+- All stats filtered by `userId` from Clerk — dashboard now shows only the logged-in user's data
+
+### `8eb1c838` — USER_SCOPING_SPEC.md (2026-05-13 16:19)
+- farsight-authored spec noting missing userId on settings, tags, messages tables
+- Provides migration guidance for those tables — Netrunner should apply before building Settings API
+
+---
+
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 16:23 UTC*
