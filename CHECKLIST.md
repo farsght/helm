@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-13 17:35 UTC
+> Last updated: 2026-05-13 17:53 UTC
 
 ---
 
@@ -36,6 +36,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `d468df16` | Fix ownership-check select mocks (prospects, lists, templates) | ✅ |
 | `3402b306` | Scope dashboard to userId, single-query chart data, Clerk auth guard | ✅ |
 | `d7845dce` | **Remove server-side DB calls from all pages → fixes SSR 500 crashes** | ✅ |
+| `a0cec375` | Fix tests after server-component + dashboard refactor (test-only commit) | ✅ |
 
 ---
 
@@ -55,6 +56,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `GET /api/messages` without auth | ✅ Auth + `?campaignId` / `?prospectId` filter added |
 | `/api/conversations` no auth | ✅ Clerk auth + prospect join added |
 | Dashboard not user-scoped | ✅ Scoped in `3402b306` |
+| Test suite failures (server-component + dashboard) | ✅ Fixed in `a0cec375` |
 
 ### 🔴 Still Broken / Missing
 
@@ -114,11 +116,12 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | All 22 gaps | ✅ | `905eaae7` |
 | Clerk auth + ownership | ✅ | Multiple commits |
 | SSR crash fixes | ✅ | `d7845dce` |
+| Test suite fixes | ✅ | `a0cec375` |
 | Schema userId gaps | ⬜ | See USER_SCOPING_SPEC.md |
 | Settings API | ⬜ | |
 | `POST /api/prospects` fix | ⬜ | |
-| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 11:42 CDT) |
+| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 12:43 CDT) |
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 17:35 UTC*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-13 17:53 UTC*
