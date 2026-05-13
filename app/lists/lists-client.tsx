@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,8 +43,14 @@ type ListMember = {
   title: string | null;
 };
 
-export function ListsClient({ initialLists }: { initialLists: List[] }) {
-  const [lists, setLists] = useState<List[]>(initialLists);
+export function ListsClient() {
+  const [lists, setLists] = useState<List[]>([]);
+
+  useEffect(() => {
+    fetch('/api/lists').then(r => r.json()).then(data => {
+      setLists(Array.isArray(data) ? data : []);
+    }).catch(err => console.error('Fetch lists error:', err));
+  }, []);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [addProspectsDialogOpen, setAddProspectsDialogOpen] = useState(false);

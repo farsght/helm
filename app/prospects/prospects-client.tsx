@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,9 +37,9 @@ type Prospect = {
   campaignStatus?: string | null;
 };
 
-export function ProspectsClient({ initialProspects, initialTotal = 0 }: { initialProspects: Prospect[]; initialTotal?: number }) {
-  const [prospects, setProspects] = useState<Prospect[]>(initialProspects);
-  const [total, setTotal] = useState(initialTotal);
+export function ProspectsClient() {
+  const [prospects, setProspects] = useState<Prospect[]>([]);
+  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searching, setSearching] = useState(false);
@@ -50,6 +50,11 @@ export function ProspectsClient({ initialProspects, initialTotal = 0 }: { initia
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchProspects(1, '');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [formData, setFormData] = useState({
     firstName: '',

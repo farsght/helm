@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,13 +19,15 @@ interface Template {
   variablesJson?: string | null;
 }
 
-interface TemplatesClientProps {
-  initialTemplates: Template[];
-}
-
-export function TemplatesClient({ initialTemplates }: TemplatesClientProps) {
+export function TemplatesClient() {
   const router = useRouter();
-  const [templates, setTemplates] = useState(initialTemplates);
+  const [templates, setTemplates] = useState<Template[]>([]);
+
+  useEffect(() => {
+    fetch('/api/templates').then(r => r.json()).then(data => {
+      setTemplates(Array.isArray(data) ? data : []);
+    }).catch(err => console.error('Fetch templates error:', err));
+  }, []);
   const [showEditor, setShowEditor] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);

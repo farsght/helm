@@ -38,10 +38,6 @@ interface Conversation {
   prospect: Prospect;
 }
 
-interface ConversationsClientProps {
-  initialConversations: Conversation[];
-}
-
 const STATUS_COLORS: Record<string, string> = {
   new: 'bg-blue-500/10 text-blue-400',
   in_progress: 'bg-yellow-500/10 text-yellow-400',
@@ -50,8 +46,14 @@ const STATUS_COLORS: Record<string, string> = {
   not_interested: 'bg-gray-500/10 text-gray-400',
 };
 
-export function ConversationsClient({ initialConversations }: ConversationsClientProps) {
-  const [conversations, setConversations] = useState(initialConversations);
+export function ConversationsClient() {
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+
+  useEffect(() => {
+    fetch('/api/conversations').then(r => r.json()).then(data => {
+      setConversations(Array.isArray(data) ? data : []);
+    }).catch(err => console.error('Fetch conversations error:', err));
+  }, []);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);

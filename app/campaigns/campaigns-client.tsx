@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,11 +18,17 @@ type Campaign = {
   stepCount: number;
 };
 
-export function CampaignsClient({ initialCampaigns }: { initialCampaigns: Campaign[] }) {
+export function CampaignsClient() {
   const router = useRouter();
-  const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [creating, setCreating] = useState(false);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch('/api/campaigns').then(r => r.json()).then(data => {
+      setCampaigns(Array.isArray(data) ? data : []);
+    }).catch(err => console.error('Fetch campaigns error:', err));
+  }, []);
 
   const handleNewCampaign = async () => {
     setCreating(true);

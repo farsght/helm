@@ -1,10 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Mail, Linkedin, Building, MapPin, Phone } from "lucide-react";
+import { ArrowLeft, Mail, Linkedin, Building, MapPin, Phone, Loader2 } from "lucide-react";
 
 interface Prospect {
   id: number;
@@ -42,13 +43,39 @@ interface Message {
   createdAt: Date;
 }
 
-interface ProspectDetailClientProps {
-  prospect: Prospect;
-  campaignHistory: Array<{ campaign: Campaign; enrollment: Enrollment }>;
-  messages: Message[];
-}
+export function ProspectDetailClient({ id }: { id: string }) {
+  const [prospect, setProspect] = useState<Prospect | null>(null);
+  const [campaignHistory, setCampaignHistory] = useState<Array<{ campaign: Campaign; enrollment: Enrollment }>>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export function ProspectDetailClient({ prospect, campaignHistory, messages }: ProspectDetailClientProps) {
+  useEffect(() => {
+    Promise.all([
+      fetch(`/api/prospects/${id}`).then(r => r.json()),
+      fetch(`/api/prospects/${id}/campaigns`).then(r => r.json()),
+      fetch(`/api/messages?prospectId=${id}`).then(r => r.json()),
+    ]).then(([p, campaigns, msgs]) => {
+      setProspect(p);
+      setCampaignHistory(Array.isArray(campaigns) ? campaigns : []);
+      setMessages(Array.isArray(msgs) ? msgs : []);
+    }).catch(err => console.error('Fetch prospect detail error:', err))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  if (!prospect) {
+    return (
+      <div className="p-8 text-center text-gray-400">Prospect not found.</div>
+    );
+  }
+
   return (
     <div className="p-8 max-w-5xl mx-auto">
       <div className="flex items-center gap-4 mb-8">

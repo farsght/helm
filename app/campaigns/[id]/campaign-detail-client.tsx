@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -134,23 +133,13 @@ function CampaignSettingsForm({ campaign, onUpdate }: { campaign: Campaign; onUp
   );
 }
 
-interface CampaignDetailClientProps {
-  campaign: Campaign;
-  nodes: WorkflowNode[];
-  edges: WorkflowEdge[];
-  enrolledProspects: Array<{ prospect: Prospect; enrollment: Enrollment }>;
-  messages: Message[];
-}
-
-export function CampaignDetailClient({
-  campaign: initialCampaign,
-  nodes,
-  edges,
-  enrolledProspects,
-  messages,
-}: CampaignDetailClientProps) {
-  const router = useRouter();
-  const [campaign, setCampaign] = useState(initialCampaign);
+export function CampaignDetailClient({ id }: { id: string }) {
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [nodes, setNodes] = useState<WorkflowNode[]>([]);
+  const [edges, setEdges] = useState<WorkflowEdge[]>([]);
+  const [enrolledProspects, setEnrolledProspects] = useState<Array<{ prospect: Prospect; enrollment: Enrollment }>>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
   const [executing, setExecuting] = useState(false);
   const [enrollModalOpen, setEnrollModalOpen] = useState(false);
@@ -162,19 +151,46 @@ export function CampaignDetailClient({
   const [prospectSearch, setProspectSearch] = useState('');
   const [enrolling, setEnrolling] = useState(false);
 
+  const fetchData = useCallback(async () => {
+    try {
+      const [campaignRes, workflowRes, prospectsRes, messagesRes] = await Promise.all([
+        fetch(`/api/campaigns/${id}`),
+        fetch(`/api/campaigns/${id}/workflow`),
+        fetch(`/api/campaigns/${id}/prospects`),
+        fetch(`/api/messages?campaignId=${id}`),
+      ]);
+      if (!campaignRes.ok) return;
+      const [campaignData, workflowData, prospectsData, messagesData] = await Promise.all([
+        campaignRes.json(),
+        workflowRes.json(),
+        prospectsRes.json(),
+        messagesRes.json(),
+      ]);
+      setCampaign(campaignData);
+      setNodes(workflowData.nodes || []);
+      setEdges(workflowData.edges || []);
+      setEnrolledProspects(Array.isArray(prospectsData) ? prospectsData : []);
+      setMessages(Array.isArray(messagesData) ? messagesData : []);
+    } catch (err) {
+      console.error('Fetch campaign detail error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   const handleToggleStatus = async () => {
+    if (!campaign) return;
     setToggling(true);
     try {
       const endpoint = campaign.status === 'active' ? 'pause' : 'activate';
-      const response = await fetch(`/api/campaigns/${campaign.id}/${endpoint}`, {
-        method: 'POST',
-      });
-
+      const response = await fetch(`/api/campaigns/${campaign.id}/${endpoint}`, { method: 'POST' });
       if (!response.ok) throw new Error('Failed to toggle status');
-
       const data = await response.json();
       setCampaign(data.campaign);
-      router.refresh();
     } catch (err) {
       console.error('Toggle status error:', err);
       alert('Failed to update campaign status');
@@ -184,17 +200,14 @@ export function CampaignDetailClient({
   };
 
   const handleExecute = async () => {
+    if (!campaign) return;
     setExecuting(true);
     try {
-      const response = await fetch(`/api/campaigns/${campaign.id}/execute`, {
-        method: 'POST',
-      });
-
+      const response = await fetch(`/api/campaigns/${campaign.id}/execute`, { method: 'POST' });
       if (!response.ok) throw new Error('Failed to execute campaign');
-
       const data = await response.json();
       alert(`Processed ${data.processed} of ${data.total} prospects`);
-      router.refresh();
+      await fetchData();
     } catch (err) {
       console.error('Execute error:', err);
       alert('Failed to execute campaign');
@@ -216,6 +229,7 @@ export function CampaignDetailClient({
   };
 
   const handleEnroll = async () => {
+    if (!campaign) return;
     setEnrolling(true);
     try {
       const body = enrollTab === 'lists'
@@ -232,7 +246,7 @@ export function CampaignDetailClient({
       setEnrollModalOpen(false);
       setSelectedListId(null);
       setSelectedProspectIds([]);
-      router.refresh();
+      await fetchData();
     } catch (err) {
       console.error('Enroll error:', err);
       alert('Failed to enroll prospects');
@@ -246,6 +260,14 @@ export function CampaignDetailClient({
     const node = nodes.find(n => n.id === nodeId);
     return node ? node.label : 'Unknown step';
   };
+
+  if (loading || !campaign) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen">
@@ -369,8 +391,8 @@ export function CampaignDetailClient({
                             Current step: <span className="text-[#266DF0]">{getNodeLabel(enrollment.currentNodeId)}</span>
                           </p>
                         </div>
-                        <Badge 
-                          variant="secondary" 
+                        <Badge
+                          variant="secondary"
                           className={
                             enrollment.status === 'active'
                               ? 'bg-blue-500/10 text-blue-400'

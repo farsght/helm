@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
-import { ArrowLeft, Mail, Linkedin, Save } from "lucide-react";
+import { ArrowLeft, Mail, Linkedin, Save, Loader2 } from "lucide-react";
 import { TemplateVariants } from "@/components/template-variants";
 
 interface Template {
@@ -21,22 +21,27 @@ interface Template {
   variablesJson: string | null;
 }
 
-interface TemplateDetailClientProps {
-  template: Template;
-}
-
-export function TemplateDetailClient({ template: initialTemplate }: TemplateDetailClientProps) {
+export function TemplateDetailClient({ id }: { id: string }) {
   const router = useRouter();
-  const [template, setTemplate] = useState(initialTemplate);
+  const [template, setTemplate] = useState<Template | null>(null);
+  const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    name: template.name,
-    subject: template.subject || '',
-    body: template.body,
-  });
+  const [formData, setFormData] = useState({ name: '', subject: '', body: '' });
+
+  useEffect(() => {
+    fetch(`/api/templates/${id}`)
+      .then(r => r.json())
+      .then(t => {
+        setTemplate(t);
+        setFormData({ name: t.name, subject: t.subject || '', body: t.body });
+      })
+      .catch(err => console.error('Fetch template error:', err))
+      .finally(() => setLoading(false));
+  }, [id]);
 
   const handleSave = async () => {
+    if (!template) return;
     setSaving(true);
     try {
       const response = await fetch(`/api/templates/${template.id}`, {
@@ -54,8 +59,8 @@ export function TemplateDetailClient({ template: initialTemplate }: TemplateDeta
 
       const updated = await response.json();
       setTemplate(updated);
+      setFormData({ name: updated.name, subject: updated.subject || '', body: updated.body });
       setEditing(false);
-      router.refresh();
     } catch (err) {
       console.error('Save error:', err);
       alert('Failed to save template');
@@ -63,6 +68,20 @@ export function TemplateDetailClient({ template: initialTemplate }: TemplateDeta
       setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  if (!template) {
+    return (
+      <div className="p-8 text-center text-gray-400">Template not found.</div>
+    );
+  }
 
   return (
     <div className="p-8">

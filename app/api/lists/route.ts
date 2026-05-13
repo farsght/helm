@@ -1,16 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
-import { lists } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { lists, listMembers } from '@/db/schema';
+import { eq, sql } from 'drizzle-orm';
 
 export async function GET() {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const allLists = await db.select().from(lists).where(eq(lists.userId, userId));
-    return NextResponse.json(allLists);
+    const allLists = await db.select().from(lists).where(eq(lists.userId, userId)).orderBy(sql`${lists.createdAt} DESC`);
+
+    const listsWithCounts = await Promise.all(
+      allLists.map(async (list) => {
+        const [count] = await db.select({ count: sql<number>`count(*)::int` }).from(listMembers).where(eq(listMembers.listId, list.id));
+        return { ...list, memberCount: count?.count || 0 };
+      })
+    );
+
+    return NextResponse.json(listsWithCounts);
   } catch (err) {
     console.error('Fetch lists error:', err);
     return NextResponse.json({ error: 'Failed to fetch lists' }, { status: 500 });

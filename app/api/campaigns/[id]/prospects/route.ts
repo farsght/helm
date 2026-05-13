@@ -1,12 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
-import { campaigns, campaignProspects, listMembers } from '@/db/schema';
+import { campaigns, campaignProspects, listMembers, prospects } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 async function verifyCampaignOwnership(campaignId: number, userId: string) {
   const [campaign] = await db.select().from(campaigns).where(and(eq(campaigns.id, campaignId), eq(campaigns.userId, userId)));
   return campaign ?? null;
+}
+
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const { id } = await params;
+    const campaignId = parseInt(id);
+    if (!await verifyCampaignOwnership(campaignId, userId)) {
+      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    }
+
+    const enrolledProspects = await db
+      .select({ prospect: prospects, enrollment: campaignProspects })
+      .from(campaignProspects)
+      .innerJoin(prospects, eq(campaignProspects.prospectId, prospects.id))
+      .where(eq(campaignProspects.campaignId, campaignId));
+
+    return NextResponse.json(enrolledProspects);
+  } catch (err) {
+    console.error('Fetch enrolled prospects error:', err);
+    return NextResponse.json({ error: 'Failed to fetch enrolled prospects' }, { status: 500 });
+  }
 }
 
 export async function POST(
