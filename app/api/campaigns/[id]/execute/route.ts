@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
-import { campaigns, campaignProspects, workflowNodes, workflowEdges, messages, prospects } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { campaigns, campaignProspects, workflowNodes, workflowEdges, messages, prospects, prospectTags, tags, tasks } from '@/db/schema';
+import { eq, and, isNotNull } from 'drizzle-orm';
+import { sendEmail } from '@/lib/email-sender';
+import { sendLinkedInMessage, sendLinkedInConnection } from '@/lib/linkedin-sender';
+import OpenAI from 'openai';
 
 export async function POST(
   request: NextRequest,
@@ -79,6 +82,7 @@ interface Prospect {
   email: string | null;
   company: string | null;
   title: string | null;
+  linkedinUrl: string | null;
   phone: string | null;
   industry: string | null;
   location: string | null;
@@ -94,6 +98,7 @@ interface WorkflowEdge {
   sourceNodeId: number;
   targetNodeId: number;
   conditionJson: string | null;
+  label: string | null;
 }
 
 async function processProspectStep(
@@ -124,39 +129,46 @@ async function processProspectStep(
     throw new Error(`Node ${currentNodeId} not found`);
   }
 
-  // Process the current node
-  await executeNode(campaignId, campaignProspect, prospect, currentNode);
+  let conditionResult: boolean | null = null;
 
-  // Find next node
-  const nextEdge = edges.find(e => e.sourceNodeId === currentNodeId);
-  
-  if (nextEdge) {
-    // Check if condition needs to be evaluated
-    if (nextEdge.conditionJson) {
+  // Process the current node
+  try {
+    await executeNode(campaignId, campaignProspect, prospect, currentNode);
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith('CONDITION_FALSE')) {
+      conditionResult = false;
+    } else if (err instanceof Error && (err.message === 'MANUAL_TASK_CREATED' || err.message === 'Wait period not complete')) {
+      return; // Stop processing, resume later
+    } else {
+      throw err;
+    }
+  }
+
+  if (conditionResult === null) conditionResult = true;
+
+  // Find next node — for conditions, follow 'yes'/'no' label
+  const outgoingEdges = edges.filter(e => e.sourceNodeId === currentNodeId);
+  let nextEdge: typeof outgoingEdges[0] | undefined;
+
+  if (currentNode.type === 'condition' || currentNode.type === 'ai_decision') {
+    // Route based on condition result
+    nextEdge = outgoingEdges.find(e => e.label === (conditionResult ? 'yes' : 'no')) || outgoingEdges[0];
+  } else {
+    nextEdge = outgoingEdges[0];
+    if (nextEdge?.conditionJson) {
       const condition = JSON.parse(nextEdge.conditionJson);
       const conditionMet = await evaluateCondition(condition, prospect);
-      
-      if (!conditionMet) {
-        // Find alternative path or stop
-        return;
-      }
+      if (!conditionMet) return;
     }
+  }
 
-    // Move to next node
+  if (nextEdge) {
     await db.update(campaignProspects)
-      .set({
-        currentNodeId: nextEdge.targetNodeId,
-        lastActivityAt: new Date(),
-      })
+      .set({ currentNodeId: nextEdge.targetNodeId, lastActivityAt: new Date() })
       .where(eq(campaignProspects.id, campaignProspect.id));
   } else {
-    // No more nodes, mark as completed
     await db.update(campaignProspects)
-      .set({
-        status: 'completed',
-        completedAt: new Date(),
-        lastActivityAt: new Date(),
-      })
+      .set({ status: 'completed', completedAt: new Date(), lastActivityAt: new Date() })
       .where(eq(campaignProspects.id, campaignProspect.id));
   }
 }
@@ -165,45 +177,177 @@ async function executeNode(campaignId: number, campaignProspect: CampaignProspec
   const config = node.configJson ? JSON.parse(node.configJson) : {};
 
   switch (node.type) {
-    case 'email':
-    case 'linkedin_message':
-      // Create message (will be sent by send endpoint)
+    case 'email': {
+      const subject = config.subject ? replaceVariables(config.subject, prospect) : '';
+      const body = replaceVariables(config.body || '', prospect);
+      await sendEmail(prospect.email || '', subject, body);
       await db.insert(messages).values({
         campaignId,
         prospectId: prospect.id,
         nodeId: node.id,
-        channel: node.type === 'email' ? 'email' : 'linkedin',
+        channel: 'email',
         direction: 'outbound',
-        subject: config.subject ? replaceVariables(config.subject, prospect) : undefined,
-        body: replaceVariables(config.body || config.message || '', prospect),
-        status: 'scheduled',
+        subject,
+        body,
+        status: 'sent',
+        sentAt: new Date(),
+        openedAt: null,
+        repliedAt: null,
       });
       break;
+    }
 
-    case 'wait':
-      // Update last activity time; prospect will stay here until wait period passes
-      const waitHours = config.hours || 24;
-      
-      // Check if wait period has passed
-      if (campaignProspect.lastActivityAt) {
-        const lastActivity = new Date(campaignProspect.lastActivityAt);
-        if (Date.now() - lastActivity.getTime() < waitHours * 60 * 60 * 1000) {
-          // Wait period not over yet, don't proceed
-          throw new Error('Wait period not complete');
+    case 'linkedin_message': {
+      const message = replaceVariables(config.message || config.body || '', prospect);
+      await sendLinkedInMessage('stub-member', prospect.linkedinUrl || '', message, 'stub-token', 'stub-ua');
+      await db.insert(messages).values({
+        campaignId,
+        prospectId: prospect.id,
+        nodeId: node.id,
+        channel: 'linkedin',
+        direction: 'outbound',
+        body: message,
+        status: 'sent',
+        sentAt: new Date(),
+        openedAt: null,
+        repliedAt: null,
+      });
+      break;
+    }
+
+    case 'linkedin_connection':
+    case 'linkedin_profile_view': {
+      const msg = replaceVariables(config.message || '', prospect);
+      await sendLinkedInConnection('stub-member', prospect.linkedinUrl || '', msg, 'stub-token', 'stub-ua');
+      await db.insert(messages).values({
+        campaignId,
+        prospectId: prospect.id,
+        nodeId: node.id,
+        channel: 'linkedin',
+        direction: 'outbound',
+        body: msg || `[${node.type}]`,
+        status: 'sent',
+        sentAt: new Date(),
+        openedAt: null,
+        repliedAt: null,
+      });
+      break;
+    }
+
+    case 'wait': {
+      const waitHours = config.duration || config.hours || 24;
+      const nextRunAt = new Date(Date.now() + waitHours * 60 * 60 * 1000);
+      await db.update(campaignProspects)
+        .set({ nextRunAt, lastActivityAt: new Date() })
+        .where(eq(campaignProspects.id, campaignProspect.id));
+      // Don't advance — cron will resume after wait
+      throw new Error('Wait period not complete');
+    }
+
+    case 'condition': {
+      const conditionType = config.conditionType || 'message_opened';
+      let result = false;
+      if (conditionType === 'message_opened' || conditionType === 'email_opened') {
+        const opened = await db.select({ id: messages.id }).from(messages)
+          .where(and(eq(messages.prospectId, prospect.id), isNotNull(messages.openedAt))).limit(1);
+        result = opened.length > 0;
+      } else if (conditionType === 'replied' || conditionType === 'email_replied' || conditionType === 'linkedin_replied') {
+        const replied = await db.select({ id: messages.id }).from(messages)
+          .where(and(eq(messages.prospectId, prospect.id), isNotNull(messages.repliedAt))).limit(1);
+        result = replied.length > 0;
+      }
+      // Store condition result so processProspectStep can route yes/no
+      // We use a special error to signal branching
+      if (!result) {
+        throw new Error(`CONDITION_FALSE:${conditionType}`);
+      }
+      break;
+    }
+
+    case 'tag': {
+      const tagName = config.tagName || 'untagged';
+      // Find or create tag
+      let [tag] = await db.select().from(tags).where(eq(tags.name, tagName)).limit(1);
+      if (!tag) {
+        [tag] = await db.insert(tags).values({ name: tagName }).returning();
+      }
+      if (config.action === 'remove') {
+        await db.delete(prospectTags).where(and(
+          eq(prospectTags.prospectId, prospect.id),
+          eq(prospectTags.tagId, tag.id)
+        ));
+      } else {
+        const existing = await db.select().from(prospectTags).where(and(
+          eq(prospectTags.prospectId, prospect.id),
+          eq(prospectTags.tagId, tag.id)
+        )).limit(1);
+        if (existing.length === 0) {
+          await db.insert(prospectTags).values({ prospectId: prospect.id, tagId: tag.id });
         }
       }
       break;
+    }
+
+    case 'move_to_campaign': {
+      const targetCampaignId = config.campaignId;
+      if (targetCampaignId) {
+        const existing = await db.select().from(campaignProspects).where(and(
+          eq(campaignProspects.campaignId, targetCampaignId),
+          eq(campaignProspects.prospectId, prospect.id)
+        )).limit(1);
+        if (existing.length === 0) {
+          await db.insert(campaignProspects).values({
+            campaignId: targetCampaignId,
+            prospectId: prospect.id,
+            status: 'pending',
+          });
+        }
+      }
+      break;
+    }
+
+    case 'ai_decision': {
+      const prompt = config.prompt || 'Should we continue outreach?';
+      try {
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [{
+            role: 'user',
+            content: `${prompt}\n\nProspect: ${prospect.firstName} ${prospect.lastName}, ${prospect.title || ''} at ${prospect.company || ''}. Reply with YES or NO only.`
+          }],
+          max_tokens: 10,
+        });
+        const answer = completion.choices[0]?.message?.content?.trim().toUpperCase() || 'YES';
+        if (answer.startsWith('NO')) {
+          throw new Error('CONDITION_FALSE:ai_decision');
+        }
+      } catch (err) {
+        if (err instanceof Error && err.message.startsWith('CONDITION_FALSE')) throw err;
+        console.log('AI decision fallback: YES');
+      }
+      break;
+    }
+
+    case 'manual_task': {
+      // Create task record and pause prospect
+      await db.insert(tasks).values({
+        campaignProspectId: campaignProspect.id,
+        description: config.description || 'Manual task required',
+        status: 'pending',
+      });
+      await db.update(campaignProspects)
+        .set({ status: 'paused' })
+        .where(eq(campaignProspects.id, campaignProspect.id));
+      throw new Error('MANUAL_TASK_CREATED');
+    }
 
     case 'end':
       await db.update(campaignProspects)
-        .set({
-          status: 'completed',
-          completedAt: new Date(),
-        })
+        .set({ status: 'completed', completedAt: new Date() })
         .where(eq(campaignProspects.id, campaignProspect.id));
       break;
 
-    // Add more node types as needed
     default:
       console.log(`Node type ${node.type} not yet implemented`);
   }

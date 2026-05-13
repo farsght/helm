@@ -135,55 +135,55 @@ export async function GET() {
       .sort((a, b) => b.replyRate - a.replyRate)
       .slice(0, 5);
 
-    // Reply rate by industry (mock data - would aggregate from prospects)
-    const replyRateByIndustry = [
-      { industry: 'SaaS', replyRate: 15.2, count: 45 },
-      { industry: 'Finance', replyRate: 12.8, count: 32 },
-      { industry: 'Healthcare', replyRate: 9.5, count: 28 },
-      { industry: 'Retail', replyRate: 7.3, count: 21 },
-      { industry: 'Manufacturing', replyRate: 6.1, count: 18 },
-    ];
+    // Reply rate by industry (real DB query)
+    const industryRows = await db.execute(sql`
+      SELECT p.industry, COUNT(DISTINCT p.id)::int AS total,
+             COUNT(DISTINCT CASE WHEN m.replied_at IS NOT NULL THEN p.id END)::int AS replied
+      FROM prospects p
+      JOIN messages m ON m.prospect_id = p.id AND m.direction = 'outbound'
+      WHERE p.industry IS NOT NULL
+      GROUP BY p.industry
+      ORDER BY total DESC
+      LIMIT 10
+    `);
+    const replyRateByIndustry = (industryRows.rows as Array<{ industry: string; total: number; replied: number }>).map(r => ({
+      industry: r.industry,
+      count: r.total,
+      replyRate: r.total > 0 ? (r.replied / r.total) * 100 : 0,
+    }));
 
-    // Reply rate by title (mock data)
-    const replyRateByTitle = [
-      { title: 'CTO', replyRate: 18.5, count: 42 },
-      { title: 'VP Engineering', replyRate: 16.2, count: 38 },
-      { title: 'Director', replyRate: 14.7, count: 51 },
-      { title: 'Manager', replyRate: 12.3, count: 67 },
-      { title: 'Senior Engineer', replyRate: 9.8, count: 89 },
-    ];
+    // Reply rate by title (real DB query)
+    const titleRows = await db.execute(sql`
+      SELECT p.title, COUNT(DISTINCT p.id)::int AS total,
+             COUNT(DISTINCT CASE WHEN m.replied_at IS NOT NULL THEN p.id END)::int AS replied
+      FROM prospects p
+      JOIN messages m ON m.prospect_id = p.id AND m.direction = 'outbound'
+      WHERE p.title IS NOT NULL
+      GROUP BY p.title
+      ORDER BY total DESC
+      LIMIT 10
+    `);
+    const replyRateByTitle = (titleRows.rows as Array<{ title: string; total: number; replied: number }>).map(r => ({
+      title: r.title,
+      count: r.total,
+      replyRate: r.total > 0 ? (r.replied / r.total) * 100 : 0,
+    }));
 
-    // Best sending times (heatmap data)
-    const sendingTimeHeatmap = [
-      { day: 'Mon', hour: 9, count: 12 },
-      { day: 'Mon', hour: 12, count: 18 },
-      { day: 'Mon', hour: 15, count: 15 },
-      { day: 'Mon', hour: 18, count: 8 },
-      { day: 'Tue', hour: 9, count: 15 },
-      { day: 'Tue', hour: 12, count: 22 },
-      { day: 'Tue', hour: 15, count: 19 },
-      { day: 'Tue', hour: 18, count: 10 },
-      { day: 'Wed', hour: 9, count: 14 },
-      { day: 'Wed', hour: 12, count: 20 },
-      { day: 'Wed', hour: 15, count: 17 },
-      { day: 'Wed', hour: 18, count: 9 },
-      { day: 'Thu', hour: 9, count: 16 },
-      { day: 'Thu', hour: 12, count: 23 },
-      { day: 'Thu', hour: 15, count: 18 },
-      { day: 'Thu', hour: 18, count: 11 },
-      { day: 'Fri', hour: 9, count: 11 },
-      { day: 'Fri', hour: 12, count: 16 },
-      { day: 'Fri', hour: 15, count: 12 },
-      { day: 'Fri', hour: 18, count: 6 },
-      { day: 'Sat', hour: 9, count: 2 },
-      { day: 'Sat', hour: 12, count: 3 },
-      { day: 'Sat', hour: 15, count: 1 },
-      { day: 'Sat', hour: 18, count: 1 },
-      { day: 'Sun', hour: 9, count: 1 },
-      { day: 'Sun', hour: 12, count: 2 },
-      { day: 'Sun', hour: 15, count: 1 },
-      { day: 'Sun', hour: 18, count: 0 },
-    ];
+    // Heatmap: replied messages grouped by DOW and hour
+    const heatmapRows = await db.execute(sql`
+      SELECT EXTRACT(DOW FROM sent_at)::int AS dow,
+             EXTRACT(HOUR FROM sent_at)::int AS hour,
+             COUNT(*)::int AS count
+      FROM messages
+      WHERE direction = 'outbound' AND replied_at IS NOT NULL AND sent_at IS NOT NULL
+      GROUP BY dow, hour
+    `);
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const sendingTimeHeatmap = (heatmapRows.rows as Array<{ dow: number; hour: number; count: number }>).map(r => ({
+      day: dayNames[r.dow] || 'Sun',
+      hour: r.hour,
+      count: r.count,
+    }));
 
     return NextResponse.json({
       summary,

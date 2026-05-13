@@ -162,10 +162,20 @@ export async function GET(
             eq(campaignProspects.currentNodeId, node.id)
           ));
 
+        // Calculate avg time from enrolledAt to first message sentAt
+        const avgResult = await db.execute(sql`
+          SELECT AVG(EXTRACT(EPOCH FROM (m.sent_at - cp.enrolled_at)) / 3600) AS avg_hours
+          FROM campaign_prospects cp
+          JOIN messages m ON m.prospect_id = cp.prospect_id AND m.campaign_id = cp.campaign_id
+          WHERE cp.campaign_id = ${campaignId} AND cp.current_node_id = ${node.id}
+            AND m.sent_at IS NOT NULL
+        `);
+        const avgHours = (avgResult.rows[0] as { avg_hours: number | null } | undefined)?.avg_hours ?? 0;
+
         return {
           nodeLabel: node.label,
           prospects: prospectsAtNode[0]?.count || 0,
-          avgTimeHours: Math.random() * 48, // TODO: Calculate actual avg time
+          avgTimeHours: avgHours,
         };
       })
     );

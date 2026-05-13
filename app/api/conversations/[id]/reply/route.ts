@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { conversations, messages, prospects } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
+import { fireWebhook } from '@/lib/webhook';
 
 export async function POST(
   request: NextRequest,
@@ -33,10 +34,21 @@ export async function POST(
     const lastMessages = await db.select()
       .from(messages)
       .where(eq(messages.prospectId, conversation.prospectId))
-      .orderBy(messages.createdAt)
-      .limit(1);
+      .orderBy(desc(messages.createdAt))
+      .limit(10);
 
     const channel = lastMessages[0]?.channel || 'email';
+
+    // Dedup: check for same body sent in last 60 seconds
+    const sixtySecondsAgo = new Date(Date.now() - 60000);
+    const duplicate = lastMessages.find(m =>
+      m.body === body.body &&
+      m.direction === 'outbound' &&
+      m.createdAt > sixtySecondsAgo
+    );
+    if (duplicate) {
+      return NextResponse.json(duplicate, { status: 200 });
+    }
 
     // Create reply message
     const [message] = await db.insert(messages).values({
@@ -80,6 +92,11 @@ export async function POST(
       if (!sendResponse.ok) {
         console.error('Failed to send message');
       }
+    }
+
+    // Fire webhook for outbound replies
+    if (body.send) {
+      await fireWebhook('reply_sent', { prospectId: conversation.prospectId, messageId: message.id });
     }
 
     return NextResponse.json(message, { status: 201 });

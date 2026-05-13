@@ -28,29 +28,32 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     await db.delete(workflowNodes).where(eq(workflowNodes.campaignId, campaignId));
     await db.delete(workflowEdges).where(eq(workflowEdges.campaignId, campaignId));
     
-    // Insert new nodes
+    // Insert new nodes one-by-one to build reactFlowId → dbId map
+    const nodeIdMap: Record<string, number> = {};
     if (nodes && Array.isArray(nodes) && nodes.length > 0) {
-      await db.insert(workflowNodes).values(
-        nodes.map((node: {
-          id?: string | number;
-          data: { type: string; label: string; config?: Record<string, unknown> };
-          position: { x: number; y: number };
-        }) => ({
-          id: parseInt(String(node.id)) || undefined,
+      for (const node of nodes as Array<{
+        id?: string | number;
+        data: { type: string; label: string; config?: Record<string, unknown> };
+        position: { x: number; y: number };
+      }>) {
+        const [inserted] = await db.insert(workflowNodes).values({
           campaignId,
           type: node.data.type,
           label: node.data.label,
           configJson: JSON.stringify(node.data.config || {}),
           positionX: node.position.x,
           positionY: node.position.y,
-        }))
-      );
+        }).returning();
+        if (node.id !== undefined) {
+          nodeIdMap[String(node.id)] = inserted.id;
+        }
+      }
     }
-    
-    // Get the newly inserted nodes to map IDs
+
+    // Get the newly inserted nodes
     const newNodes = await db.select().from(workflowNodes).where(eq(workflowNodes.campaignId, campaignId));
-    
-    // Insert new edges
+
+    // Insert new edges using mapped IDs
     if (edges && Array.isArray(edges) && edges.length > 0) {
       await db.insert(workflowEdges).values(
         edges.map((edge: {
@@ -60,8 +63,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           label?: string;
         }) => ({
           campaignId,
-          sourceNodeId: parseInt(String(edge.source)),
-          targetNodeId: parseInt(String(edge.target)),
+          sourceNodeId: nodeIdMap[String(edge.source)] ?? parseInt(String(edge.source)),
+          targetNodeId: nodeIdMap[String(edge.target)] ?? parseInt(String(edge.target)),
           conditionJson: edge.condition ? JSON.stringify(edge.condition) : null,
           label: edge.label,
         }))

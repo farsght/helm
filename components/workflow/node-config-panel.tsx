@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Node } from "@xyflow/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,17 @@ interface NodeConfigPanelProps {
 
 export function NodeConfigPanel({ node, onUpdate, onClose }: NodeConfigPanelProps) {
   const [config, setConfig] = useState<NodeConfig>(node.data.config || {});
+  const [templates, setTemplates] = useState<Array<{ id: number; name: string }>>([]);
+  const [campaigns, setCampaigns] = useState<Array<{ id: number; name: string }>>([]);
+
+  useEffect(() => {
+    fetch('/api/templates').then(r => r.json()).then(data => {
+      if (Array.isArray(data)) setTemplates(data);
+    }).catch(() => {});
+    fetch('/api/campaigns').then(r => r.json()).then(data => {
+      if (Array.isArray(data)) setCampaigns(data);
+    }).catch(() => {});
+  }, []);
 
   const handleSave = () => {
     onUpdate(node.id, { config });
@@ -73,7 +84,9 @@ export function NodeConfigPanel({ node, onUpdate, onClose }: NodeConfigPanelProp
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No template</SelectItem>
-                  <SelectItem value="1">Initial Outreach - Email</SelectItem>
+                  {templates.map(t => (
+                    <SelectItem key={t.id} value={String(t.id)}>{t.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -200,8 +213,9 @@ export function NodeConfigPanel({ node, onUpdate, onClose }: NodeConfigPanelProp
                 <SelectValue placeholder="Select campaign" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Q1 Product Launch Outreach</SelectItem>
-                <SelectItem value="2">Cold Email Follow-up Sequence</SelectItem>
+                {campaigns.map(c => (
+                  <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

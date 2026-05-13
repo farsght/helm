@@ -1,10 +1,13 @@
+export const dynamic = "force-dynamic";
 import { db } from "@/db";
 import { prospects, campaignProspects, campaigns } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { ProspectsClient } from "./prospects-client";
 
 export default async function ProspectsPage() {
-  const allProspects = await db.select().from(prospects).limit(100);
+  const allProspects = await db.select().from(prospects).limit(50).offset(0);
+  const totalResult = await db.select({ count: sql<number>`count(*)::int` }).from(prospects);
+  const total = totalResult[0]?.count || 0;
 
   // Get campaign info for each prospect
   const prospectCampaigns = await Promise.all(
@@ -31,5 +34,5 @@ export default async function ProspectsPage() {
     };
   });
 
-  return <ProspectsClient initialProspects={prospectsWithCampaigns} />;
+  return <ProspectsClient initialProspects={prospectsWithCampaigns} initialTotal={total} />;
 }

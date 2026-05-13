@@ -77,10 +77,11 @@ export const campaignProspects = pgTable('campaign_prospects', {
   campaignId: integer('campaign_id').notNull().references(() => campaigns.id, { onDelete: 'cascade' }),
   prospectId: integer('prospect_id').notNull().references(() => prospects.id, { onDelete: 'cascade' }),
   currentNodeId: integer('current_node_id').references(() => workflowNodes.id),
-  status: text('status').notNull().default('active'), // active, completed, paused, failed
+  status: text('status').notNull().default('active'), // active, pending, completed, paused, failed
   enrolledAt: timestamp('enrolled_at').notNull().defaultNow(),
   lastActivityAt: timestamp('last_activity_at'),
   completedAt: timestamp('completed_at'),
+  nextRunAt: timestamp('next_run_at'),
 });
 
 // Messages
@@ -161,6 +162,15 @@ export const prospectTags = pgTable('prospect_tags', {
   id: serial('id').primaryKey(),
   prospectId: integer('prospect_id').notNull().references(() => prospects.id, { onDelete: 'cascade' }),
   tagId: integer('tag_id').notNull().references(() => tags.id, { onDelete: 'cascade' }),
+});
+
+// Tasks (for manual_task workflow nodes)
+export const tasks = pgTable('tasks', {
+  id: serial('id').primaryKey(),
+  campaignProspectId: integer('campaign_prospect_id').notNull().references(() => campaignProspects.id, { onDelete: 'cascade' }),
+  description: text('description').notNull(),
+  status: text('status').notNull().default('pending'), // pending, completed
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 // Settings (key-value store)

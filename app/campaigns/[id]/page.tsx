@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { db } from "@/db";
 import { campaigns, workflowNodes, workflowEdges, campaignProspects, prospects, messages } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";

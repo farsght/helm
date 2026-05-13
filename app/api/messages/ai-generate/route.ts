@@ -159,14 +159,21 @@ function generateFallbackTemplates(
     const variants = [];
     for (let i = 0; i < variantCount; i++) {
       const personalizedBody = template.body
+        .replace(/\{\{first_name\}\}/g, firstName)
+        .replace(/\{\{last_name\}\}/g, lastName)
         .replace(/\{\{firstName\}\}/g, firstName)
         .replace(/\{\{lastName\}\}/g, lastName)
         .replace(/\{\{fullName\}\}/g, fullName)
         .replace(/\{\{company\}\}/g, company || 'your company')
+        .replace(/\{\{companyName\}\}/g, company || 'your company')
         .replace(/\{\{title\}\}/g, title || 'your role');
-      
+
       variants.push({
-        subject: template.subject?.replace(/\{\{firstName\}\}/g, firstName).replace(/\{\{company\}\}/g, company || 'your company'),
+        subject: template.subject
+          ?.replace(/\{\{first_name\}\}/g, firstName)
+          .replace(/\{\{firstName\}\}/g, firstName)
+          .replace(/\{\{company\}\}/g, company || 'your company')
+          .replace(/\{\{companyName\}\}/g, company || 'your company'),
         body: personalizedBody
       });
     }

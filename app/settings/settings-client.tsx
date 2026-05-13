@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Mail, Linkedin, Trash2, CheckCircle, XCircle, Webhook } from "lucide-react";
+import { Plus, Mail, Linkedin, Trash2, CheckCircle, XCircle, Webhook, AlertCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 type ConnectedAccount = {
@@ -19,6 +20,13 @@ type ConnectedAccount = {
   name: string;
   status: string;
   configJson: string | null;
+};
+
+type LinkedInConnection = {
+  connected: boolean;
+  name?: string;
+  memberId?: string;
+  connectedAt?: string;
 };
 
 type Settings = {
@@ -36,8 +44,11 @@ type Settings = {
 };
 
 export function SettingsClient() {
+  const searchParams = useSearchParams();
   const [accounts, setAccounts] = useState<ConnectedAccount[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [linkedin, setLinkedin] = useState<LinkedInConnection>({ connected: false });
+  const [linkedinNotice, setLinkedinNotice] = useState<'connected' | 'error' | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showAccountDialog, setShowAccountDialog] = useState(false);
@@ -52,23 +63,42 @@ export function SettingsClient() {
   });
 
   useEffect(() => {
+    const li = searchParams.get('linkedin');
+    if (li === 'connected' || li === 'error') {
+      setLinkedinNotice(li);
+    }
     loadData();
   }, []);
 
   const loadData = async () => {
     try {
-      const [accountsRes, settingsRes] = await Promise.all([
+      const [accountsRes, settingsRes, linkedinRes] = await Promise.all([
         fetch('/api/settings/accounts'),
         fetch('/api/settings/general'),
+        fetch('/api/settings/linkedin'),
       ]);
       const accountsData = await accountsRes.json();
       const settingsData = await settingsRes.json();
       setAccounts(accountsData);
       setSettings(settingsData);
+      if (linkedinRes.ok) {
+        setLinkedin(await linkedinRes.json());
+      }
     } catch (err) {
       console.error('Load settings error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDisconnectLinkedIn = async () => {
+    if (!confirm('Disconnect LinkedIn account?')) return;
+    try {
+      await fetch('/api/settings/linkedin', { method: 'DELETE' });
+      setLinkedin({ connected: false });
+      setLinkedinNotice(null);
+    } catch (err) {
+      console.error('Disconnect LinkedIn error:', err);
     }
   };
 
@@ -164,33 +194,118 @@ export function SettingsClient() {
 
           {/* Accounts Tab */}
           <TabsContent value="accounts" className="space-y-6">
+            {/* LinkedIn notice banner */}
+            {linkedinNotice === 'connected' && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400">
+                <CheckCircle className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm">LinkedIn account connected successfully.</span>
+              </div>
+            )}
+            {linkedinNotice === 'error' && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <span className="text-sm">Failed to connect LinkedIn. Please try again.</span>
+              </div>
+            )}
+
+            {/* LinkedIn OAuth Card */}
+            <Card className="bg-[#25252A] border-[#3A3A40]">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Linkedin className="h-5 w-5 text-[#0A66C2]" />
+                  LinkedIn
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                  LinkedIn messages will be sent on your behalf using your account
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {linkedin.connected ? (
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-[#1B1B1F] border border-[#3A3A40]">
+                    <div className="flex items-center gap-3">
+                      <Linkedin className="h-5 w-5 text-[#0A66C2]" />
+                      <div>
+                        <p className="font-medium text-white">{linkedin.name || 'LinkedIn Account'}</p>
+                        {linkedin.memberId && (
+                          <p className="text-xs text-gray-500">Member ID: {linkedin.memberId}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Badge className="bg-green-500/10 text-green-500">
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        Connected
+                      </Badge>
+                      <Button
+                        onClick={handleDisconnectLinkedIn}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-start gap-3">
+                    <p className="text-sm text-gray-400">No LinkedIn account connected.</p>
+                    <Button
+                      onClick={() => window.location.href = '/api/auth/linkedin'}
+                      className="bg-[#0A66C2] hover:bg-[#004182] text-white"
+                    >
+                      <Linkedin className="mr-2 h-4 w-4" />
+                      Connect LinkedIn
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Email Accounts Card */}
             <Card className="bg-[#25252A] border-[#3A3A40]">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-white">Connected Accounts</CardTitle>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Mail className="h-5 w-5 text-blue-400" />
+                      Email Accounts
+                    </CardTitle>
                     <CardDescription className="text-gray-400">
-                      Manage your email and LinkedIn accounts
+                      Connect email accounts for outreach
                     </CardDescription>
                   </div>
-                  <Button
-                    onClick={() => setShowAccountDialog(true)}
-                    className="bg-[#266DF0] hover:bg-[#1a5ac9]"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Account
-                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                {accounts.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-400 mb-4">No accounts connected yet</p>
-                    <Button onClick={() => setShowAccountDialog(true)} variant="outline" className="border-[#3A3A40]">
-                      Connect your first account
+                <div className="text-center py-8">
+                  <Mail className="h-8 w-8 text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-400 font-medium">Email accounts coming soon</p>
+                  <p className="text-sm text-gray-500 mt-1">SMTP integration is under development</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Legacy connected accounts (non-email/linkedin) */}
+            {accounts.length > 0 && (
+              <Card className="bg-[#25252A] border-[#3A3A40]">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-white">Connected Accounts</CardTitle>
+                      <CardDescription className="text-gray-400">
+                        Legacy connected accounts
+                      </CardDescription>
+                    </div>
+                    <Button
+                      onClick={() => setShowAccountDialog(true)}
+                      className="bg-[#266DF0] hover:bg-[#1a5ac9]"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Account
                     </Button>
                   </div>
-                ) : (
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-3">
                     {accounts.map((account) => (
                       <div
@@ -234,9 +349,9 @@ export function SettingsClient() {
                       </div>
                     ))}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Sending Tab */}

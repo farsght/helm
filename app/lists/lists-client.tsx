@@ -15,7 +15,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, Trash2, UserPlus } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type List = {
   id: number;
@@ -38,11 +47,15 @@ export function ListsClient({ initialLists }: { initialLists: List[] }) {
   const [lists, setLists] = useState<List[]>(initialLists);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [addProspectsDialogOpen, setAddProspectsDialogOpen] = useState(false);
   const [selectedListId, setSelectedListId] = useState<number | null>(null);
   const [listMembers, setListMembers] = useState<ListMember[]>([]);
+  const [allProspects, setAllProspects] = useState<ListMember[]>([]);
+  const [selectedProspectIds, setSelectedProspectIds] = useState<number[]>([]);
+  const [prospectSearch, setProspectSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingMembers, setLoadingMembers] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -94,6 +107,63 @@ export function ListsClient({ initialLists }: { initialLists: List[] }) {
     }
   };
 
+  const handleDeleteList = async (id: number) => {
+    if (!confirm('Delete this list?')) return;
+    try {
+      const response = await fetch(`/api/lists/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Failed to delete');
+      setLists(prev => prev.filter(l => l.id !== id));
+    } catch (err) {
+      console.error('Delete list error:', err);
+      alert('Failed to delete list');
+    }
+  };
+
+  const openAddProspects = async (listId: number) => {
+    setSelectedListId(listId);
+    setAddProspectsDialogOpen(true);
+    const res = await fetch('/api/prospects?limit=200');
+    const data = await res.json();
+    setAllProspects(Array.isArray(data) ? data : (data.prospects ?? []));
+  };
+
+  const handleAddProspects = async () => {
+    if (!selectedListId || selectedProspectIds.length === 0) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/lists/${selectedListId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prospectIds: selectedProspectIds }),
+      });
+      if (!response.ok) throw new Error('Failed to add prospects');
+      const data = await response.json();
+      setLists(prev => prev.map(l => l.id === selectedListId ? { ...l, memberCount: l.memberCount + data.added } : l));
+      setAddProspectsDialogOpen(false);
+      setSelectedProspectIds([]);
+    } catch (err) {
+      console.error('Add prospects error:', err);
+      alert('Failed to add prospects');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveMember = async (prospectId: number) => {
+    if (!selectedListId) return;
+    try {
+      await fetch(`/api/lists/${selectedListId}/members`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prospectId }),
+      });
+      setListMembers(prev => prev.filter(m => m.id !== prospectId));
+      setLists(prev => prev.map(l => l.id === selectedListId ? { ...l, memberCount: Math.max(0, l.memberCount - 1) } : l));
+    } catch (err) {
+      console.error('Remove member error:', err);
+    }
+  };
+
   const selectedList = lists.find(l => l.id === selectedListId);
 
   return (
@@ -141,14 +211,32 @@ export function ListsClient({ initialLists }: { initialLists: List[] }) {
                   <Users className="h-4 w-4" />
                   <span className="text-sm">{list.memberCount} prospects</span>
                 </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-[#266DF0] hover:text-white hover:bg-[#266DF0]"
-                  onClick={() => handleViewList(list.id)}
-                >
-                  View
-                </Button>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => openAddProspects(list.id)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-[#266DF0] hover:text-white hover:bg-[#266DF0]"
+                    onClick={() => handleViewList(list.id)}
+                  >
+                    View
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleDeleteList(list.id)}
+                    className="text-gray-400 hover:text-red-400"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -237,9 +325,19 @@ export function ListsClient({ initialLists }: { initialLists: List[] }) {
                           : member.company || member.title || member.email || '—'}
                       </p>
                     </div>
-                    {member.email && (
-                      <span className="text-sm text-gray-400">{member.email}</span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {member.email && (
+                        <span className="text-sm text-gray-400">{member.email}</span>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRemoveMember(member.id)}
+                        className="h-7 w-7 p-0 text-gray-400 hover:text-red-400"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -252,6 +350,75 @@ export function ListsClient({ initialLists }: { initialLists: List[] }) {
               className="border-[#3A3A40] text-gray-400"
             >
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Prospects to List Dialog */}
+      <Dialog open={addProspectsDialogOpen} onOpenChange={setAddProspectsDialogOpen}>
+        <DialogContent className="bg-[#25252A] border-[#3A3A40] text-white max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add Prospects to List</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Select prospects to add to {lists.find(l => l.id === selectedListId)?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-4">
+            <Input
+              placeholder="Search prospects..."
+              value={prospectSearch}
+              onChange={e => setProspectSearch(e.target.value)}
+              className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+            />
+            <div className="max-h-64 overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-[#3A3A40]">
+                    <TableHead className="w-10"></TableHead>
+                    <TableHead className="text-gray-400">Name</TableHead>
+                    <TableHead className="text-gray-400">Company</TableHead>
+                    <TableHead className="text-gray-400">Email</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {allProspects
+                    .filter(p =>
+                      !prospectSearch ||
+                      `${p.firstName} ${p.lastName} ${p.company} ${p.email}`.toLowerCase().includes(prospectSearch.toLowerCase())
+                    )
+                    .map(p => (
+                      <TableRow key={p.id} className="border-[#3A3A40]">
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedProspectIds.includes(p.id)}
+                            onCheckedChange={checked => {
+                              setSelectedProspectIds(prev =>
+                                checked ? [...prev, p.id] : prev.filter(id => id !== p.id)
+                              );
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell className="text-white">{p.firstName} {p.lastName}</TableCell>
+                        <TableCell className="text-gray-400">{p.company || '—'}</TableCell>
+                        <TableCell className="text-gray-400">{p.email || '—'}</TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </div>
+            <p className="text-sm text-gray-400">{selectedProspectIds.length} selected</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddProspectsDialogOpen(false)} className="border-[#3A3A40] text-gray-400">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddProspects}
+              disabled={loading || selectedProspectIds.length === 0}
+              className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+            >
+              {loading ? 'Adding...' : `Add ${selectedProspectIds.length} Prospects`}
             </Button>
           </DialogFooter>
         </DialogContent>

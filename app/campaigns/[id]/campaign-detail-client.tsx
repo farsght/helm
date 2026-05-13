@@ -1,13 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Link from "next/link";
-import { ArrowLeft, Play, Pause, Mail, Linkedin, Loader2 } from "lucide-react";
+import { ArrowLeft, Play, Pause, Mail, Linkedin, Loader2, UserPlus, Settings } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { CampaignCanvas } from "@/components/campaign-canvas";
 import { CampaignAnalytics } from "@/components/campaign-analytics";
 
@@ -59,6 +65,75 @@ interface Message {
   createdAt: Date;
 }
 
+interface AvailableProspect {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  company: string | null;
+  title: string | null;
+}
+
+interface AvailableList {
+  id: number;
+  name: string;
+  memberCount: number;
+}
+
+function CampaignSettingsForm({ campaign, onUpdate }: { campaign: Campaign; onUpdate: (c: Campaign) => void }) {
+  const [name, setName] = useState(campaign.name);
+  const [description, setDescription] = useState(campaign.description || '');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/campaigns/${campaign.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description }),
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      const updated = await res.json();
+      onUpdate(updated);
+      alert('Settings saved');
+    } catch {
+      alert('Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="max-w-2xl space-y-6">
+      <h2 className="text-xl font-semibold text-white">Campaign Settings</h2>
+      <Card className="bg-[#25252A] border-[#3A3A40] p-6 space-y-4">
+        <div className="space-y-2">
+          <Label className="text-gray-400">Campaign Name</Label>
+          <Input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-gray-400">Description</Label>
+          <Textarea
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+            rows={3}
+          />
+        </div>
+        <Button onClick={handleSave} disabled={saving} className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white">
+          {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Settings className="mr-2 h-4 w-4" />}
+          {saving ? 'Saving...' : 'Save Settings'}
+        </Button>
+      </Card>
+    </div>
+  );
+}
+
 interface CampaignDetailClientProps {
   campaign: Campaign;
   nodes: WorkflowNode[];
@@ -78,6 +153,14 @@ export function CampaignDetailClient({
   const [campaign, setCampaign] = useState(initialCampaign);
   const [toggling, setToggling] = useState(false);
   const [executing, setExecuting] = useState(false);
+  const [enrollModalOpen, setEnrollModalOpen] = useState(false);
+  const [enrollTab, setEnrollTab] = useState<'lists' | 'prospects'>('lists');
+  const [availableLists, setAvailableLists] = useState<AvailableList[]>([]);
+  const [availableProspects, setAvailableProspects] = useState<AvailableProspect[]>([]);
+  const [selectedListId, setSelectedListId] = useState<number | null>(null);
+  const [selectedProspectIds, setSelectedProspectIds] = useState<number[]>([]);
+  const [prospectSearch, setProspectSearch] = useState('');
+  const [enrolling, setEnrolling] = useState(false);
 
   const handleToggleStatus = async () => {
     setToggling(true);
@@ -117,6 +200,44 @@ export function CampaignDetailClient({
       alert('Failed to execute campaign');
     } finally {
       setExecuting(false);
+    }
+  };
+
+  const openEnrollModal = async () => {
+    setEnrollModalOpen(true);
+    const [listsRes, prospectsRes] = await Promise.all([
+      fetch('/api/lists'),
+      fetch('/api/prospects?limit=200'),
+    ]);
+    const listsData = await listsRes.json();
+    const prospectsData = await prospectsRes.json();
+    setAvailableLists(Array.isArray(listsData) ? listsData.map((l: { id: number; name: string; memberCount?: number }) => ({ ...l, memberCount: l.memberCount ?? 0 })) : []);
+    setAvailableProspects(Array.isArray(prospectsData) ? prospectsData : (prospectsData.prospects ?? []));
+  };
+
+  const handleEnroll = async () => {
+    setEnrolling(true);
+    try {
+      const body = enrollTab === 'lists'
+        ? { listId: selectedListId }
+        : { prospectIds: selectedProspectIds };
+      const response = await fetch(`/api/campaigns/${campaign.id}/prospects`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) throw new Error('Failed to enroll');
+      const data = await response.json();
+      alert(`Enrolled ${data.enrolled} prospects`);
+      setEnrollModalOpen(false);
+      setSelectedListId(null);
+      setSelectedProspectIds([]);
+      router.refresh();
+    } catch (err) {
+      console.error('Enroll error:', err);
+      alert('Failed to enroll prospects');
+    } finally {
+      setEnrolling(false);
     }
   };
 
@@ -220,8 +341,9 @@ export function CampaignDetailClient({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-white">Enrolled Prospects</h2>
-                <Button className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white">
-                  Add Prospects
+                <Button onClick={openEnrollModal} className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Enroll Prospects
                 </Button>
               </div>
               {enrolledProspects.length === 0 ? (
@@ -327,12 +449,123 @@ export function CampaignDetailClient({
 
           <TabsContent value="settings" className="flex-1 overflow-auto p-6">
             <h2 className="text-xl font-semibold text-white mb-4">Settings</h2>
-            <Card className="bg-[#25252A] border-[#3A3A40] p-6">
-              <p className="text-gray-400">Campaign settings coming soon...</p>
-            </Card>
+            <CampaignSettingsForm campaign={campaign} onUpdate={setCampaign} />
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Enroll Prospects Modal */}
+      <Dialog open={enrollModalOpen} onOpenChange={setEnrollModalOpen}>
+        <DialogContent className="bg-[#25252A] border-[#3A3A40] text-white max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Enroll Prospects</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Select prospects to enroll in this campaign
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 mb-4">
+            <Button
+              size="sm"
+              variant={enrollTab === 'lists' ? 'default' : 'outline'}
+              onClick={() => setEnrollTab('lists')}
+              className={enrollTab === 'lists' ? 'bg-[#266DF0]' : 'border-[#3A3A40] text-gray-400'}
+            >
+              From List
+            </Button>
+            <Button
+              size="sm"
+              variant={enrollTab === 'prospects' ? 'default' : 'outline'}
+              onClick={() => setEnrollTab('prospects')}
+              className={enrollTab === 'prospects' ? 'bg-[#266DF0]' : 'border-[#3A3A40] text-gray-400'}
+            >
+              Individual Prospects
+            </Button>
+          </div>
+
+          {enrollTab === 'lists' ? (
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {availableLists.length === 0 ? (
+                <p className="text-gray-400 text-center py-4">No lists available</p>
+              ) : (
+                availableLists.map(list => (
+                  <div
+                    key={list.id}
+                    onClick={() => setSelectedListId(list.id)}
+                    className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
+                      selectedListId === list.id
+                        ? 'border-[#266DF0] bg-[#266DF0]/10'
+                        : 'border-[#3A3A40] bg-[#1B1B1F] hover:border-[#266DF0]/50'
+                    }`}
+                  >
+                    <span className="font-medium text-white">{list.name}</span>
+                    <span className="text-sm text-gray-400">{list.memberCount} prospects</span>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Input
+                placeholder="Search prospects..."
+                value={prospectSearch}
+                onChange={e => setProspectSearch(e.target.value)}
+                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+              />
+              <div className="max-h-64 overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-[#3A3A40]">
+                      <TableHead className="w-10"></TableHead>
+                      <TableHead className="text-gray-400">Name</TableHead>
+                      <TableHead className="text-gray-400">Company</TableHead>
+                      <TableHead className="text-gray-400">Email</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {availableProspects
+                      .filter(p =>
+                        !prospectSearch ||
+                        `${p.firstName} ${p.lastName} ${p.company} ${p.email}`.toLowerCase().includes(prospectSearch.toLowerCase())
+                      )
+                      .map(p => (
+                        <TableRow key={p.id} className="border-[#3A3A40]">
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedProspectIds.includes(p.id)}
+                              onCheckedChange={checked => {
+                                setSelectedProspectIds(prev =>
+                                  checked ? [...prev, p.id] : prev.filter(id => id !== p.id)
+                                );
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell className="text-white">{p.firstName} {p.lastName}</TableCell>
+                          <TableCell className="text-gray-400">{p.company || '—'}</TableCell>
+                          <TableCell className="text-gray-400">{p.email || '—'}</TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <p className="text-sm text-gray-400">{selectedProspectIds.length} selected</p>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEnrollModalOpen(false)} className="border-[#3A3A40] text-gray-400">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEnroll}
+              disabled={enrolling || (enrollTab === 'lists' ? !selectedListId : selectedProspectIds.length === 0)}
+              className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+            >
+              {enrolling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Enroll
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
