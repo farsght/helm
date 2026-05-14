@@ -1,8 +1,8 @@
 "use client"
 
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
-import { useEffect, useState } from "react"
-import { Button } from "~/components/ui/button"
+import * as React from "react"
+import { Button } from "@/components/ui/button"
 import {
   Command,
   CommandEmpty,
@@ -10,18 +10,18 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "~/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover"
-import { cn } from "~/lib/utils"
+} from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 
 const Example = () => {
-  const [open, setOpen] = useState(false)
-  const [value, setValue] = useState("")
-  const [search, setSearch] = useState("")
-  const [isSearching, setIsSearching] = useState(false)
-  const [results, setResults] = useState<string[]>([])
+  const [open, setOpen] = React.useState(false)
+  const [value, setValue] = React.useState("")
+  const [search, setSearch] = React.useState("")
+  const [isSearching, setIsSearching] = React.useState(false)
+  const [results, setResults] = React.useState<string[]>([])
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!search) {
       setResults([])
       return
