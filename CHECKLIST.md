@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 08:08 UTC
+> Last updated: 2026-05-14 08:23 UTC
 
 ---
 
@@ -237,8 +237,20 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 | `067feae8` | **feat: column type variant menu with coercion matrix** — datasets data grid column type selector with full type coercion matrix | datasets data-grid | ✅ |
 | `acfa0b95` | **fix: auto-size dataset grid columns from label length + sample + type** — dynamic column width calculation | datasets data-grid | ✅ |
 | `d031bef1` | **fix: VariantMenu — self-contained header, no nested DataGridColumnHeader** — fixes nested header nesting bug | `components/data-grid/` | ✅ |
+| `23d69253` | **fix: pass stretchColumns to dataset DataGrid** — headers and cells now fill and stretch full width | `components/data-grid/`, `app/datasets/` | ✅ |
+| `f7ca9dc4` | **fix: restore DataGridColumnHeader in VariantMenu** — resize drag working again, flex layout preserved | `components/data-grid/` | ✅ |
 
 ---
+
+### Review Notes (08:23 UTC)
+- **2 new code commits** since last run (08:08 UTC) — continued DataGrid column header refinement:
+  - `23d69253` fix: pass stretchColumns to dataset DataGrid — headers and cells now fill and stretch full width
+  - `f7ca9dc4` fix: restore DataGridColumnHeader in VariantMenu — resize drag working again, flex layout preserved
+- **Claude Code: NOT running** (0 processes). Last commit at 08:13 UTC — 10 min ago. Under the 30-min stall threshold, no wake event sent.
+- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth.
+- **DataGrid column header** receiving iterative fixes: VariantMenu nesting → column stretch → resize drag restoration. Converging on stable UX.
+- **Phase C theme verification** still pending (human visual pass required).
+- App is stable. No regressions detected.
 
 ### Review Notes (08:08 UTC)
 - **3 new code commits** since last run (07:53 UTC) — all datasets DataGrid polish:
@@ -280,4 +292,4 @@ All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, and Notebooks sh
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 08:08 UTC (Claude Code stopped — last code commit ~0 min ago `d031bef1` VariantMenu fix — clean stop, no stall)*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 08:23 UTC (Claude Code stopped — last code commit 10 min ago `f7ca9dc4` VariantMenu resize drag fix — clean stop, no stall)*
