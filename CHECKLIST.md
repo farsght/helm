@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 11:08 UTC
+> Last updated: 2026-05-14 11:23 UTC
 
 ---
 
@@ -285,6 +285,13 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 
 ---
 
+### Review Notes (11:23 UTC)
+- **0 new code commits** since last run (11:08 UTC) — no new activity from Netrunner
+- **Claude Code: NOT running** (0 processes). Last code commit `662cc96f` at 11:07 UTC — **16 min ago. Under 30-min stall threshold. No wake event sent.**
+- **SSH to Netrunner** timed out again on repo find — GitHub API used as source of truth (consistent pattern).
+- App is stable. Agents Tier 1 + Tier 4 shipped. Awaiting next Claude Code burst.
+- Phase C theme verification still pending (human visual pass required).
+
 ### Review Notes (11:08 UTC)
 - **2 new code commits** since last run (10:53 UTC):
   - `cb9f18eb` 10:55 UTC — **feat(agents): Tier 1 — Skills + MCP servers + tool-use loop** — migration 0009 adds 4 new tables; MCP HTTP JSON-RPC client; agent runtime now does two-stage research+decision loop (generateText with tools → generateObject for final decision); full /api/skills + /api/mcp-servers CRUD; per-server tool whitelisting; /skills library UI + /integrations/mcp-servers UI; AgentAttachments panel with skill + MCP picker
@@ -329,4 +336,4 @@ All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, Notebooks, Sentr
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 11:08 UTC (Claude Code stopped — last code commit 1 min ago `662cc96f` — under stall threshold)*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 11:23 UTC (Claude Code stopped — last code commit 16 min ago `662cc96f` — under stall threshold)*
