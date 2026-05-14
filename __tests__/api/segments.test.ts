@@ -143,8 +143,9 @@ describe('POST /api/segments/[id]/members', () => {
   it('adds prospects to the list and returns count of added', async () => {
     // Both prospects are new members
     vi.mocked(db.select)
-      .mockReturnValueOnce(q([]) as ReturnType<typeof db.select>)
-      .mockReturnValueOnce(q([]) as ReturnType<typeof db.select>)
+      .mockReturnValueOnce(q([{ id: 1, type: 'static', userId: 'test-user-id' }]) as ReturnType<typeof db.select>) // segment exists
+      .mockReturnValueOnce(q([]) as ReturnType<typeof db.select>) // prospect 10: not yet a member
+      .mockReturnValueOnce(q([]) as ReturnType<typeof db.select>) // prospect 20: not yet a member
     vi.mocked(db.insert).mockReturnValue(q([{ id: 1 }]) as ReturnType<typeof db.insert>)
 
     const req = new NextRequest('http://localhost/api/segments/1/members', {
@@ -161,9 +162,9 @@ describe('POST /api/segments/[id]/members', () => {
 
   it('adding an already-member prospect is idempotent — added:0', async () => {
     // Prospect already in list
-    vi.mocked(db.select).mockReturnValue(
-      q([{ id: 99 }]) as ReturnType<typeof db.select>,
-    )
+    vi.mocked(db.select)
+      .mockReturnValueOnce(q([{ id: 1, type: 'static', userId: 'test-user-id' }]) as ReturnType<typeof db.select>) // segment exists
+      .mockReturnValue(q([{ id: 99 }]) as ReturnType<typeof db.select>) // prospect already a member
 
     const req = new NextRequest('http://localhost/api/segments/1/members', {
       method: 'POST',
