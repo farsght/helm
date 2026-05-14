@@ -1,28 +1,27 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
+  Calendar as CalendarIcon,
   Database,
-  FileSpreadsheet,
+  Hash,
   Plus,
-  Sheet,
+  Tag,
+  Text as TextIcon,
   Trash2,
   Upload,
+  Sheet,
+  FileSpreadsheet,
   Webhook,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -34,8 +33,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { DataTable } from "@/components/data-table/data-table";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { ConfirmDialog, EmptyState, PageHeader } from "@/components/page";
+import { useDataTable } from "@/hooks/use-data-table";
 import { apiFetch } from "@/lib/api";
-import { PageHeader, ConfirmDialog } from "@/components/page";
 
 type DatasetRow = {
   id: number;
@@ -43,6 +46,7 @@ type DatasetRow = {
   description: string | null;
   source: string;
   rowCount: number;
+  columnSchemaJson: unknown;
   status: string;
   refreshedAt: string | null;
   createdAt: string;
@@ -60,7 +64,7 @@ const SOURCES: SourceCard[] = [
   {
     source: "csv",
     title: "Upload CSV",
-    description: "Drop a CSV file. We'll infer column types automatically.",
+    description: "Drop a CSV file. We’ll infer column types automatically.",
     icon: Upload,
     enabled: true,
   },
@@ -106,6 +110,142 @@ function sourceLabel(source: string): string {
   }
 }
 
+function columnCount(row: DatasetRow): number {
+  if (!row.columnSchemaJson) return 0;
+  try {
+    const arr = Array.isArray(row.columnSchemaJson)
+      ? row.columnSchemaJson
+      : JSON.parse(row.columnSchemaJson as string);
+    return Array.isArray(arr) ? arr.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function DataTableDatasets({
+  data,
+  onDeleteRequest,
+}: {
+  data: DatasetRow[];
+  onDeleteRequest: (id: number) => void;
+}) {
+  const router = useRouter();
+
+  const columns = React.useMemo<ColumnDef<DatasetRow>[]>(() => [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          onCheckedChange={(v) => table.toggleAllPageRowsSelected(!!v)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(v) => row.toggleSelected(!!v)}
+          onClick={(e) => e.stopPropagation()}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      size: 40,
+    },
+    {
+      id: "name",
+      accessorKey: "name",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Name" label="Name" />,
+      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+      meta: { label: "Name", placeholder: "Search datasets...", variant: "text", icon: TextIcon },
+      enableColumnFilter: true,
+    },
+    {
+      id: "source",
+      accessorKey: "source",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Source" label="Source" />,
+      cell: ({ row }) => <Badge variant="secondary">{sourceLabel(row.original.source)}</Badge>,
+      meta: {
+        label: "Source",
+        variant: "select",
+        icon: Tag,
+        options: [
+          { label: "CSV", value: "csv" },
+          { label: "Manual", value: "manual" },
+          { label: "Webhook", value: "webhook" },
+        ],
+      },
+      enableColumnFilter: true,
+    },
+    {
+      id: "rowCount",
+      accessorKey: "rowCount",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Rows" label="Rows" />,
+      cell: ({ row }) => <span className="tabular-nums">{row.original.rowCount.toLocaleString()}</span>,
+      meta: { label: "Rows", variant: "number", icon: Hash },
+    },
+    {
+      id: "columns",
+      accessorFn: (row) => columnCount(row),
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Columns" label="Columns" />,
+      cell: ({ row }) => <span className="tabular-nums text-muted-foreground">{columnCount(row.original)}</span>,
+      meta: { label: "Columns", variant: "number", icon: Hash },
+    },
+    {
+      id: "createdAt",
+      accessorKey: "createdAt",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Created" label="Created" />,
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">{new Date(row.original.createdAt).toLocaleDateString()}</span>
+      ),
+      meta: { label: "Created", variant: "date", icon: CalendarIcon },
+      enableColumnFilter: true,
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeleteRequest(row.original.id);
+          }}
+          aria-label="Delete dataset"
+        >
+          <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+        </Button>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      size: 60,
+    },
+  ], [onDeleteRequest]);
+
+  const pageCount = Math.max(1, Math.ceil(data.length / 10));
+
+  const { table } = useDataTable({
+    data,
+    columns,
+    pageCount,
+    initialState: {
+      sorting: [{ id: "createdAt", desc: true }],
+      pagination: { pageIndex: 0, pageSize: 10 },
+    },
+    getRowId: (row) => String(row.id),
+    shallow: false,
+    clearOnDefault: true,
+  });
+
+  return (
+    <DataTable table={table} onRowClick={(row) => router.push(`/datasets/${row.original.id}`)}>
+      <DataTableToolbar table={table} />
+    </DataTable>
+  );
+}
+
 export function DatasetsClient() {
   const router = useRouter();
   const [datasets, setDatasets] = React.useState<DatasetRow[]>([]);
@@ -116,6 +256,7 @@ export function DatasetsClient() {
   const [uploadName, setUploadName] = React.useState("");
   const [uploadDescription, setUploadDescription] = React.useState("");
   const [uploading, setUploading] = React.useState(false);
+  const [deleteId, setDeleteId] = React.useState<number | null>(null);
 
   React.useEffect(() => {
     fetch("/api/datasets")
@@ -127,9 +268,7 @@ export function DatasetsClient() {
 
   const onPickFile = (f: File | null) => {
     setFile(f);
-    if (f && !uploadName) {
-      setUploadName(f.name.replace(/\.csv$/i, ""));
-    }
+    if (f && !uploadName) setUploadName(f.name.replace(/\.csv$/i, ""));
   };
 
   const onUpload = async () => {
@@ -140,7 +279,6 @@ export function DatasetsClient() {
       form.append("file", file);
       form.append("name", uploadName || file.name);
       if (uploadDescription) form.append("description", uploadDescription);
-
       const res = await fetch("/api/datasets", { method: "POST", body: form });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -162,15 +300,13 @@ export function DatasetsClient() {
     }
   };
 
-  const [deleteId, setDeleteId] = React.useState<number | null>(null);
-
   const onDelete = async () => {
     if (deleteId === null) return;
     const id = deleteId;
     setDeleteId(null);
     try {
       await apiFetch(`/api/datasets/${id}`, { method: "DELETE" });
-      setDatasets((prev) => prev.filter((d) => d.id !== id));
+      setDatasets((prev) => prev.filter((dataset) => dataset.id !== id));
       toast.success("Dataset deleted");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
@@ -180,93 +316,49 @@ export function DatasetsClient() {
 
   return (
     <div className="p-8">
-      <div className="mb-6">
-        <PageHeader
-          title="Datasets"
-          description="Staging workspace for raw data. Import, inspect, transform, then promote into prospects or segments."
-          actions={
-            <Button onClick={() => setAddOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              New Dataset
-            </Button>
-          }
-        />
-      </div>
+      <PageHeader
+        className="mb-6"
+        title="Datasets"
+        description="Staging workspace for raw data. Import, inspect, transform, then promote into prospects or segments."
+        actions={(
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Dataset
+          </Button>
+        )}
+      />
 
       {loading ? (
         <p className="text-muted-foreground">Loading…</p>
       ) : datasets.length === 0 ? (
         <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              No datasets yet
-            </CardTitle>
-            <CardDescription>
-              Upload a CSV to get started. You'll be able to browse, filter, and
-              edit rows before promoting them.
-            </CardDescription>
-          </CardHeader>
           <CardContent>
-            <Button onClick={() => setAddOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create your first dataset
-            </Button>
+            <EmptyState
+              icon={Database}
+              title="No datasets yet"
+              description="Upload a CSV to get started."
+              action={(
+                <Button onClick={() => setAddOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create your first dataset
+                </Button>
+              )}
+            />
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {datasets.map((ds) => (
-            <Card
-              key={ds.id}
-              className="hover:border-primary/50 transition-colors cursor-pointer"
-              onClick={() => router.push(`/datasets/${ds.id}`)}
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <CardTitle className="truncate">{ds.name}</CardTitle>
-                    <CardDescription className="line-clamp-2 mt-1">
-                      {ds.description || "No description"}
-                    </CardDescription>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteId(ds.id);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between text-sm">
-                  <Badge variant="secondary">{sourceLabel(ds.source)}</Badge>
-                  <span className="text-muted-foreground tabular-nums">
-                    {ds.rowCount.toLocaleString()} rows
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <DataTableDatasets data={datasets} onDeleteRequest={setDeleteId} />
       )}
 
-      {/* Source picker */}
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>New Dataset</DialogTitle>
             <DialogDescription>
-              Choose a source. Only CSV is wired up for now — the rest are
-              coming soon.
+              Choose a source. Only CSV is wired up for now — the rest are coming soon.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-3 sm:grid-cols-2 py-2">
+          <div className="grid gap-3 py-2 sm:grid-cols-2">
             {SOURCES.map((src) => (
               <button
                 key={src.source}
@@ -279,19 +371,13 @@ export function DatasetsClient() {
                 }}
                 className="flex items-start gap-3 rounded-lg border border-border bg-card p-4 text-left transition-colors hover:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-border"
               >
-                <src.icon className="h-5 w-5 mt-0.5 shrink-0 text-primary" />
+                <src.icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div className="min-w-0">
-                  <p className="font-medium flex items-center gap-2">
+                  <p className="flex items-center gap-2 font-medium">
                     {src.title}
-                    {!src.enabled && (
-                      <Badge variant="secondary" className="text-xs">
-                        Soon
-                      </Badge>
-                    )}
+                    {!src.enabled && <Badge variant="secondary" className="text-xs">Soon</Badge>}
                   </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {src.description}
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{src.description}</p>
                 </div>
               </button>
             ))}
@@ -299,67 +385,39 @@ export function DatasetsClient() {
         </DialogContent>
       </Dialog>
 
-      {/* CSV upload */}
-      <Dialog
-        open={uploadOpen}
-        onOpenChange={(open) => {
-          setUploadOpen(open);
-          if (!open) {
-            setFile(null);
-            setUploadName("");
-            setUploadDescription("");
-          }
-        }}
-      >
+      <Dialog open={uploadOpen} onOpenChange={(open) => {
+        setUploadOpen(open);
+        if (!open) {
+          setFile(null);
+          setUploadName("");
+          setUploadDescription("");
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Upload CSV</DialogTitle>
             <DialogDescription>
-              We'll infer column types from the first 100 rows. Header row required.
+              We’ll infer column types from the first 100 rows. Header row required.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-2">
             <div className="space-y-2">
               <Label>CSV File *</Label>
-              <Input
-                type="file"
-                accept=".csv,text/csv"
-                onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
-              />
-              {file && (
-                <p className="text-sm text-muted-foreground">
-                  {file.name} · {(file.size / 1024).toFixed(1)} KB
-                </p>
-              )}
+              <Input type="file" accept=".csv,text/csv" onChange={(e) => onPickFile(e.target.files?.[0] ?? null)} />
+              {file && <p className="text-sm text-muted-foreground">{file.name} · {(file.size / 1024).toFixed(1)} KB</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="ds-name">Name</Label>
-              <Input
-                id="ds-name"
-                value={uploadName}
-                onChange={(e) => setUploadName(e.target.value)}
-                placeholder="e.g., Q1 Trade Show Leads"
-              />
+              <Input id="ds-name" value={uploadName} onChange={(e) => setUploadName(e.target.value)} placeholder="e.g., Q1 Trade Show Leads" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="ds-desc">Description</Label>
-              <Textarea
-                id="ds-desc"
-                value={uploadDescription}
-                onChange={(e) => setUploadDescription(e.target.value)}
-                placeholder="Optional notes about this dataset"
-                rows={2}
-              />
+              <Textarea id="ds-desc" value={uploadDescription} onChange={(e) => setUploadDescription(e.target.value)} placeholder="Optional notes about this dataset" rows={2} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setUploadOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={onUpload}
-              disabled={!file || uploading || !uploadName}
-            >
+            <Button variant="outline" onClick={() => setUploadOpen(false)}>Cancel</Button>
+            <Button onClick={onUpload} disabled={!file || uploading || !uploadName}>
               {uploading ? "Importing…" : "Import"}
             </Button>
           </DialogFooter>
@@ -368,7 +426,9 @@ export function DatasetsClient() {
 
       <ConfirmDialog
         open={deleteId !== null}
-        onOpenChange={(o) => !o && setDeleteId(null)}
+        onOpenChange={(open) => {
+          if (!open) setDeleteId(null);
+        }}
         title="Delete this dataset?"
         description="This will permanently delete the dataset and all its rows. This action cannot be undone."
         confirmLabel="Delete"
