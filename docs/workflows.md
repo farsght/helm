@@ -1,4 +1,4 @@
-# Vercel Workflows — ai-sdr
+# Vercel Workflows — helm
 
 Last updated: 2026-05-14
 
@@ -56,7 +56,7 @@ The `workflow` package's `exports` map in `package.json` has `workflow/next → 
 
 ## Production checklist (before first prod deploy)
 
-1. **Enable Fluid Compute** — Vercel dashboard → ai-sdr → Settings → Functions → Fluid Compute → **On**.
+1. **Enable Fluid Compute** — Vercel dashboard → helm → Settings → Functions → Fluid Compute → **On**.
    - Without it: every workflow resume = cold start = high latency + high cost.
    - With it: suspended workflows resume cheaply. The SDK is designed around this.
 2. Verify the build emits `app/.well-known/workflow/` routes. Build log will show them generated.
@@ -118,7 +118,7 @@ npx workflow web         # web UI on http://localhost:<port>
 npx workflow inspect runs
 ```
 
-In prod: Vercel dashboard → ai-sdr → Functions → Workflow Runs.
+In prod: Vercel dashboard → helm → Functions → Workflow Runs.
 
 ---
 

@@ -1,4 +1,4 @@
-# ai-sdr CHECKLIST.md
+# helm CHECKLIST.md
 
 _Last updated: 2026-05-14 17:38 UTC by farsight watchdog_
 
@@ -78,7 +78,7 @@ Claude exited cleanly after finishing P2 AI work. `app/api/ai/suggest-reply/rout
 
 ## Resume Instructions
 
-1. ✅ Repo at ~/Projects/ai-sdr
+1. ✅ Repo at ~/Projects/helm
 2. ✅ Claude binary: v2.1.141
 3. ✅ Claude exited cleanly after P2 suggest-reply commit (17:29 UTC)
 4. Next: `git push origin main` to push `215c50c` + `382218e` to remote

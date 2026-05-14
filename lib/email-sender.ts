@@ -1,7 +1,7 @@
 /**
  * Email sender — Resend-based, plain-text-first.
  *
- * Strategy for ai-sdr v1:
+ * Strategy for Helm v1:
  *   - Cold outbound campaigns send PLAIN TEXT by default (better deliverability,
  *     looks like a 1:1 human message, no tracking pixels = no Promotions tab)
  *   - HTML is opt-in per-send via `html` arg or per-campaign-node config

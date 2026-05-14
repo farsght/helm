@@ -1,4 +1,4 @@
-# Sentry Setup — ai-sdr
+# Sentry Setup — helm
 
 Last updated: 2026-05-14
 
@@ -25,7 +25,7 @@ Quick reference for how Sentry is wired into this Next.js app and why certain th
 | Session Replay | ✅ On | 10% all sessions / 100% error sessions |
 | Logging | ✅ On | `enableLogs: true` + `consoleLoggingIntegration` everywhere |
 
-**Sentry project:** `bitwage / ai-sdr` (org `bitwage`, project `4511387394572288`).
+**Sentry project:** `bitwage / helm` (org `bitwage`, project `4511387394572288`).
 
 ---
 
@@ -41,7 +41,7 @@ Init files used to hardcode a different DSN (`o1355568` / farsight-studio) while
 This endpoint accepts OpenTelemetry trace data from non-Sentry SDKs. `@sentry/nextjs` already does tracing natively, so adding OTLP would be redundant (double-counted spans) or require ripping out native tracing in favor of `@vercel/otel` — net loss. **Wire this up only when a second service (Go/Python/etc.) ships and needs traces in the same Sentry project.** Until then, treat the env var as inert reference.
 
 ### Why `SENTRY_VERCEL_LOG_DRAIN_URL` matters
-Forwards Vercel's *platform* logs (build events, function invocation logs, cold starts, edge runtime errors) into Sentry → Logs. Complements `Sentry.logger.*` / `console.*` (which only fire from inside our code). Configure via the **Sentry Vercel marketplace integration** (Sentry → Settings → Integrations → Vercel), not by hand-pasting the URL — the marketplace integration also handles release linking + auth token provisioning. Verify it's live at: Vercel → ai-sdr → Settings → Log Drains.
+Forwards Vercel's *platform* logs (build events, function invocation logs, cold starts, edge runtime errors) into Sentry → Logs. Complements `Sentry.logger.*` / `console.*` (which only fire from inside our code). Configure via the **Sentry Vercel marketplace integration** (Sentry → Settings → Integrations → Vercel), not by hand-pasting the URL — the marketplace integration also handles release linking + auth token provisioning. Verify it's live at: Vercel → helm → Settings → Log Drains.
 
 ---
 

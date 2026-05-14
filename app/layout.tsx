@@ -15,8 +15,8 @@ import { Separator } from "@/components/ui/separator";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI SDR - Sales Automation Platform",
-  description: "AI-powered sales development representative tool",
+  title: "Helm",
+  description: "The operating layer for marketing — agents, pipelines, datasets, institutional knowledge.",
 };
 
 export default function RootLayout({

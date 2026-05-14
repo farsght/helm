@@ -2,7 +2,7 @@
 
 ## 🎉 Mission Accomplished
 
-Phase 1 of the AI SDR tool has been **successfully completed** and is **fully operational**.
+Phase 1 of the Helm tool has been **successfully completed** and is **fully operational**.
 
 ## ✅ Deliverables Checklist
 

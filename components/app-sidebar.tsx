@@ -149,9 +149,9 @@ export function AppSidebar() {
                   <MegaphoneIcon className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">AI SDR</span>
+                  <span className="font-medium">Helm</span>
                   <span className="text-xs text-muted-foreground">
-                    Sales Automation
+                    Marketing OS
                   </span>
                 </div>
               </Link>

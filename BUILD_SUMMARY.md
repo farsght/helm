@@ -1,4 +1,4 @@
-# AI SDR - Phase 1 Build Summary
+# Helm - Phase 1 Build Summary
 
 ## ✅ Completed Tasks
 
@@ -105,7 +105,7 @@
 
 ## 🚀 How to Run
 ```bash
-cd ~/claw/projects/ai-sdr
+cd ~/claw/projects/helm
 npm install
 npm run db:generate  # Generate migrations
 npm run db:migrate   # Run migrations

@@ -1,4 +1,4 @@
-# AI SDR Tool — Project Plan
+# Helm Tool — Project Plan
 
 ## Overview
 An AI-powered Sales Development Representative (SDR) tool that automates multi-channel outreach campaigns via email and LinkedIn. Features a visual canvas workflow builder for designing campaign sequences, AI-generated personalized messaging, and ongoing conversation management.

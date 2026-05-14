@@ -1,8 +1,8 @@
-# AI-SDR Implementation Specification
+# Helm Implementation Specification
 
 ## Overview
 
-AI-SDR is a sales development representative automation platform. Users build multi-step outreach campaigns on a visual canvas, enroll prospects into those campaigns, and the system automatically sends emails (and simulated LinkedIn messages) through a workflow engine. An AI layer (OpenAI GPT-4o-mini) generates personalized message variants and suggests replies to inbound prospect messages. Analytics track funnel conversion across campaigns.
+Helm is a sales development representative automation platform. Users build multi-step outreach campaigns on a visual canvas, enroll prospects into those campaigns, and the system automatically sends emails (and simulated LinkedIn messages) through a workflow engine. An AI layer (OpenAI GPT-4o-mini) generates personalized message variants and suggests replies to inbound prospect messages. Analytics track funnel conversion across campaigns.
 
 **Current state:** The UI shell, database schema, and most API routes exist. However 22 gaps — ranging from silent data corruption to dead UI buttons — prevent the app from functioning end-to-end. This document describes every gap with enough specificity to implement without opening any other file.
 

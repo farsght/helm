@@ -1,8 +1,8 @@
-# Email Sending — ai-sdr
+# Email Sending — helm
 
 Last updated: 2026-05-14
 
-How outbound email works in ai-sdr, why we made the choices we did, and the deliverability hygiene required before going live.
+How outbound email works in helm, why we made the choices we did, and the deliverability hygiene required before going live.
 
 ---
 
@@ -50,7 +50,7 @@ Future convergence: if BYOSMTP turns out to be a niche need or per-user Resend s
 
 Do these in this order. **Don't send a single campaign email until step 6 is done.**
 
-1. **Create a Resend account + project** for ai-sdr at https://resend.com
+1. **Create a Resend account + project** for helm at https://resend.com
 2. **Add and verify a dedicated sending SUBDOMAIN** (not your apex domain). Examples: `mail.bitwage.com`, `go.bitwage.com`, `send.bitwage.com`.
    - Resend dashboard → Domains → Add → enter `mail.bitwage.com`
    - Why subdomain: protects your main domain's reputation if anything goes sideways with a campaign

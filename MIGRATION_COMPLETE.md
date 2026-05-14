@@ -6,7 +6,7 @@
 ## 🎯 What Was Done
 
 ### 1. ✅ GitHub Repository
-- **Created:** https://github.com/farsght/ai-sdr
+- **Created:** https://github.com/farsght/helm
 - Private repository under farsght organization
 - All code committed and pushed
 
@@ -43,7 +43,7 @@
 - ✅ All queries use Drizzle ORM (database-agnostic)
 
 ### 5. ✅ Vercel Deployment
-- **Project:** ai-sdr
+- **Project:** helm
 - **Organization:** scott3jx (can be transferred to farsght org if needed)
 - **URLs:**
   - https://ai-ox8763317-scott3jx.vercel.app
@@ -119,9 +119,9 @@ npm run db:seed          # Seed sample data
 
 ## 📚 Resources
 
-- **GitHub Repo:** https://github.com/farsght/ai-sdr
+- **GitHub Repo:** https://github.com/farsght/helm
 - **Production URL:** https://ai-sdr-mocha.vercel.app
-- **Vercel Dashboard:** https://vercel.com/scott3jx/ai-sdr
+- **Vercel Dashboard:** https://vercel.com/scott3jx/helm
 - **Neon Dashboard:** https://console.neon.tech (database: ai_sdr)
 
 ---

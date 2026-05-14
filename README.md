@@ -1,4 +1,4 @@
-# AI SDR — Sales Automation Platform
+# Helm — the operating layer for Bitwage marketing
 
 AI-powered Sales Development Representative tool that automates multi-channel outreach via email and LinkedIn. Features a visual canvas workflow builder, CRM, prospect database, segmentation, datasets, and AI-assisted messaging.
 
@@ -60,7 +60,7 @@ OPENAI_API_KEY=sk-...
 ## Project Structure
 
 ```
-ai-sdr/
+helm/
 ├── app/
 │   ├── api/                    # API routes (all Clerk-auth'd, userId-scoped)
 │   │   ├── ai/                 # suggest-reply, ai-generate
