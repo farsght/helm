@@ -1,12 +1,12 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 14:08 UTC by farsight watchdog_
+_Last updated: 2026-05-14 14:23 UTC by farsight watchdog_
 
 ---
 
-## ⚠️ Claude Running — No New Feature Commits in 48 Min
+## 🔴 Claude Stopped — Wake Event Sent (14:23 UTC)
 
-Claude running (1 process, PID 59939, started 8:13 AM local). Last feature commit: `7a9d3d5f` at 13:20 UTC (48 min ago). Process count remains at 1 (was 3 at peak). Still monitoring — may be doing deep work on USER_SCOPING_SPEC.md.
+Claude Code dropped to 0 processes (was 1 at 14:08 UTC). Last feature commit: `7a9d3d5f` at 13:20 UTC (63 min ago). Watchdog restarted Claude via `nohup claude --dangerously-skip-permissions` in ~/Projects/ai-sdr. Telegram alert sent to Scott.
 
 ---
 
@@ -67,8 +67,8 @@ Claude running (1 process, PID 59939, started 8:13 AM local). Last feature commi
 
 ## Resume Instructions
 
-1. ✅ Repo cloned and working in separate dir
-2. ✅ Claude Code running (1 process, PID 59939)
+1. ✅ Repo at ~/Projects/ai-sdr
+2. 🔄 Claude restarted by watchdog at 14:23 UTC (PID 86716)
 3. Next: continue from USER_SCOPING_SPEC.md — userId on settings/tags/messages tables + API routes
 
 ---
@@ -90,3 +90,4 @@ Claude running (1 process, PID 59939, started 8:13 AM local). Last feature commi
 | 13:38 | ✅ Running | ✅ Healthy — last feature commit 13:20 UTC (18 min ago), 3 processes |
 | 13:53 | ⚠️ Running | ⚠️ Process count 3→1, no feature commits in 33 min. Watching. |
 | 14:08 | ⚠️ Running | ⚠️ Still 1 process, 48 min since last feature commit. No wake sent — Claude still alive. |
+| 14:23 | 🔴 Stopped | 🔴 Claude dropped to 0 processes (63 min since last feature commit). Watchdog restarted claude (PID 86716). Telegram alert sent. |
