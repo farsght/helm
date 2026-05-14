@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/table";
 import { Plus, Upload, Download, Pencil, Trash2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { PageHeader, ConfirmDialog } from "@/components/page";
 
 type Prospect = {
   id: number;
@@ -226,8 +227,12 @@ export function ProspectsClient() {
     }
   };
 
-  const handleDeleteProspect = async (id: number) => {
-    if (!confirm('Delete this prospect?')) return;
+  const [deleteProspectId, setDeleteProspectId] = useState<number | null>(null);
+
+  const handleDeleteProspect = async () => {
+    if (deleteProspectId === null) return;
+    const id = deleteProspectId;
+    setDeleteProspectId(null);
     try {
       await apiFetch(`/api/prospects/${id}`, { method: 'DELETE' });
       setProspects(prev => prev.filter(p => p.id !== id));
@@ -275,10 +280,7 @@ export function ProspectsClient() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Prospects</h1>
-          <p className="text-muted-foreground mt-1">Manage your prospect database</p>
-        </div>
+        <PageHeader title="Prospects" description="Manage your prospect database" />
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -371,7 +373,7 @@ export function ProspectsClient() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleDeleteProspect(prospect.id)}
+                      onClick={() => setDeleteProspectId(prospect.id)}
                       className="h-7 w-7 p-0 text-muted-foreground hover:text-red-400"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -663,6 +665,16 @@ export function ProspectsClient() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteProspectId !== null}
+        onOpenChange={(o) => !o && setDeleteProspectId(null)}
+        title="Delete this prospect?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={handleDeleteProspect}
+      />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Plus, Mail, Linkedin, Edit, Trash2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { TemplateEditor } from "@/components/template-editor";
+import { PageHeader, ConfirmDialog } from "@/components/page";
 
 interface Template {
   id: number;
@@ -77,9 +78,12 @@ export function TemplatesClient() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
+  const handleDelete = async () => {
+    if (deleteId === null) return;
+    const id = deleteId;
+    setDeleteId(null);
     setDeleting(id);
     try {
       await apiFetch(`/api/templates/${id}`, { method: 'DELETE' });
@@ -98,10 +102,7 @@ export function TemplatesClient() {
     <>
       <div className="p-8">
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Templates</h1>
-            <p className="text-muted-foreground mt-1">Manage your message templates</p>
-          </div>
+          <PageHeader title="Templates" description="Manage your message templates" />
           <Button 
             onClick={handleCreate}
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -175,7 +176,7 @@ export function TemplatesClient() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => handleDelete(template.id)}
+                    onClick={() => setDeleteId(template.id)}
                     disabled={deleting === template.id}
                     className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
                   >
@@ -218,6 +219,16 @@ export function TemplatesClient() {
           />
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteId !== null}
+        onOpenChange={(o) => !o && setDeleteId(null)}
+        title="Delete this template?"
+        description="This action cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={handleDelete}
+      />
     </>
   );
 }

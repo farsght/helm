@@ -36,16 +36,16 @@ interface DataTableListsProps {
   onDataChange?: (data: SegmentRow[]) => void;
 }
 
-export function DataTableLists({ data, onDataChange }: DataTableListsProps) {
+export function DataTableSegments({ data, onDataChange }: DataTableListsProps) {
   const router = useRouter();
 
-  const onDeleteList = React.useCallback(
+  const onDeleteSegment = React.useCallback(
     async (id: number) => {
-      if (!confirm("Delete this list?")) return;
+      if (!confirm("Delete this segment?")) return;
       try {
         await apiFetch(`/api/segments/${id}`, { method: "DELETE" });
         onDataChange?.(data.filter((l) => l.id !== id));
-        toast.success("List deleted");
+        toast.success("Segment deleted");
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Unknown error";
         toast.error(`Failed to delete: ${msg}`);
@@ -171,9 +171,9 @@ export function DataTableLists({ data, onDataChange }: DataTableListsProps) {
             className="h-8 w-8"
             onClick={(e) => {
               e.stopPropagation();
-              onDeleteList(row.original.id);
+              onDeleteSegment(row.original.id);
             }}
-            aria-label="Delete list"
+            aria-label="Delete segment"
           >
             <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
           </Button>
@@ -183,7 +183,7 @@ export function DataTableLists({ data, onDataChange }: DataTableListsProps) {
         size: 60,
       },
     ],
-    [onDeleteList],
+    [onDeleteSegment],
   );
 
   const pageCount = Math.max(1, Math.ceil(data.length / 10));

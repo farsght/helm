@@ -21,7 +21,7 @@ import {
   type FilterOperator,
 } from "@/lib/segment-filters";
 
-interface ListFilterBuilderProps {
+interface SegmentFilterBuilderProps {
   value: SegmentFilter;
   onChange: (next: SegmentFilter) => void;
 }
@@ -32,7 +32,7 @@ const EMPTY_RULE: FilterRule = {
   value: "",
 };
 
-export function ListFilterBuilder({ value, onChange }: ListFilterBuilderProps) {
+export function SegmentFilterBuilder({ value, onChange }: SegmentFilterBuilderProps) {
   const rules = value.rules ?? [];
 
   const updateRule = (idx: number, patch: Partial<FilterRule>) => {

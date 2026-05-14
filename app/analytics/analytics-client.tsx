@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BarChart3, TrendingUp, Users, Mail } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useEffect, useState } from "react";
+import { PageHeader } from "@/components/page";
 
 type AnalyticsData = {
   summary: {
@@ -115,8 +116,7 @@ export function AnalyticsClient() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
-        <p className="text-muted-foreground mt-1">Track your campaign performance and insights across all campaigns</p>
+        <PageHeader title="Analytics" description={`Track your campaign performance and insights across all campaigns`} />
       </div>
 
       {/* Summary Cards */}

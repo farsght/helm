@@ -35,6 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api";
+import { PageHeader, ConfirmDialog } from "@/components/page";
 
 type DatasetRow = {
   id: number;
@@ -161,8 +162,12 @@ export function DatasetsClient() {
     }
   };
 
-  const onDelete = async (id: number) => {
-    if (!confirm("Delete this dataset and all its rows?")) return;
+  const [deleteId, setDeleteId] = React.useState<number | null>(null);
+
+  const onDelete = async () => {
+    if (deleteId === null) return;
+    const id = deleteId;
+    setDeleteId(null);
     try {
       await apiFetch(`/api/datasets/${id}`, { method: "DELETE" });
       setDatasets((prev) => prev.filter((d) => d.id !== id));
@@ -176,13 +181,7 @@ export function DatasetsClient() {
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Datasets</h1>
-          <p className="text-muted-foreground mt-1">
-            Staging workspace for raw data. Import, inspect, transform, then
-            promote into prospects or segments.
-          </p>
-        </div>
+        <PageHeader title="Datasets" description="Staging workspace for raw data. Import, inspect, transform, then promote into prospects or segments." />
         <Button onClick={() => setAddOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           New Dataset
@@ -232,7 +231,7 @@ export function DatasetsClient() {
                     className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onDelete(ds.id);
+                      setDeleteId(ds.id);
                     }}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -361,6 +360,16 @@ export function DatasetsClient() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteId !== null}
+        onOpenChange={(o) => !o && setDeleteId(null)}
+        title="Delete this dataset?"
+        description="This will permanently delete the dataset and all its rows. This action cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={onDelete}
+      />
     </div>
   );
 }
