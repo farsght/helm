@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowLeft, Database, Download, Plus, Trash2 } from "lucide-react";
+import type { ColumnDef, HeaderContext } from "@tanstack/react-table";
+import { ArrowLeft, Database, Download, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -15,11 +15,13 @@ import { DataGridRowHeightMenu } from "@/components/data-grid/data-grid-row-heig
 import { getDataGridSelectColumn } from "@/components/data-grid/data-grid-select-column";
 import { DataGridSortMenu } from "@/components/data-grid/data-grid-sort-menu";
 import { DataGridViewMenu } from "@/components/data-grid/data-grid-view-menu";
+import { VariantMenu } from "@/components/data-grid/variant-menu";
 import { useDataGrid } from "@/hooks/use-data-grid";
 import { useWindowSize } from "@/hooks/use-window-size";
 import { getFilterFn } from "@/lib/data-grid-filters";
 import { apiFetch } from "@/lib/api";
-import type { CellUpdate } from "@/types/data-grid";
+import type { CellVariant } from "@/lib/data-grid-coercion";
+import type { CellOpts, CellUpdate } from "@/types/data-grid";
 
 type DatasetColumn = {
   key: string;
@@ -57,26 +59,55 @@ function sourceLabel(source: string): string {
   }
 }
 
-const TYPE_ICON: Record<string, string> = {
-  number: "🔢",
-  date: "📅",
-  boolean: "✅",
-  string: "📝",
-};
+function schemaTypeToVariant(type: DatasetColumn["type"]): CellVariant {
+  switch (type) {
+    case "number": return "number";
+    case "date": return "date";
+    case "boolean": return "checkbox";
+    default: return "short-text";
+  }
+}
 
-function buildColumns(schema: DatasetColumn[]): ColumnDef<GridRow>[] {
+function variantToSchemaType(variant: CellVariant): DatasetColumn["type"] {
+  switch (variant) {
+    case "number": return "number";
+    case "date": return "date";
+    case "checkbox": return "boolean";
+    default: return "string";
+  }
+}
+
+function buildColumns(
+  schema: DatasetColumn[],
+  variantsRef: React.RefObject<Record<string, CellVariant>>,
+  rowsRef: React.RefObject<GridRow[]>,
+  onApplyRef: React.RefObject<(colKey: string, newVariant: CellVariant, newData: GridRow[]) => void>,
+): ColumnDef<GridRow>[] {
   const filterFn = getFilterFn<GridRow>();
   return [
     getDataGridSelectColumn<GridRow>({ enableRowMarkers: true }),
     ...schema.map((col) => ({
       id: col.key,
       accessorKey: col.key,
-      header: `${TYPE_ICON[col.type] ?? "📝"} ${col.label}`,
+      header: (ctx: HeaderContext<GridRow, unknown>) => (
+        <VariantMenu<GridRow>
+          header={ctx.header}
+          table={ctx.table}
+          label={col.label}
+          columnId={col.key}
+          variant={variantsRef.current[col.key] ?? "short-text"}
+          data={rowsRef.current}
+          rowIdKey="__rowId"
+          onApply={(newVariant, newData) =>
+            onApplyRef.current(col.key, newVariant, newData)
+          }
+        />
+      ),
       minSize: col.type === "number" ? 120 : 180,
       filterFn,
       meta: {
         label: col.label,
-        cell: { variant: col.type === "number" ? ("number" as const) : ("short-text" as const) },
+        cell: { variant: variantsRef.current[col.key] ?? schemaTypeToVariant(col.type) } as CellOpts,
       },
     })),
   ];
@@ -113,6 +144,7 @@ export function DatasetDetailClient({ id }: { id: string }) {
   const [loading, setLoading] = React.useState(true);
   const [page, setPage] = React.useState(0);
   const [total, setTotal] = React.useState(0);
+  const [variants, setVariants] = React.useState<Record<string, CellVariant>>({});
   const LIMIT = 100;
 
   const windowSize = useWindowSize();
@@ -129,6 +161,16 @@ export function DatasetDetailClient({ id }: { id: string }) {
         ...r.rowJson,
       }));
       setRows(gridRows);
+      // Initialize variants from schema
+      const schema: DatasetColumn[] = data.dataset.columnSchemaJson ?? [];
+      setVariants((prev) => {
+        const next: Record<string, CellVariant> = {};
+        for (const col of schema) {
+          // Keep existing overrides, fall back to schema type
+          next[col.key] = prev[col.key] ?? schemaTypeToVariant(col.type);
+        }
+        return next;
+      });
     } catch (err) {
       console.error("Load dataset error:", err);
     } finally {
@@ -139,7 +181,48 @@ export function DatasetDetailClient({ id }: { id: string }) {
   React.useEffect(() => { load(page); }, [load, page]);
 
   const schema = dataset?.columnSchemaJson ?? [];
-  const columns = React.useMemo(() => buildColumns(schema), [schema]);
+
+  // Stable refs so header render functions never go stale
+  const variantsRef = React.useRef(variants);
+  variantsRef.current = variants;
+
+  const rowsRef = React.useRef(rows);
+  rowsRef.current = rows;
+
+  const onApplyVariant = React.useCallback(
+    async (colKey: string, newVariant: CellVariant, newData: GridRow[]) => {
+      // Update local state
+      setRows(newData);
+      setVariants((prev) => ({ ...prev, [colKey]: newVariant }));
+
+      // Persist updated columnSchemaJson
+      const currentSchema = dataset?.columnSchemaJson ?? [];
+      const updatedSchema = currentSchema.map((col) =>
+        col.key === colKey ? { ...col, type: variantToSchemaType(newVariant) } : col
+      );
+      try {
+        await apiFetch(`/api/datasets/${datasetId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ columnSchemaJson: updatedSchema }),
+        });
+        setDataset((prev) => prev ? { ...prev, columnSchemaJson: updatedSchema } : prev);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        toast.error(`Failed to save column type: ${msg}`);
+      }
+    },
+    [datasetId, dataset]
+  );
+
+  const onApplyRef = React.useRef(onApplyVariant);
+  onApplyRef.current = onApplyVariant;
+
+  const columns = React.useMemo(
+    () => buildColumns(schema, variantsRef, rowsRef, onApplyRef),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [schema, variants]
+  );
 
   const onDataUpdate = React.useCallback(async (updates: CellUpdate | CellUpdate[]) => {
     const arr = Array.isArray(updates) ? updates : [updates];
