@@ -1,12 +1,12 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 16:38 UTC by farsight watchdog_
+_Last updated: 2026-05-14 16:53 UTC by farsight watchdog_
 
 ---
 
 ## 🎉 Tier 2 RAG DONE (16:37 UTC)
 
-Claude committed `b83618b` at 16:37 UTC — Tier 2 RAG with pgvector, Obsidian vault ingest, and agent retrieval fully implemented. Clean exit 1 min ago. **No wake needed.**
+Claude committed `b83618b` at 16:37 UTC — Tier 2 RAG with pgvector, Obsidian vault ingest, and agent retrieval fully implemented. Clean exit, 16 min ago. **No wake needed (under 30-min threshold).**
 
 ⚠️ **LOCAL DIVERGE**: Netrunner local branch has `476946e` (Tier 5 recursion) that was never pushed. Remote moved on from `b17b780` independently. Local needs `git pull --rebase` or merge before next push.
 
@@ -77,7 +77,7 @@ Claude committed `b83618b` at 16:37 UTC — Tier 2 RAG with pgvector, Obsidian v
 
 1. ✅ Repo at ~/Projects/ai-sdr (clean working tree, but DIVERGED from remote)
 2. ✅ Claude binary: v2.1.141
-3. 🔴 Claude: stopped (clean exit after 16:37 UTC RAG commit — 1 min ago)
+3. 🔴 Claude: stopped (clean exit after 16:37 UTC RAG commit — 16 min ago, under threshold)
 4. ⚠️ Run `git pull --rebase origin main` first to reconcile local `476946e`
 5. Next: /api/ai/suggest-reply (P2)
 
@@ -110,3 +110,4 @@ Claude committed `b83618b` at 16:37 UTC — Tier 2 RAG with pgvector, Obsidian v
 | 16:08 | 🔴→🔄 Wake | 🔴 52 min since last feature commit. Clean tree. Claude relaunched PID 55157. Telegram alert sent. |
 | 16:23 | 🔴 Stopped | ✅ Clean exit — `476946e` Tier 5 sub_workflow recursion committed 16:16 UTC (7 min ago). LOCAL ONLY. Under threshold, no wake. |
 | 16:38 | 🔴 Stopped | ✅ Clean exit — `b83618b` Tier 2 RAG committed 16:37 UTC (1 min ago). ⚠️ Local branch diverged from remote. No wake needed. |
+| 16:53 | 🔴 Stopped | ⏳ Clean exit — last feature commit `b83618b` 16 min ago. Local diverged (`476946e` unpushed). Under 30-min threshold. No action. |
