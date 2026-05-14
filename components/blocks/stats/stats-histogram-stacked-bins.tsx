@@ -10,7 +10,7 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from "~/components/ui/chart"
+} from "@/components/ui/chart"
 
 interface HistogramBin {
   bucket: string
