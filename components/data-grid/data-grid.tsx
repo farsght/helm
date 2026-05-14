@@ -168,7 +168,7 @@ export function DataGrid<TData>({
                     }
                     data-slot="grid-header-cell"
                     tabIndex={-1}
-                    className={cn("relative", {
+                    className={cn("relative min-w-0 overflow-hidden", {
                       grow: stretchColumns && header.column.id !== "select",
                       "border-e":
                         showEndBorder && header.column.id !== "select",

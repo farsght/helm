@@ -2186,7 +2186,7 @@ function useDataGrid<TData>({
     tableRef.current = table;
   }
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: columnSizingInfo and columnSizing are used for calculating the column size vars
+  // biome-ignore lint/correctness/useExhaustiveDependencies: columnSizingInfo, columnSizing, AND the column list itself drive the size vars. The vendor block omitted the column list, causing only static columns to be measured on first render when columns load asynchronously (e.g., dataset schema arriving via useEffect). See building-data-grids skill, pitfall #1.
   const columnSizeVars = React.useMemo(() => {
     const headers = table.getFlatHeaders();
     const colSizes: { [key: string]: number } = {};
@@ -2195,7 +2195,13 @@ function useDataGrid<TData>({
       colSizes[`--col-${header.column.id}-size`] = header.column.getSize();
     }
     return colSizes;
-  }, [table.getState().columnSizingInfo, table.getState().columnSizing]);
+  }, [
+    table.getState().columnSizingInfo,
+    table.getState().columnSizing,
+    // Force re-compute when the column set itself changes (dynamic schemas).
+    table.getAllColumns().length,
+    table.getAllColumns().map((c) => c.id).join("|"),
+  ]);
 
   const isFirefox = React.useSyncExternalStore(
     React.useCallback(() => () => {}, []),

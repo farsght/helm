@@ -32,17 +32,14 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { useDataTable } from "@/hooks/use-data-table";
+import { DatasetImportWizard } from "@/components/dataset-import-wizard";
 import { apiFetch } from "@/lib/api";
 
 type DatasetRow = {
@@ -255,15 +252,10 @@ function DataTableDatasets({ data, onDataChange }: { data: DatasetRow[]; onDataC
 }
 
 export function DatasetsClient() {
-  const router = useRouter();
   const [datasets, setDatasets] = React.useState<DatasetRow[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [addOpen, setAddOpen] = React.useState(false);
   const [uploadOpen, setUploadOpen] = React.useState(false);
-  const [file, setFile] = React.useState<File | null>(null);
-  const [uploadName, setUploadName] = React.useState("");
-  const [uploadDescription, setUploadDescription] = React.useState("");
-  const [uploading, setUploading] = React.useState(false);
 
   React.useEffect(() => {
     fetch("/api/datasets")
@@ -272,40 +264,6 @@ export function DatasetsClient() {
       .catch((err) => console.error("Fetch datasets error:", err))
       .finally(() => setLoading(false));
   }, []);
-
-  const onPickFile = (f: File | null) => {
-    setFile(f);
-    if (f && !uploadName) setUploadName(f.name.replace(/\.csv$/i, ""));
-  };
-
-  const onUpload = async () => {
-    if (!file) return;
-    setUploading(true);
-    try {
-      const form = new FormData();
-      form.append("file", file);
-      form.append("name", uploadName || file.name);
-      if (uploadDescription) form.append("description", uploadDescription);
-      const res = await fetch("/api/datasets", { method: "POST", body: form });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Upload failed (${res.status})`);
-      }
-      const created: DatasetRow = await res.json();
-      toast.success(`Imported ${created.rowCount} rows`);
-      setUploadOpen(false);
-      setAddOpen(false);
-      setFile(null);
-      setUploadName("");
-      setUploadDescription("");
-      router.push(`/datasets/${created.id}`);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unknown error";
-      toast.error(`Failed to import: ${msg}`);
-    } finally {
-      setUploading(false);
-    }
-  };
 
   return (
     <div className="p-8">
@@ -379,41 +337,18 @@ export function DatasetsClient() {
         </DialogContent>
       </Dialog>
 
-      {/* CSV upload */}
-      <Dialog open={uploadOpen} onOpenChange={(open) => {
-        setUploadOpen(open);
-        if (!open) { setFile(null); setUploadName(""); setUploadDescription(""); }
-      }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Upload CSV</DialogTitle>
-            <DialogDescription>
-              We'll infer column types from the first 100 rows. Header row required.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-2">
-            <div className="space-y-2">
-              <Label>CSV File *</Label>
-              <Input type="file" accept=".csv,text/csv" onChange={(e) => onPickFile(e.target.files?.[0] ?? null)} />
-              {file && <p className="text-sm text-muted-foreground">{file.name} · {(file.size / 1024).toFixed(1)} KB</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ds-name">Name</Label>
-              <Input id="ds-name" value={uploadName} onChange={(e) => setUploadName(e.target.value)} placeholder="e.g., Q1 Trade Show Leads" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ds-desc">Description</Label>
-              <Textarea id="ds-desc" value={uploadDescription} onChange={(e) => setUploadDescription(e.target.value)} placeholder="Optional notes about this dataset" rows={2} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setUploadOpen(false)}>Cancel</Button>
-            <Button onClick={onUpload} disabled={!file || uploading || !uploadName}>
-              {uploading ? "Importing…" : "Import"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* CSV upload wizard (Step 1 drop → Step 2 preview → Step 3 import → Step 4 done) */}
+      <DatasetImportWizard
+        open={uploadOpen}
+        onOpenChange={setUploadOpen}
+        onImported={(created) => {
+          // Optimistically add to the list so users see it before navigation
+          setDatasets((prev) => [
+            { ...(created as unknown as DatasetRow) },
+            ...prev,
+          ]);
+        }}
+      />
     </div>
   );
 }
