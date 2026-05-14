@@ -196,20 +196,20 @@ export function CampaignCanvas({ initialNodes, initialEdges }: CampaignCanvasPro
         nodeTypes={nodeTypes}
         fitView
         className="bg-background"
-        style={{ background: "#1B1B1F" }}
+        style={{ background: "var(--background)" }}
       >
         <Background
-          color="#3A3A40"
+          color="var(--border)"
           variant={BackgroundVariant.Dots}
           gap={20}
           size={1}
         />
         <MiniMap
-          nodeColor="#266DF0"
-          maskColor="rgba(27, 27, 31, 0.8)"
+          nodeColor="var(--primary)"
+          maskColor="color-mix(in oklab, var(--background) 80%, transparent)"
           style={{
-            background: "#25252A",
-            border: "1px solid #3A3A40",
+            background: "var(--card)",
+            border: "1px solid var(--border)",
           }}
         />
         <Controls
