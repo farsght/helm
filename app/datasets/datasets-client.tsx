@@ -355,7 +355,7 @@ export function DatasetsClient() {
               Choose a source. Only CSV is wired up for now — the rest are coming soon.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-3 sm:grid-cols-2 py-2">
+          <div className="grid gap-3 py-2 sm:grid-cols-2">
             {SOURCES.map((src) => (
               <button
                 key={src.source}
