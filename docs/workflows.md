@@ -167,9 +167,37 @@ linkedin_*, ai_decision, manual_task, tag, move_to_campaign.
 
 **Email sending:** `email` nodes route through `lib/email-sender.ts` (Resend backend, plain-text by default). See `docs/email.md` for full setup, deliverability checklist, and the `configJson` schema for email nodes. **You must complete the Resend DNS + warmup setup before running real campaigns.**
 
-## Future plans (not implemented)
+## Graph validation (strict-DAG)
 
-- **Edge-level conditions**: evaluate `workflow_edges.conditionJson` to support conditional transitions beyond just `condition` nodes.
+Campaign workflow graphs are validated against strict-DAG rules in `lib/workflow-graph-validator.ts`. Validation runs at two gates:
+
+1. **`POST /api/campaigns/:id/activate`** — hard block. Returns 422 with a structured `errors` array when the graph is invalid; the campaign stays in `draft` status until the user fixes it.
+2. **`POST /api/campaigns/:id/start-workflow`** — defensive re-check. Catches edge cases where the graph was mutated between activation and start.
+
+Validation is intentionally NOT enforced on workflow SAVE (`PUT /api/campaigns/:id/workflow`) — drafts must be allowed to save in invalid intermediate states.
+
+**Rules enforced:**
+- Exactly one start node (no incoming edges, type ≠ end)
+- At least one end node
+- Non-branching, non-end nodes have exactly 1 outgoing edge (no implicit fan-out)
+- `condition` / `ai_decision` nodes have exactly 2 outgoing edges labeled `yes` and `no`
+- `end` nodes have 0 outgoing edges
+- No cycles (DFS gray/black coloring detects them)
+- No self-loops, no duplicate edges (same source→target pair)
+- All edge source/target IDs reference existing nodes
+- Every node reachable from start
+- Every non-end node has a path to some end node
+- All node types are in the known palette
+- All `configJson` parses as valid JSON
+
+Every `ValidationError` carries `nodeId` or `edgeIds` for future UI highlighting. The API returns the full list at once so users can fix multiple issues per save.
+
+**Why strict DAG (vs free-form fan-out):**
+The campaign canvas lets users draw multi-edge topologies that look meaningful but have ambiguous semantics — e.g. node A → B and A → C (which runs first? both? does the workflow wait for both?). Strict-DAG closes the gap between "what was drawn" and "what the interpreter does." When real customer demand for parallel topologies arrives, introduce explicit `parallel` + `join` node types.
+
+---
+
+## Future plans (not implemented)
 - **LinkedIn node types**: extend the switch with `linkedin_message` / `linkedin_connection` calls (need to wire `lib/linkedin-sender` analogous to email).
 - **AI decision nodes**: `ai_decision` calls into OpenAI in a step, branches on the result. Cookbook has "Durable Agent" pattern.
 - **Throttling / rate limiting**: shared semaphore across all running workflows so we don't blast a domain with thousands of sends/sec.

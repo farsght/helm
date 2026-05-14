@@ -7,8 +7,11 @@ import {
   campaigns,
   campaignProspects,
   prospects,
+  workflowNodes,
+  workflowEdges,
 } from "@/db/schema";
 import { campaignSequenceWorkflow } from "@/workflows/campaign-sequence";
+import { validateWorkflowGraph } from "@/lib/workflow-graph-validator";
 
 /**
  * Kick off the durable campaign sequence workflow for every active prospect
@@ -49,6 +52,44 @@ export async function POST(
     return NextResponse.json(
       { error: `Campaign not active (status=${campaign.status})` },
       { status: 400 }
+    );
+  }
+
+  // Defensive re-validation: the activate route already enforces this, but
+  // a graph could theoretically mutate between activation and start (or this
+  // endpoint could be called directly). Cheap query, worth the safety.
+  const graphNodes = await db
+    .select()
+    .from(workflowNodes)
+    .where(eq(workflowNodes.campaignId, campaignId));
+  const graphEdges = await db
+    .select()
+    .from(workflowEdges)
+    .where(eq(workflowEdges.campaignId, campaignId));
+
+  const validation = validateWorkflowGraph(
+    graphNodes.map((n) => ({
+      id: n.id,
+      type: n.type,
+      label: n.label,
+      configJson: n.configJson,
+    })),
+    graphEdges.map((e) => ({
+      id: e.id,
+      sourceNodeId: e.sourceNodeId,
+      targetNodeId: e.targetNodeId,
+      label: e.label,
+      conditionJson: e.conditionJson,
+    })),
+  );
+
+  if (!validation.valid) {
+    return NextResponse.json(
+      {
+        error: "Workflow graph is invalid — cannot start.",
+        errors: validation.errors,
+      },
+      { status: 422 },
     );
   }
 
