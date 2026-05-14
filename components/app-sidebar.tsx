@@ -5,18 +5,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
+  AlertTriangle,
   BarChart3,
+  Building2,
   CalendarClock,
   ChevronRightIcon,
+  Contact,
   Database,
   FileText,
+  HandCoins,
+  HeartPulse,
   LayoutDashboard,
-  List,
+  Layers,
   MegaphoneIcon,
   MessageSquare,
+  ScrollText,
   Settings,
   Target,
   Users,
+  Workflow,
 } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 
@@ -54,9 +61,12 @@ type NavGroup = {
 
 const navGroups: NavGroup[] = [
   {
-    title: "Overview",
+    title: "Insights",
     defaultOpen: true,
-    items: [{ title: "Dashboard", url: "/", icon: LayoutDashboard }],
+    items: [
+      { title: "Dashboard", url: "/", icon: LayoutDashboard },
+      { title: "Analytics", url: "/analytics", icon: BarChart3 },
+    ],
   },
   {
     title: "Outreach",
@@ -64,31 +74,37 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Campaigns", url: "/campaigns", icon: Target },
       { title: "Templates", url: "/templates", icon: FileText },
+      { title: "Conversations", url: "/conversations", icon: MessageSquare },
     ],
   },
   {
-    title: "Data",
+    title: "Audience",
+    defaultOpen: true,
+    items: [
+      { title: "Companies", url: "/companies", icon: Building2 },
+      { title: "Contacts", url: "/contacts", icon: Contact },
+      { title: "Deals", url: "/deals", icon: HandCoins },
+      { title: "Segments", url: "/lists", icon: Layers },
+    ],
+  },
+  {
+    title: "Ops",
     defaultOpen: true,
     items: [
       { title: "Datasets", url: "/datasets", icon: Database },
-      { title: "Lists", url: "/lists", icon: List },
-      { title: "Prospects", url: "/prospects", icon: Users },
+      { title: "Pipelines", url: "/pipelines", icon: Workflow },
       { title: "Events", url: "/events", icon: CalendarClock },
       { title: "Intent Signals", url: "/intent-signals", icon: Activity },
     ],
   },
   {
-    title: "Engagement",
-    defaultOpen: true,
-    items: [
-      { title: "Conversations", url: "/conversations", icon: MessageSquare },
-      { title: "Analytics", url: "/analytics", icon: BarChart3 },
-    ],
-  },
-  {
-    title: "System",
+    title: "Monitoring",
     defaultOpen: false,
-    items: [{ title: "Settings", url: "/settings", icon: Settings }],
+    items: [
+      { title: "Health", url: "/monitoring/health", icon: HeartPulse },
+      { title: "Logs", url: "/monitoring/logs", icon: ScrollText },
+      { title: "Alerts", url: "/monitoring/alerts", icon: AlertTriangle },
+    ],
   },
 ];
 
@@ -162,6 +178,20 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={isItemActive(pathname, "/settings")}
+              tooltip="Settings"
+            >
+              <Link href="/settings">
+                <Settings className="size-4" />
+                <span>Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         <div className="flex items-center justify-between gap-2 px-2 py-1 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2">
           <UserButton />
           <ThemeToggle />
