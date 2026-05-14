@@ -1,13 +1,13 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 13:23 UTC by farsight watchdog_
+_Last updated: 2026-05-14 13:38 UTC by farsight watchdog_
 
 ---
 
-## ✅ Claude Active — Tier 5 Workflow Commits Shipping
+## ✅ Claude Active — Tier 5 Workflow Progress Continuing
 
-Claude resumed and pushed 2 new commits since last watchdog run (13:17–13:20 UTC).
-Repo re-cloned at `~/Projects/ai-sdr` — local is clean, pulling from remote.
+Claude running (3 processes). Last feature commit: `7a9d3d5f` at 13:20 UTC (18 min ago). No stall.
+Local `~/Projects/ai-sdr` is stale (behind remote by 4 commits) — Claude is working from a separate working dir.
 
 ---
 
@@ -89,3 +89,4 @@ Repo re-cloned at `~/Projects/ai-sdr` — local is clean, pulling from remote.
 | 12:53 | Stopped | Wake event #6 — 106 min stall, repo still missing, Telegram alert sent |
 | 13:08 | Stopped | ✅ Repo re-cloned + npm install done. 🔴 claude binary NOT FOUND escalated |
 | 13:23 | ✅ Running | ✅ Claude resumed — Tier 5 workflow commits (switch, sub_workflow, wait_for_event) |
+| 13:38 | ✅ Running | ✅ Healthy — last feature commit 13:20 UTC (18 min ago), no stall. Local repo stale but Claude working from separate dir |
