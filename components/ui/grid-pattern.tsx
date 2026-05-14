@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { cn } from "~/lib/utils"
+import { cn } from "@/lib/utils"
 
 interface GridPatternProps {
   width?: number
@@ -11,7 +11,7 @@ interface GridPatternProps {
   squares?: [number, number][]
   strokeDasharray?: string
   className?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export function GridPattern({
@@ -33,7 +33,7 @@ export function GridPattern({
         "pointer-events-none absolute inset-0 h-full w-full fill-gray-400/30 stroke-gray-400/30",
         className,
       )}
-      {...(props as any)}
+      {...(props as unknown as React.SVGProps<SVGSVGElement>)}
     >
       <defs>
         <pattern height={height} id={id} patternUnits="userSpaceOnUse" width={width} x={x} y={y}>

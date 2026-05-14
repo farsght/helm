@@ -17,6 +17,7 @@ vi.mock('@/db', () => ({
 import { db } from '@/db'
 import { GET as GET_DASHBOARD } from '@/app/api/analytics/dashboard/route'
 import { GET as GET_CROSS } from '@/app/api/analytics/cross-campaign/route'
+import { NeonHttpQueryResult } from 'drizzle-orm/neon-http'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -64,7 +65,7 @@ describe('GET /api/analytics/dashboard', () => {
       sent: 0,
       replied: 0,
     }))
-    vi.mocked(db.execute).mockResolvedValue({ rows: chartRows } as ReturnType<typeof db.execute> extends Promise<infer T> ? T : never)
+    vi.mocked(db.execute).mockResolvedValue({ rows: chartRows } as unknown as NeonHttpQueryResult<Record<string, unknown>>)
   }
 
   it('returns real aggregated counts — not hardcoded zeros', async () => {
@@ -159,7 +160,7 @@ describe('GET /api/analytics/cross-campaign', () => {
       idx++
       return q(val) as ReturnType<typeof db.select>
     })
-    vi.mocked(db.execute).mockResolvedValue({ rows: [] } as ReturnType<typeof db.execute> extends Promise<infer T> ? T : never)
+    vi.mocked(db.execute).mockResolvedValue({ rows: [], rowCount: 0, fields: [], command: 'SELECT' } as unknown as NeonHttpQueryResult<Record<string, unknown>>)
   }
 
   it('returns summary, funnel, trendsChart, replyRateByIndustry keys', async () => {
