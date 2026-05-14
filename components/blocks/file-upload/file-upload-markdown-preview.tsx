@@ -9,7 +9,7 @@ import {
   EyeIcon,
   FileTextIcon,
 } from "lucide-react"
-import { useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
@@ -98,7 +98,7 @@ export default function FileUploadMarkdownPreview() {
   }
 
   const stats = source ? getStats(source) : null
-  const preview = source ? renderPreview(source) : []
+  const preview = useMemo(() => (source ? renderPreview(source) : []), [source])
 
   const copySource = () => {
     if (!source) return
@@ -123,7 +123,148 @@ export default function FileUploadMarkdownPreview() {
     if (e.dataTransfer.files.length > 0) handleUpload()
   }
 
-  const [inCode, setInCode] = useState(false)
+  const previewContent = useMemo(() => {
+    return preview.reduce<{
+      elements: Array<React.ReactNode>
+      inCode: boolean
+    }>(
+      (acc, line, i) => {
+        const key = `${i}-${line.slice(0, 20)}`
+
+        if (line === "code") {
+          return {
+            elements: acc.elements,
+            inCode: !acc.inCode,
+          }
+        }
+
+        if (acc.inCode && line.startsWith("p:")) {
+          return {
+            elements: [
+              ...acc.elements,
+              (
+                <p
+                  key={key}
+                  className="rounded bg-zinc-950 px-3 py-1 font-mono text-xs text-zinc-300"
+                >
+                  {line.slice(2)}
+                </p>
+              ),
+            ],
+            inCode: acc.inCode,
+          }
+        }
+
+        if (line.startsWith("h1:")) {
+          return {
+            elements: [
+              ...acc.elements,
+              (
+                <h3 key={key} className="font-semibold text-lg">
+                  {line.slice(3)}
+                </h3>
+              ),
+            ],
+            inCode: acc.inCode,
+          }
+        }
+
+        if (line.startsWith("h2:")) {
+          return {
+            elements: [
+              ...acc.elements,
+              (
+                <h4 key={key} className="mt-2 font-semibold text-sm">
+                  {line.slice(3)}
+                </h4>
+              ),
+            ],
+            inCode: acc.inCode,
+          }
+        }
+
+        if (line.startsWith("h3:")) {
+          return {
+            elements: [
+              ...acc.elements,
+              (
+                <h5 key={key} className="mt-1 font-medium text-sm">
+                  {line.slice(3)}
+                </h5>
+              ),
+            ],
+            inCode: acc.inCode,
+          }
+        }
+
+        if (line.startsWith("li:")) {
+          return {
+            elements: [
+              ...acc.elements,
+              (
+                <p key={key} className="flex items-start gap-2 text-sm">
+                  <span className="mt-2 size-1 shrink-0 rounded-full bg-foreground" />
+                  {line.slice(3)}
+                </p>
+              ),
+            ],
+            inCode: acc.inCode,
+          }
+        }
+
+        if (line.startsWith("bq:")) {
+          return {
+            elements: [
+              ...acc.elements,
+              (
+                <p
+                  key={key}
+                  className="border-l-2 border-muted-foreground/30 pl-3 text-sm text-muted-foreground italic"
+                >
+                  {line.slice(3)}
+                </p>
+              ),
+            ],
+            inCode: acc.inCode,
+          }
+        }
+
+        if (line.startsWith("tbl:")) {
+          return {
+            elements: [
+              ...acc.elements,
+              (
+                <p key={key} className="font-mono text-xs text-muted-foreground">
+                  {line.slice(4)}
+                </p>
+              ),
+            ],
+            inCode: acc.inCode,
+          }
+        }
+
+        if (line === "br") {
+          return {
+            elements: [...acc.elements, <div key={key} className="h-1" />],
+            inCode: acc.inCode,
+          }
+        }
+
+        return {
+          elements: [
+            ...acc.elements,
+            (
+              <p key={key} className="text-sm leading-relaxed">
+                {line.slice(2)}
+              </p>
+            ),
+          ],
+          inCode: acc.inCode,
+        }
+      },
+      { elements: [], inCode: false }
+    ).elements
+  }, [preview])
 
   return (
     <section className="mx-auto w-full max-w-4xl p-4">
@@ -241,75 +382,7 @@ export default function FileUploadMarkdownPreview() {
                 </pre>
               ) : (
                 <div className="p-4 space-y-2">
-                  {preview.map((line, i) => {
-                    const key = `${i}-${line.slice(0, 20)}`
-                    if (line === "code") {
-                      setInCode(prev => !prev)
-                      return null
-                    }
-                    if (inCode && line.startsWith("p:")) {
-                      return (
-                        <p
-                          key={key}
-                          className="rounded bg-zinc-950 px-3 py-1 font-mono text-xs text-zinc-300"
-                        >
-                          {line.startsWith("p:") ? line.slice(2) : line}
-                        </p>
-                      )
-                    }
-                    if (line.startsWith("h1:")) {
-                      return (
-                        <h3 key={key} className="font-semibold text-lg">
-                          {line.slice(3)}
-                        </h3>
-                      )
-                    }
-                    if (line.startsWith("h2:")) {
-                      return (
-                        <h4 key={key} className="mt-2 font-semibold text-sm">
-                          {line.slice(3)}
-                        </h4>
-                      )
-                    }
-                    if (line.startsWith("h3:")) {
-                      return (
-                        <h5 key={key} className="mt-1 font-medium text-sm">
-                          {line.slice(3)}
-                        </h5>
-                      )
-                    }
-                    if (line.startsWith("li:")) {
-                      return (
-                        <p key={key} className="flex items-start gap-2 text-sm">
-                          <span className="mt-2 size-1 shrink-0 rounded-full bg-foreground" />
-                          {line.slice(3)}
-                        </p>
-                      )
-                    }
-                    if (line.startsWith("bq:")) {
-                      return (
-                        <p
-                          key={key}
-                          className="border-l-2 border-muted-foreground/30 pl-3 text-sm text-muted-foreground italic"
-                        >
-                          {line.slice(3)}
-                        </p>
-                      )
-                    }
-                    if (line.startsWith("tbl:")) {
-                      return (
-                        <p key={key} className="font-mono text-xs text-muted-foreground">
-                          {line.slice(4)}
-                        </p>
-                      )
-                    }
-                    if (line === "br") return <div key={key} className="h-1" />
-                    return (
-                      <p key={key} className="text-sm leading-relaxed">
-                        {line.slice(2)}
-                      </p>
-                    )
-                  })}
+                  {previewContent}
                 </div>
               )}
             </div>
