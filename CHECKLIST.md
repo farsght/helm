@@ -1,27 +1,28 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 16:08 UTC by farsight watchdog_
+_Last updated: 2026-05-14 16:23 UTC by farsight watchdog_
 
 ---
 
-## 🎉 USER_SCOPING_SPEC.md — P0 Complete (15:23 UTC)
+## 🎉 Tier 5 Sub-workflow Recursion DONE (16:16 UTC)
 
-Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. All 4 feature commits pushed to remote. Claude stopped again at 16:08 UTC — **52 min since last commit, OVER 30-min threshold. Wake event sent. Claude relaunched PID 55157.**
+Claude committed `476946e` at 16:16 UTC — sub_workflow inline recursion implemented. **Local only, not yet pushed to remote.** Claude exited cleanly after commit (7 min ago — under 30-min threshold, no wake sent).
 
 ---
 
 ## Completed Work ✅
 
-| Commit | Time | Description |
-|---|---|---|
-| `b17b780` | ~15:16 UTC | feat(api): add POST /api/campaigns/:id/steps and per-step CRUD route |
-| `41306b2` | ~15:15 UTC | fix(api): inject userId on prospect import; verify scoping on prospects/templates/campaigns |
-| `84dbba7` | ~15:15 UTC | feat(api): add user-scoped GET/PUT /api/settings |
-| `b118512` | ~15:14 UTC | feat(db): add tags (user_id, name) compound unique constraint |
-| `7a9d3d5f` | 13:20 UTC | feat(workflow): Tier 5 — wait_for_event + error handler + UI inspectors |
-| `5a8e264f` | 13:17 UTC | feat(workflow): add support for switch and sub_workflow node types |
-| `662cc96f` | 11:07 UTC | feat(canvas): Tier 4 — visual workflow + agent library canvases |
-| `def93478` | 11:12 UTC | watchdog: Tier 1+4 agents/MCP runtime + visual canvas noted |
+| Commit | Time | Status | Description |
+|---|---|---|---|
+| `476946e` | 16:16 UTC | ⚠️ LOCAL ONLY | feat(workflow): implement sub_workflow inline recursion (Tier 5) |
+| `b17b780` | ~15:16 UTC | ✅ Remote | feat(api): add POST /api/campaigns/:id/steps and per-step CRUD route |
+| `41306b2` | ~15:15 UTC | ✅ Remote | fix(api): inject userId on prospect import; verify scoping on prospects/templates/campaigns |
+| `84dbba7` | ~15:15 UTC | ✅ Remote | feat(api): add user-scoped GET/PUT /api/settings |
+| `b118512` | ~15:14 UTC | ✅ Remote | feat(db): add tags (user_id, name) compound unique constraint |
+| `7a9d3d5f` | 13:20 UTC | ✅ Remote | feat(workflow): Tier 5 — wait_for_event + error handler + UI inspectors |
+| `5a8e264f` | 13:17 UTC | ✅ Remote | feat(workflow): add support for switch and sub_workflow node types |
+| `662cc96f` | 11:07 UTC | ✅ Remote | feat(canvas): Tier 4 — visual workflow + agent library canvases |
+| `def93478` | 11:12 UTC | ✅ Remote | watchdog: Tier 1+4 agents/MCP runtime + visual canvas noted |
 
 ### P0 — USER_SCOPING_SPEC.md (ALL DONE ✅)
 
@@ -32,14 +33,15 @@ Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. All 4
 - ✅ `41306b2` — PUT /api/campaigns/:id: userId check/scoping
 - ✅ `b17b780` — POST /api/campaigns/:id/steps + per-step CRUD
 
-### Tier 5 Workflow Engine (DONE per commits 5a8e264f + 7a9d3d5f)
+### Tier 5 Workflow Engine (ALL DONE ✅)
 - ✅ `switch` node: fully functional — cases editor, label/when pairs, default fallthrough
 - ✅ `sub_workflow` node: inspector, DB schema (errorHandlerCampaignId), execution stub
 - ✅ `wait_for_event` node: durable createHook suspension, deterministic token, POST webhook
 - ✅ Top-level try/catch + `notifyErrorHandler` step
+- ✅ `476946e` — Sub-workflow inline recursion: graph-level recursion for sub_workflow execution (**LOCAL ONLY, not pushed**)
 - ✅ Tests: 152/157 passing (5 pre-existing failures)
 
-### Tier 4 Canvas (DONE per commit 662cc96f)
+### Tier 4 Canvas (DONE ✅)
 - ✅ FlowNode, ResourceNode, Palette components + dagre auto-layout
 - ✅ Campaign workflow canvas (/campaigns/[id]/workflow)
 - ✅ Agent library canvas (/agents/[id])
@@ -48,20 +50,20 @@ Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. All 4
 
 ## Pending Work 🔄
 
-### P2 — AI (IN PROGRESS 🔄)
-- 🔄 /api/ai/suggest-reply — Claude relaunched 16:08 UTC to implement this
+### P2 — AI (NOT STARTED)
+- [ ] /api/ai/suggest-reply — Not yet implemented (Claude exited after Tier 5 recursion commit)
 
-### Tier 5 — Sub-workflow recursion (partial)
-- [ ] Graph-level recursion for sub_workflow execution (currently stubbed)
+### Git push needed
+- ⚠️ `476946e` is local-only — needs `git push` to reach remote
 
 ---
 
 ## Resume Instructions
 
-1. ✅ Repo at ~/Projects/ai-sdr (clean working tree)
+1. ✅ Repo at ~/Projects/ai-sdr (clean working tree, 1 commit ahead of origin)
 2. ✅ Claude binary: v2.1.141
-3. 🔄 Claude: relaunched PID 55157 (16:08 UTC wake)
-4. Next: /api/ai/suggest-reply (P2), then sub-workflow recursion
+3. 🔴 Claude: stopped (clean exit after 16:16 UTC commit — 7 min idle)
+4. Next: push `476946e`, then /api/ai/suggest-reply (P2)
 
 ---
 
@@ -90,3 +92,4 @@ Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. All 4
 | 15:38 | 🔴 Stopped | ⏳ Still stopped. 22 min since last commit. Under 30-min threshold. No action. |
 | 15:53 | 🔴→🔄 Wake | 🔴 37 min since last commit. OVER threshold. Claude relaunched PID 45004. Telegram alert sent. |
 | 16:08 | 🔴→🔄 Wake | 🔴 52 min since last feature commit. Clean tree. Claude relaunched PID 55157. Telegram alert sent. |
+| 16:23 | 🔴 Stopped | ✅ Clean exit — `476946e` Tier 5 sub_workflow recursion committed 16:16 UTC (7 min ago). LOCAL ONLY. Under threshold, no wake. |
