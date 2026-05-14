@@ -22,8 +22,8 @@ import {
   ScrollText,
   Settings,
   Target,
-  Users,
   Workflow,
+  NotebookText,
 } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 
@@ -93,6 +93,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Datasets", url: "/datasets", icon: Database },
       { title: "Pipelines", url: "/pipelines", icon: Workflow },
+      { title: "Notebooks", url: "/notebooks", icon: NotebookText },
       { title: "Events", url: "/events", icon: CalendarClock },
       { title: "Intent Signals", url: "/intent-signals", icon: Activity },
     ],
