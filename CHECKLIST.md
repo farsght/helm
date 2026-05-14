@@ -1,17 +1,13 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 13:08 UTC by farsight watchdog_
+_Last updated: 2026-05-14 13:23 UTC by farsight watchdog_
 
 ---
 
-## 🔴 STALL DETECTED — Claude has been stopped for ~121 minutes
+## ✅ Claude Active — Tier 5 Workflow Commits Shipping
 
-Last real commit: `662cc96f` at 11:07 UTC — Tier 4 canvas (visual workflow + agent library)
-Wake events sent at: 11:41 UTC, 11:55 UTC, 12:08 UTC, 12:23 UTC, 12:38 UTC, 12:53 UTC, 13:08 UTC
-
-⚠️ **Working directory gone** — the ai-sdr repo was in a macOS temp dir (`/private/var/folders/_8/.../T/tmp-YZJOqouVeY`) that has been cleaned up.
-✅ **Repo re-cloned at 13:08 UTC** — `~/Projects/ai-sdr` now exists with `node_modules` installed.
-🔴 **Claude Code NOT INSTALLED on Netrunner** — `claude` binary not found. Cannot auto-restart. **Scott must manually install or launch.**
+Claude resumed and pushed 2 new commits since last watchdog run (13:17–13:20 UTC).
+Repo re-cloned at `~/Projects/ai-sdr` — local is clean, pulling from remote.
 
 ---
 
@@ -19,8 +15,18 @@ Wake events sent at: 11:41 UTC, 11:55 UTC, 12:08 UTC, 12:23 UTC, 12:38 UTC, 12:5
 
 | Commit | Time | Description |
 |---|---|---|
+| `7a9d3d5f` | 13:20 UTC | feat(workflow): Tier 5 — wait_for_event + error handler + UI inspectors |
+| `5a8e264f` | 13:17 UTC | feat(workflow): add support for switch and sub_workflow node types |
 | `662cc96f` | 11:07 UTC | feat(canvas): Tier 4 — visual workflow + agent library canvases |
 | `def93478` | 11:12 UTC | watchdog: Tier 1+4 agents/MCP runtime + visual canvas noted |
+
+### Tier 5 Workflow Engine (DONE per commits 5a8e264f + 7a9d3d5f)
+- ✅ `switch` node: fully functional — cases editor, label/when pairs, default fallthrough, valid edge labeling
+- ✅ `sub_workflow` node: inspector (subCampaignId picker), DB schema updated (errorHandlerCampaignId), execution stub (returns completed, recursion pending)
+- ✅ `wait_for_event` node: durable createHook suspension, deterministic token, POST webhook to resume
+- ✅ switch inspector, sub_workflow inspector, wait_for_event inspector panels
+- ✅ `defaultConfigForType` helper — validator-passing scaffold per node type
+- ✅ Top-level try/catch in workflow function + `notifyErrorHandler` step (routes to campaigns.errorHandlerCampaignId on failure)
 
 ### Tier 4 Canvas (DONE per commit 662cc96f)
 - ✅ FlowNode, ResourceNode, Palette components
@@ -55,17 +61,17 @@ Wake events sent at: 11:41 UTC, 11:55 UTC, 12:08 UTC, 12:23 UTC, 12:38 UTC, 12:5
 ### P2 — AI
 - [ ] /api/ai/suggest-reply
 
+### Tier 5 — Sub-workflow recursion (partial)
+- [ ] Graph-level recursion for sub_workflow execution (currently stubbed)
+
 ---
 
 ## Resume Instructions
 
-1. ✅ Repo already cloned at `~/Projects/ai-sdr` (done by watchdog at 13:08 UTC)
-2. ✅ `npm install` already done
-3. Install Claude Code if needed: `npm install -g @anthropic-ai/claude-code`
-4. `cd ~/Projects/ai-sdr`
-5. Read `USER_SCOPING_SPEC.md` for next tasks
-6. Start with `db/schema.ts` — add userId to settings, tags, messages tables
-7. Run migration, then build /api/settings GET+PUT routes
+1. ✅ Repo at `~/Projects/ai-sdr`
+2. ✅ `npm install` done
+3. ✅ Claude Code running (3 processes active)
+4. Next: `git pull`, then continue from USER_SCOPING_SPEC.md — userId on settings/tags/messages
 
 ---
 
@@ -81,4 +87,5 @@ Wake events sent at: 11:41 UTC, 11:55 UTC, 12:08 UTC, 12:23 UTC, 12:38 UTC, 12:5
 | 12:23 | Stopped | Wake event #4 — repo temp dir GONE, Telegram alert sent |
 | 12:38 | Stopped | Wake event #5 — repo still NOT re-cloned at ~/Projects/ai-sdr |
 | 12:53 | Stopped | Wake event #6 — 106 min stall, repo still missing, Telegram alert sent |
-| 13:08 | Stopped | ✅ Repo re-cloned + npm install done. 🔴 claude binary NOT FOUND on Netrunner — escalated to Scott |
+| 13:08 | Stopped | ✅ Repo re-cloned + npm install done. 🔴 claude binary NOT FOUND escalated |
+| 13:23 | ✅ Running | ✅ Claude resumed — Tier 5 workflow commits (switch, sub_workflow, wait_for_event) |
