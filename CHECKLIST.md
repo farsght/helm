@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 10:53 UTC
+> Last updated: 2026-05-14 11:08 UTC
 
 ---
 
@@ -108,6 +108,8 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 - Resend email backend — plain-text-first cold outbound wired ✅
 - Strict-DAG graph validator — workflow validation + activate/start gates ✅
 - **AI Agents v1 — data model + runtime + API routes + sidebar integration** ✅
+- **AI Agents Tier 1 — Skills + MCP servers + two-stage tool-use runtime** ✅
+- **AI Agents Tier 4 — Visual workflow canvas + agent library canvas (dagre layout)** ✅
 
 ---
 
@@ -132,6 +134,10 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `notebooks` | ✅ | Added in `f8d4b688` |
 | `agent_definitions` | ✅ | Added in `ed6d3e0f` |
 | `agent_runs` | ✅ | Added in `ed6d3e0f` |
+| `agent_skills` | ✅ | Added in `cb9f18eb` (migration 0009) |
+| `agent_skill_links` | n/a | OK — cascades via agent_skills |
+| `mcp_servers` | ✅ | Added in `cb9f18eb` |
+| `agent_mcp_links` | n/a | OK — cascades via mcp_servers |
 | `workflowNodes` | n/a | OK — cascades via campaigns |
 | `workflowEdges` | n/a | OK — cascades via campaigns |
 | `campaignProspects` | n/a | OK — cascades via both |
@@ -183,6 +189,8 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | Strict-DAG graph validator + workflow gates | ✅ | `e306c84b` — DAG validation before activation, start-workflow guards |
 | AI Agents v1 — data model + runtime + API routes | ✅ | `ed6d3e0f` — agent_definitions + agent_runs tables, runtime executor, API routes |
 | AI Agents v1 — workflow integration + sidebar | ✅ | `8df5f152` — agent node type in workflow canvas, sidebar Agents section |
+| AI Agents Tier 1 — Skills + MCP servers + tool-use loop | ✅ | `cb9f18eb` — migration 0009, runtime two-stage loop, /api/skills + /api/mcp-servers |
+| AI Agents Tier 4 — Visual canvas (workflow + agent library) | ✅ | `662cc96f` — shared canvas primitives, campaign workflow canvas, agent canvas |
 
 ---
 
@@ -271,9 +279,21 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 | `fe0b5d09` | **feat(email): wire Resend backend with plain-text-first cold outbound** | email/api layer | ✅ |
 | `e306c84b` | **feat(workflows): strict-DAG graph validator + activate/start-workflow gates** | workflows/, api/workflows/ | ✅ |
 | `ed6d3e0f` | **feat(agents): increment 1 — data model + runtime + API routes** — `agent_definitions` + `agent_runs` schema tables, runtime executor, full CRUD API | db/schema, db/migrations, app/api/agents/, lib/agents/ | ✅ |
+| `cb9f18eb` | **feat(agents): Tier 1 — Skills + MCP servers + tool-use loop** — agent_skills, agent_skill_links, mcp_servers, agent_mcp_links (migration 0009); MCP JSON-RPC client; agent runtime two-stage research+decision loop; /api/skills + /api/mcp-servers CRUD + /verify; /skills library + /integrations/mcp-servers UI; AgentAttachments panel | 20 files | ✅ |
+| `662cc96f` | **feat(canvas): Tier 4 — visual workflow + agent library canvases** — shared canvas primitives (FlowNode, ResourceNode, Palette, dagre auto-layout); campaign workflow ReactFlow canvas with type-specific inspectors + DAG validation; agent canvas (/agents/[id]) with resource circle layout + skill/MCP picker | 12 files | ✅ |
 | `8df5f152` | **feat(agents): add AI agent support in workflow and sidebar** — Agent node type in ReactFlow workflow canvas, Agents section in sidebar nav | workflow canvas, sidebar | ✅ |
 
 ---
+
+### Review Notes (11:08 UTC)
+- **2 new code commits** since last run (10:53 UTC):
+  - `cb9f18eb` 10:55 UTC — **feat(agents): Tier 1 — Skills + MCP servers + tool-use loop** — migration 0009 adds 4 new tables; MCP HTTP JSON-RPC client; agent runtime now does two-stage research+decision loop (generateText with tools → generateObject for final decision); full /api/skills + /api/mcp-servers CRUD; per-server tool whitelisting; /skills library UI + /integrations/mcp-servers UI; AgentAttachments panel with skill + MCP picker
+  - `662cc96f` 11:07 UTC — **feat(canvas): Tier 4 — visual workflow + agent library canvases** — shared canvas primitives (FlowNode, ResourceNode, Palette, dagre auto-layout); full campaign workflow ReactFlow canvas (type-specific inspectors, local DAG validation, save via PUT API, auto-arrange); agent canvas (/agents/[id]) with resource circle layout + resource picker overlay. Tests: 152/157 passing (5 pre-existing failures).
+- **Claude Code: NOT running** (0 processes). Last code commit `662cc96f` at 11:07 UTC — **1 min ago. Well under 30-min stall threshold. No wake event sent.**
+- **SSH to Netrunner** continues to time out on repo find (consistent pattern) — GitHub API is source of truth. Repo path unknown but commit velocity is healthy.
+- **Schema note:** migration 0009 adds agent_skills, agent_skill_links, mcp_servers, agent_mcp_links — all with appropriate userId scoping.
+- **This is a substantial capability jump:** agents now have a real tool-use runtime (bounded MCP tool loop + forced decision extraction) AND a visual canvas for building/inspecting agent configurations. The two-stage pattern (research → decision) is a solid pattern for reliable AI agent outputs.
+- Phase C theme verification still pending (human visual pass required).
 
 ### Review Notes (10:53 UTC)
 - **2 new code commits** since last checklist capture:
@@ -303,10 +323,10 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 
 ---
 
-## 🎉 Implementation Complete + DataOps v1 + Observability + Email + Durable Workflows + AI Agents
+## 🎉 Implementation Complete + DataOps v1 + Observability + Email + Durable Workflows + AI Agents v1-4
 
-All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, Notebooks, Sentry error monitoring, durable campaign workflows, Resend email backend, strict-DAG workflow validation, and **AI Agents v1** shipped. App is a full SDR + data ops platform with production observability, actual email sending, safe durable execution, and an embedded AI agent runtime.
+All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, Notebooks, Sentry, durable workflows, Resend email, strict-DAG validation, **AI Agents v1** (data model + runtime), **Tier 1** (Skills + MCP servers + two-stage tool-use loop, migration 0009), and **Tier 4** (visual workflow canvas + agent library canvas with dagre layout) shipped. App is a full SDR + data ops platform with embedded AI agent runtime, tool-use, and visual orchestration.
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 10:53 UTC (Claude Code stopped — last code commit 9 min ago `8df5f152` — under stall threshold)*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 11:08 UTC (Claude Code stopped — last code commit 1 min ago `662cc96f` — under stall threshold)*
