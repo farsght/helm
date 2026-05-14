@@ -4,13 +4,13 @@ import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
 import {
   Mail, Linkedin, Clock, GitBranch, Bot, ClipboardList,
-  Tag, ArrowRightLeft, Square, Sparkles,
+  Tag, ArrowRightLeft, Square, Sparkles, Hourglass, Split, FolderInput,
 } from "lucide-react";
 
 /**
  * FlowNode — rectangle representing a step in the workflow.
  * Renders typed input handle (left), output handle(s) (right).
- * For branching types (condition, ai_decision, ai_agent), renders
+ * For branching types (condition, ai_decision, ai_agent, switch), renders
  * one right-side handle per branch label.
  */
 
@@ -20,12 +20,15 @@ export const FLOW_NODE_TYPES = {
   linkedin_connection: { icon: Linkedin, color: "border-purple-500/60 text-purple-300", bg: "bg-purple-500/10" },
   linkedin_profile_view: { icon: Linkedin, color: "border-purple-500/60 text-purple-300", bg: "bg-purple-500/10" },
   wait: { icon: Clock, color: "border-amber-500/60 text-amber-300", bg: "bg-amber-500/10" },
+  wait_for_event: { icon: Hourglass, color: "border-amber-500/60 text-amber-300", bg: "bg-amber-500/10" },
   condition: { icon: GitBranch, color: "border-emerald-500/60 text-emerald-300", bg: "bg-emerald-500/10" },
+  switch: { icon: Split, color: "border-emerald-500/60 text-emerald-300", bg: "bg-emerald-500/10" },
   ai_decision: { icon: Sparkles, color: "border-emerald-500/60 text-emerald-300", bg: "bg-emerald-500/10" },
   ai_agent: { icon: Bot, color: "border-indigo-500/60 text-indigo-300", bg: "bg-indigo-500/10" },
   manual_task: { icon: ClipboardList, color: "border-orange-500/60 text-orange-300", bg: "bg-orange-500/10" },
   tag: { icon: Tag, color: "border-teal-500/60 text-teal-300", bg: "bg-teal-500/10" },
   move_to_campaign: { icon: ArrowRightLeft, color: "border-pink-500/60 text-pink-300", bg: "bg-pink-500/10" },
+  sub_workflow: { icon: FolderInput, color: "border-sky-500/60 text-sky-300", bg: "bg-sky-500/10" },
   end: { icon: Square, color: "border-red-500/60 text-red-300", bg: "bg-red-500/10" },
 } as const;
 
@@ -48,6 +51,12 @@ function getOutputPorts(data: FlowNodeData): string[] {
   if (data.type === "ai_agent") {
     const decisions = (data.config?.decisions as string[] | undefined) ?? [];
     return decisions.length > 0 ? decisions : ["continue"];
+  }
+  if (data.type === "switch") {
+    const cases = (data.config?.cases as Array<{ label: string }> | undefined) ?? [];
+    const labels = cases.map((c) => c.label).filter(Boolean);
+    if (data.config?.defaultCase) labels.push("default");
+    return labels.length > 0 ? labels : ["case_1"];
   }
   return ["next"];
 }

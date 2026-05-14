@@ -25,12 +25,15 @@ export type NodeType =
   | "linkedin_connection"
   | "linkedin_profile_view"
   | "wait"
+  | "wait_for_event"
   | "condition"
+  | "switch"
   | "ai_decision"
   | "ai_agent"
   | "manual_task"
   | "tag"
   | "move_to_campaign"
+  | "sub_workflow"
   | "end";
 
 export const KNOWN_NODE_TYPES: readonly NodeType[] = [
@@ -39,12 +42,15 @@ export const KNOWN_NODE_TYPES: readonly NodeType[] = [
   "linkedin_connection",
   "linkedin_profile_view",
   "wait",
+  "wait_for_event",
   "condition",
+  "switch",
   "ai_decision",
   "ai_agent",
   "manual_task",
   "tag",
   "move_to_campaign",
+  "sub_workflow",
   "end",
 ] as const;
 
@@ -54,9 +60,15 @@ const BRANCHING_TYPES: ReadonlySet<NodeType> = new Set<NodeType>([
   "ai_decision",
 ]);
 
-/** Node types that branch on N decisions defined in their config. */
+/**
+ * Node types that branch on N labels defined in their config. The expected
+ * label set is read from configJson and edge labels must match exactly.
+ * - ai_agent: labels = config.decisions
+ * - switch:   labels = config.cases.map(c => c.label)  (+ optional "default")
+ */
 const N_WAY_BRANCHING_TYPES: ReadonlySet<NodeType> = new Set<NodeType>([
   "ai_agent",
+  "switch",
 ]);
 
 /** Required labels on the two outgoing edges of a branching node. */
@@ -140,6 +152,23 @@ export type ValidationError =
     }
   | {
       kind: "ai_agent_edges_must_match_decisions";
+      nodeId: number;
+      expected: string[];
+      actualLabels: (string | null | undefined)[];
+      message: string;
+    }
+  | {
+      kind: "switch_missing_expression";
+      nodeId: number;
+      message: string;
+    }
+  | {
+      kind: "switch_must_have_at_least_one_case";
+      nodeId: number;
+      message: string;
+    }
+  | {
+      kind: "switch_edges_must_match_cases";
       nodeId: number;
       expected: string[];
       actualLabels: (string | null | undefined)[];
@@ -314,39 +343,83 @@ export function validateWorkflowGraph(
         }
       }
     } else if (N_WAY_BRANCHING_TYPES.has(n.type as NodeType)) {
-      // ai_agent: edge labels must exactly match the decisions array in configJson.
-      // configJson shape: { agentId: number, decisions: string[] }
-      // We don't fetch the agent here — we trust the node's snapshot of decisions
-      // taken when the node was authored. Drift is detected at execution time.
-      let cfg: { agentId?: unknown; decisions?: unknown } | null = null;
+      // ai_agent + switch: edge labels must exactly match a config-derived
+      // label list. configJson is the source of truth for the expected labels.
+      let cfg: { agentId?: unknown; decisions?: unknown; cases?: unknown; expression?: unknown; defaultCase?: unknown } | null = null;
       try {
         cfg = n.configJson ? JSON.parse(n.configJson) : null;
       } catch {
         // already flagged by invalid_config_json elsewhere
       }
-      if (!cfg || typeof cfg.agentId !== 'number') {
-        errors.push({
-          kind: "ai_agent_missing_agent_id",
-          nodeId: n.id,
-          message: `AI agent node "${n.label ?? n.id}" must reference an agent (configJson.agentId).`,
-        });
-      }
-      const decisions = Array.isArray(cfg?.decisions) ? (cfg!.decisions as unknown[]).filter((d): d is string => typeof d === 'string') : [];
-      if (decisions.length > 0) {
-        const labels = out.map((e) => e.label ?? '').sort();
-        const expected = [...decisions].sort();
-        if (JSON.stringify(labels) !== JSON.stringify(expected)) {
+
+      let expectedLabels: string[] = [];
+
+      if (n.type === "ai_agent") {
+        if (!cfg || typeof cfg.agentId !== 'number') {
           errors.push({
-            kind: "ai_agent_edges_must_match_decisions",
+            kind: "ai_agent_missing_agent_id",
             nodeId: n.id,
-            expected: decisions,
-            actualLabels: out.map((e) => e.label),
-            message: `AI agent node "${n.label ?? n.id}" needs one edge per decision (${decisions.join(', ')}). Got labels: ${labels.join(', ') || '(none)'}.`,
+            message: `AI agent node "${n.label ?? n.id}" must reference an agent (configJson.agentId).`,
+          });
+        }
+        if (Array.isArray(cfg?.decisions)) {
+          expectedLabels = (cfg!.decisions as unknown[]).filter((d): d is string => typeof d === 'string');
+        }
+      } else if (n.type === "switch") {
+        // Switch config: { expression: string, cases: Array<{ label: string, when: string }>, defaultCase?: boolean }
+        // Each case's `label` is the edge label, `when` is a JSON-path-ish or JS-ish
+        // expression evaluated against the prospect at runtime.
+        // If defaultCase=true, a "default" labeled edge is also required.
+        if (!cfg || typeof cfg.expression !== 'string') {
+          errors.push({
+            kind: "switch_missing_expression",
+            nodeId: n.id,
+            message: `Switch node "${n.label ?? n.id}" must have configJson.expression (the value to switch on).`,
+          });
+        }
+        if (Array.isArray(cfg?.cases) && cfg!.cases.length > 0) {
+          for (const c of cfg!.cases as Array<{ label?: unknown }>) {
+            if (typeof c?.label === 'string') expectedLabels.push(c.label);
+          }
+          if (cfg!.defaultCase === true) expectedLabels.push("default");
+        } else {
+          errors.push({
+            kind: "switch_must_have_at_least_one_case",
+            nodeId: n.id,
+            message: `Switch node "${n.label ?? n.id}" needs at least one case in configJson.cases.`,
           });
         }
       }
+
+      if (expectedLabels.length > 0) {
+        const labels = out.map((e) => e.label ?? '').sort();
+        const expected = [...expectedLabels].sort();
+        if (JSON.stringify(labels) !== JSON.stringify(expected)) {
+          // Reuse the existing error kind for ai_agent; emit a switch-specific
+          // variant for the new type so the UI can disambiguate.
+          if (n.type === "switch") {
+            errors.push({
+              kind: "switch_edges_must_match_cases",
+              nodeId: n.id,
+              expected: expectedLabels,
+              actualLabels: out.map((e) => e.label),
+              message: `Switch node "${n.label ?? n.id}" needs one edge per case (${expectedLabels.join(', ')}). Got: ${labels.join(', ') || '(none)'}.`,
+            });
+          } else {
+            errors.push({
+              kind: "ai_agent_edges_must_match_decisions",
+              nodeId: n.id,
+              expected: expectedLabels,
+              actualLabels: out.map((e) => e.label),
+              message: `AI agent node "${n.label ?? n.id}" needs one edge per decision (${expectedLabels.join(', ')}). Got labels: ${labels.join(', ') || '(none)'}.`,
+            });
+          }
+        }
+      }
     } else if (knownTypes.has(n.type as NodeType)) {
-      // All other known non-terminal node types: exactly 1 outgoing edge
+      // All other known non-terminal node types: exactly 1 outgoing edge.
+      // wait_for_event + sub_workflow are non-branching (sub_workflow runs to
+      // completion then continues; wait_for_event resumes on the same edge).
       if (out.length !== 1) {
         errors.push({
           kind: "non_branching_node_must_have_one_outgoing",

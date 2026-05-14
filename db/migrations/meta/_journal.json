@@ -71,6 +71,13 @@
       "when": 1778745000000,
       "tag": "0009_agent_skills_and_mcp_servers",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1778748000000,
+      "tag": "0010_campaign_error_handler",
+      "breakpoints": true
     }
   ]
 }

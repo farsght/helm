@@ -10,6 +10,13 @@ export const campaigns = pgTable('campaigns', {
   scheduleJson: text('schedule_json'),
   aiPersonaJson: text('ai_persona_json'),
   segmentId: integer('segment_id').references(() => segments.id),
+  /**
+   * Optional campaign id to invoke when ANY node in this campaign's workflow
+   * throws an error. The error-handler campaign receives the failing prospect
+   * and the error context as variables. If null, errors just mark the
+   * prospect 'failed' and stop. Set per-campaign in Settings → Error handler.
+   */
+  errorHandlerCampaignId: integer('error_handler_campaign_id'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
