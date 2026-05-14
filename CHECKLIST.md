@@ -159,4 +159,80 @@ All P1 and P2 gaps resolved. App is fully functional end-to-end with:
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 06:08 UTC (impl complete — no new commits — Claude Code idle, implementation finished)
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 05:38 UTC (impl complete — no new commits — Claude Code idle, implementation finished)
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 03:23 UTC (impl complete — no new commits — Claude Code idle, implementation finished)*
+
+---
+
+## 🌓 Theme System Migration — Light/Dark Mode (shadcn pattern)
+
+**Goal:** Replace all hardcoded color literals (`bg-[#25252A]`, `text-white`, `text-gray-400`, `border-[#3A3A40]`, `bg-[#266DF0]`, etc.) with shadcn semantic tokens (`bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`, `bg-primary`, etc.) so the entire app responds to light/dark mode via a single `class="dark"` toggle on `<html>`.
+
+**Why:** Every page and component currently bakes in dark-mode hex values inline. There is no light theme today. Adding a theme switcher requires zero color literals to remain in component code.
+
+### Phase A — Foundation
+- [ ] Audit current color literals: `rg -n "bg-\[#|text-\[#|border-\[#|text-white|text-gray-|bg-gray-" app components | wc -l` (baseline count)
+- [ ] Verify shadcn CSS variables are present in `app/globals.css` (`--background`, `--foreground`, `--card`, `--popover`, `--primary`, `--secondary`, `--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`, light + `.dark` blocks)
+- [ ] Map our brand palette → tokens:
+  - `#266DF0` (brand blue) → `--primary` + `--ring`
+  - `#25252A` (card surface) → `--card` (dark) / white-ish (light)
+  - `#1B1B1F` (page bg / input bg) → `--background` (dark) / `--input` background
+  - `#3A3A40` (borders) → `--border` + `--input`
+  - `gray-400` (muted text) → `--muted-foreground`
+  - `gray-500` → `--muted-foreground` (slightly dimmer in light)
+- [ ] Install `next-themes` (`npm i next-themes`) — already standard with shadcn
+- [ ] Add `<ThemeProvider>` in `app/layout.tsx` (attribute=`class`, defaultTheme=`dark`, enableSystem)
+- [ ] Add a `ThemeToggle` component (Settings page + maybe top nav)
+
+### Phase B — Codemod sweep (mechanical, low-risk)
+Run a scripted find/replace across `app/**/*.tsx` and `components/**/*.tsx`:
+
+| Hardcoded | Replace with |
+|---|---|
+| `bg-[#25252A]` | `bg-card` |
+| `bg-[#1B1B1F]` | `bg-background` |
+| `border-[#3A3A40]` | `border-border` |
+| `bg-[#266DF0]` | `bg-primary` |
+| `hover:bg-[#1a5ac9]` | `hover:bg-primary/90` |
+| `text-white` (on bg-card / bg-background) | `text-foreground` |
+| `text-gray-400` | `text-muted-foreground` |
+| `text-gray-500` | `text-muted-foreground` |
+| `hover:text-white` | `hover:text-foreground` |
+| `hover:border-[#266DF0]` | `hover:border-primary` |
+| `text-[#266DF0]` | `text-primary` |
+| `bg-blue-500/10 text-blue-400` | `bg-primary/10 text-primary` |
+| `bg-purple-500/10 text-purple-400` | `bg-accent/20 text-accent-foreground` (or keep as semantic "dynamic" badge variant) |
+
+### Phase C — Page-by-page verification
+Sweep each route, eyeball in both light + dark, fix per-page edge cases:
+- [ ] `app/dashboard/`
+- [ ] `app/campaigns/` + `app/campaigns/[id]/`
+- [ ] `app/prospects/`
+- [ ] `app/lists/` + `app/lists/[id]/` (data grid + members grid)
+- [ ] `app/templates/`
+- [ ] `app/conversations/`
+- [ ] `app/analytics/`
+- [ ] `app/settings/`
+- [ ] Sidebar / top nav / layout shell
+- [ ] Auth pages (sign-in, sign-up)
+
+### Phase D — Data grid theming
+- [ ] Confirm `components/data-grid/*` already uses shadcn tokens (most tablecn components do — verify, don't assume)
+- [ ] Replace any remaining literals in `data-grid-cell-variants.tsx`, `data-grid-context-menu.tsx`, action bar
+- [ ] Test grid in both themes: borders, hover, selection, focus ring, popovers, filter menu
+
+### Phase E — Quality gates
+- [ ] `rg "bg-\[#|text-\[#|border-\[#"` returns 0 matches in `app/` and `components/` (except `components/ui/` if any shadcn primitives have intentional defaults)
+- [ ] `rg "text-white|text-gray-[0-9]"` returns 0 matches outside of theme-aware exceptions
+- [ ] Full visual smoke test: every page in light + dark, no white-on-white or black-on-black
+- [ ] Theme persists across page reloads (next-themes handles this)
+- [ ] Tailwind config: confirm `darkMode: "class"` is set in `tailwind.config.ts`
+
+### Out of scope (defer)
+- Marketing/landing page redesign
+- Brand color refresh
+- Custom themes beyond light/dark (e.g., high-contrast)
+
+---
+
+*Theme migration plan added 2026-05-13. Owner: TBD.*

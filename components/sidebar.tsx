@@ -72,7 +72,7 @@ export function Sidebar() {
     <>
       <div
         className={cn(
-          "flex h-full flex-col bg-[#1B1B1F] border-r border-[#3A3A40] transition-all duration-300",
+          "flex h-full flex-col  border-r border-[#3A3A40] transition-all duration-300",
           collapsed ? "w-16" : "w-64"
         )}
       >
@@ -82,7 +82,7 @@ export function Sidebar() {
             variant="ghost"
             size="icon"
             onClick={() => setCollapsed(!collapsed)}
-            className="text-gray-400 hover:text-white hover:bg-[#25252A]"
+            className="text-gray-800 hover:text-white hover:bg-[#25252A]"
           >
             <ChevronLeft className={cn("h-5 w-5 transition-transform", collapsed && "rotate-180")} />
           </Button>
