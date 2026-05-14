@@ -12,8 +12,8 @@ import {
   XIcon,
 } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { Button } from "~/components/ui/button"
-import { Progress } from "~/components/ui/progress"
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 
 type FileStatus = "uploading" | "complete" | "error"
 
