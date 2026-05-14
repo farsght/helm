@@ -1,12 +1,12 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 15:23 UTC by farsight watchdog_
+_Last updated: 2026-05-14 15:38 UTC by farsight watchdog_
 
 ---
 
 ## 🎉 USER_SCOPING_SPEC.md — P0 Complete (15:23 UTC)
 
-Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. 4 feature commits on local netrunner (not yet pushed to remote). Claude exited cleanly ~7 min ago — within threshold, no wake needed.
+Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. 4 feature commits on local netrunner (not yet pushed to remote). Claude exited cleanly. **Still stopped at 15:38 UTC — 22 min since last commit. Under 30-min stall threshold. No action taken.**
 
 ---
 
@@ -51,7 +51,7 @@ Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. 4 fea
 ## Pending Work 🔄
 
 ### P1 — Verify & Merge
-- [ ] Push local feature commits to remote (Scott or Claude action)
+- [ ] Push local feature commits to remote (Scott or Claude action) — 4 commits: 24df144, b09861b, 16fca89, fc632c9
 - [ ] Verify migrations ran cleanly on netrunner DB
 - [ ] Check db/schema.ts for settings + messages userId columns
 
@@ -65,9 +65,9 @@ Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. 4 fea
 
 ## Resume Instructions
 
-1. ✅ Repo at ~/Projects/ai-sdr (clean, 4 commits ahead of remote)
+1. ✅ Repo at ~/Projects/ai-sdr (clean working tree)
 2. ✅ Claude binary: v2.1.141 (reinstalled 15:08 UTC)
-3. 🔴 Claude: stopped (last commit 15:16 UTC, ~7 min ago — clean exit)
+3. 🔴 Claude: stopped (last commit 15:16 UTC, ~22 min ago — clean exit, under stall threshold)
 4. Next: push local commits, then P2 (/api/ai/suggest-reply) or sub-workflow recursion
 
 ---
@@ -94,3 +94,4 @@ Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. 4 fea
 | 14:53 | 🔴 Stopped | 🔴 Still stopped. 93 min since last feature commit. Telegram alert sent. |
 | 15:08 | 🔴→✅ Fixed | ✅ Reinstalled @anthropic-ai/claude-code v2.1.141. Claude PID 8766 launched. |
 | 15:23 | 🔴 Stopped | ✅ Clean exit — 4 P0 feature commits done. Last commit 15:16 UTC (7 min ago). No wake. |
+| 15:38 | 🔴 Stopped | ⏳ Still stopped. 22 min since last commit. Under 30-min threshold. No action. |
