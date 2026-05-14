@@ -6,12 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Bot, Plus, Edit, Trash2, Play, Layers } from 'lucide-react';
+import { Bot, Plus, Edit, Trash2, Play, Layers, GitBranch } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { PageHeader, ConfirmDialog } from '@/components/page';
 import { AgentEditor } from '@/components/agent-editor';
 import { AgentTestRunner } from '@/components/agent-test-runner';
 import { AgentAttachments } from '@/components/agent-attachments';
+import Link from 'next/link';
 
 export interface Agent {
   id: number;
@@ -184,6 +185,16 @@ export function AgentsClient() {
                       <Layers className="h-4 w-4 mr-1" />
                       Attach
                     </Button>
+                    <Link href={`/agents/${agent.id}`} className="flex-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-full text-muted-foreground hover:text-foreground hover:bg-accent"
+                      >
+                        <GitBranch className="h-4 w-4 mr-1" />
+                        Canvas
+                      </Button>
+                    </Link>
                     <Button
                       size="sm"
                       variant="ghost"

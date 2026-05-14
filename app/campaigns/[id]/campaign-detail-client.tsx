@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Link from "next/link";
-import { ArrowLeft, Play, Pause, Mail, Linkedin, Loader2, UserPlus, Settings } from "lucide-react";
+import { ArrowLeft, Play, Pause, Mail, Linkedin, Loader2, UserPlus, Settings, GitBranch } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CampaignCanvas } from "@/components/campaign-canvas";
@@ -314,6 +314,15 @@ export function CampaignDetailClient({ id }: { id: string }) {
               )}
             </Button>
           )}
+          <Link href={`/campaigns/${id}/workflow`}>
+            <Button
+              variant="outline"
+              className="border-border text-muted-foreground hover:text-foreground hover:bg-card"
+            >
+              <GitBranch className="mr-2 h-4 w-4" />
+              Workflow Canvas
+            </Button>
+          </Link>
           <Button
             onClick={handleToggleStatus}
             disabled={toggling}
