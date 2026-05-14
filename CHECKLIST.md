@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 06:23 UTC
+> Last updated: 2026-05-14 06:38 UTC
 
 ---
 
@@ -257,17 +257,24 @@ Walk through each route in both light and dark, note any visual breakage in this
 | `bdec7fa4` | **Lists: dynamic filter-rule membership (HubSpot-style segments)** — `lib/list-filters.ts` evaluates filter rules against prospects; `list-filter-builder.tsx` UI; `lists/[id]/members` API now supports dynamic membership; lists API returns member count dynamically | 7 files, +493 lines | ✅ |
 | `01b0b147` | **Datasets v1 — CSV upload + browse staging workspace** — DB migration 0004 adds `datasets` table; `lib/dataset-import.ts` parses CSV; full API (`/api/datasets`, `/api/datasets/[id]`); UI at `/datasets` + `/datasets/[id]`; shadcn sidebar components added; new breadcrumb + collapsible components | 21 files, +4180 lines | ✅ |
 | `5cc6b885` | **Sidebar: reorganize nav into 5 sections** — Insights / Outreach / Audience / Ops / Monitoring nav groupings in `components/app-sidebar.tsx` | 1 file, +44/-14 | ✅ |
+| `2b81e6e2` | **CRM v1 — companies/contacts/deals + rename lists→segments** — migrations 0005 (CRM schema) + 0006 (lists→segments rename); full API routes for `/api/companies`, `/api/contacts`, `/api/deals` (CRUD + deal-contacts join); UI at `/companies`, `/contacts`, `/deals`; all `lists` references renamed to `segments` app-wide; workflow node improvements | 47 files, +1613 lines | ✅ |
+| `394a118a` | **fix: analytics tests + grid-pattern minor** — update analytics test mocks to use `NeonHttpQueryResult` type; `grid-pattern.tsx` minor fix | 2 files, +6/-5 | ✅ |
+| `912ddeda` | **docs: full README rewrite** — reflects current feature set (CRM, segments, datasets, Clerk auth, all capabilities) | `README.md` +325/-213 | ✅ |
 
-### New Schema (migration 0004)
-- `datasets` table: id, userId, name, description, sourceType (csv/hubspot/salesforce/manual), status (staging/active/archived), rowCount, columns (jsonb), createdAt, updatedAt
+### New Schema (migration 0005 + 0006)
+- `companies` table: id, userId, name, domain, industry, size, website, linkedinUrl, createdAt, updatedAt
+- `contacts` table: id, userId, companyId (FK), firstName, lastName, email, title, phone, linkedinUrl, createdAt, updatedAt
+- `deals` table: id, userId, name, value, stage, closedAt, companyId (FK), createdAt, updatedAt
+- migration 0006: renames `lists` → `segments` throughout schema
 
 ### Review Notes
-- Datasets is a staging workspace, not yet connected to campaign targeting — import first, integrate later
-- Dynamic list membership (filter rules) is a significant capability leap — lists are now live segments, not static member lists
+- CRM v1 is a major capability addition — companies/contacts/deals forms a lightweight CRM layer on top of the SDR outbound motion
+- lists→segments rename is a cosmetic + semantic improvement aligning with the dynamic filter-rule feature
+- README rewrite suggests Netrunner is wrapping up a major milestone (documentation often signals feature completion)
+- Vercel: latest deploy READY at 01:36 CDT (`ai-4wp13dixz`) — CRM + README changes deployed clean
 - tanstack data-table infrastructure is now reusable across all list views (prospects, templates, etc.)
 - Campaign canvas CSS-vars fix completes theme Phase C for the canvas specifically
-- Latest Vercel deploy: `ai-mderlbyvs` ERROR (01:10 CDT), prior deploy `ai-p2nduusqs` READY (01:09 CDT) — likely mid-deploy on new commits
 
 ---
 
-*Auto-updated by farsight watchdog. Last run: 2026-05-14 06:23 UTC (Claude Code stopped, 15 min since last commit — within 30min threshold, no wake event sent)*
+*Auto-updated by farsight watchdog. Last run: 2026-05-14 06:38 UTC (Claude Code stopped, 2 min since last commit `912ddeda` — within 30min threshold, no wake event sent)*
