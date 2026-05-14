@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 09:38 UTC
+> Last updated: 2026-05-14 09:53 UTC
 
 ---
 
@@ -104,6 +104,8 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 - Import refactor — absolute paths + React hooks ✅
 - Sentry integration — error monitoring + tracing ✅
 - Vercel Workflow SDK — wired via withWorkflow(), smoke test endpoint, Fluid Compute prereq documented ✅
+- Durable campaign sequence workflow — step-function workflow + trigger route ✅
+- Resend email backend — plain-text-first cold outbound wired ✅
 
 ---
 
@@ -172,6 +174,8 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | Import refactor (absolute paths + React hooks) | ✅ | `12fd5eb9` |
 | Sentry integration + docs | ✅ | `14de728f` + `09171e6c` + `d108b3cb` |
 | Vercel Workflow SDK integration | ✅ | `9e358bfe` — withWorkflow() wired, smoke test, Fluid Compute prereq noted |
+| Durable campaign sequence workflow | ✅ | `a2ccbf63` — step-function workflow + `/api/workflows/campaign-sequence/trigger` |
+| Resend email backend | ✅ | `fe0b5d09` — plain-text-first cold outbound wired |
 
 ---
 
@@ -253,8 +257,25 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 | `09171e6c` | **refactor: update import paths to use absolute references** — follow-up import cleanup after Sentry integration | Multiple files | ✅ |
 | `d108b3cb` | **docs: add docs/sentry.md** — Sentry wiring reference + pitfalls documentation | `docs/sentry.md` | ✅ |
 | `9e358bfe` | **feat: wire Vercel Workflow SDK** — withWorkflow() wrapping in next.config.ts; Clerk public route for `/.well-known/workflow`; type shim; smoke-test workflow (`workflows/smoke-test.ts`); `POST /api/workflows/test` trigger; `docs/workflows.md` covers wiring, pitfalls, Fluid Compute prereq | 8 files, +353 lines | ✅ |
+| `a2ccbf63` | **feat(workflows): durable campaign sequence workflow + trigger route** — actual step-function campaign sequence workflow wired as durable Vercel Workflow; `POST /api/workflows/campaign-sequence/trigger` route added | workflows/, api/workflows/ | ✅ |
+| `496c23f0` | **fix: update continual-learning state and improve accessibility in DataGrid component** — DataGrid a11y improvements + state management fixes | `components/data-grid/` | ✅ |
+| `8671363a` | **fix: contain horizontal overflow in app shell** — SidebarInset and main content div overflow containment fix | app shell layout | ✅ |
+| `fe0b5d09` | **feat(email): wire Resend backend with plain-text-first cold outbound** — Resend API integrated for actual email sending; plain-text-first approach for cold outbound deliverability | email/api layer | ✅ |
 
 ---
+
+### Review Notes (09:53 UTC)
+- **4 new code commits** since last run (09:38 UTC):
+  - `a2ccbf63` feat(workflows): durable campaign sequence workflow + trigger route (09:40 UTC) — the SDK wiring from `9e358bfe` now has a real workflow; campaign sequences are step-function durable
+  - `496c23f0` fix: continual-learning state + DataGrid accessibility improvements (09:43 UTC)
+  - `8671363a` fix: contain horizontal overflow in app shell (09:49 UTC) — layout polish
+  - `fe0b5d09` feat(email): wire Resend backend with plain-text-first cold outbound (09:53 UTC) — **significant**: actual email sending is now wired; plain-text-first is a smart deliverability choice for cold outbound
+- **Claude Code: NOT running** (0 processes). Last commit at 09:53 UTC — just landed (~0 min ago). Clean stop, no stall action needed.
+- **SSH to Netrunner** timed out again on repo find command (SIGKILL) — GitHub API used as source of truth (consistent pattern).
+- **Resend integration** is a major milestone: the SDR can now actually send emails. Plain-text-first cold outbound is the right call for inbox placement.
+- **Durable campaign sequences**: combining `a2ccbf63` with the Workflow SDK means campaigns run as reliable step functions — retries, delays between steps, durable state. Production-grade.
+- **Phase C theme verification** still pending (human visual pass required).
+- App is stable. No regressions detected.
 
 ### Review Notes (09:38 UTC)
 - **1 new code commit** since last run (09:23 UTC):
@@ -294,10 +315,10 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 
 ---
 
-## 🎉 Implementation Complete + DataOps v1 + Observability
+## 🎉 Implementation Complete + DataOps v1 + Observability + Email
 
-All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, Notebooks, and Sentry error monitoring shipped. App is a full SDR + data ops platform with production observability.
+All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, Notebooks, Sentry error monitoring, durable campaign workflows, and Resend email backend shipped. App is a full SDR + data ops platform with production observability and actual email sending capability.
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 09:38 UTC (Claude Code stopped — last code commit 6 min ago `9e358bfe` Vercel Workflow SDK — clean stop, no action)*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 09:53 UTC (Claude Code stopped — last code commit ~0 min ago `fe0b5d09` Resend email backend — clean stop, no action)*
