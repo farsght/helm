@@ -14,8 +14,8 @@ Quick reference for how the Workflow SDK is wired into this Next.js app and what
 | `next.config.ts` wrap | ✅ Active | `withSentryConfig(withWorkflow(nextConfig), {...})` — order matters, see below |
 | Clerk public route | ✅ Added | `/.well-known/workflow(.*)` in `proxy.ts` matcher |
 | Type shim | ⚠️ Workaround | `types/workflow-next.d.ts` — upstream `workflow/next` exports map lacks `types` entry |
-| Sample workflow | ✅ Smoke test only | `workflows/smoke-test.ts` — delete once real workflow lands |
-| Trigger route | ✅ Smoke test only | `POST /api/workflows/test` — delete once real workflow lands |
+| Sample workflow | ✅ Smoke test + real campaign workflow | `workflows/smoke-test.ts` (delete when ready) and `workflows/campaign-sequence.ts` (production) |
+| Trigger routes | ✅ Smoke + real | `POST /api/workflows/test` (delete), `POST /api/campaigns/:id/start-workflow` (production) |
 | Fluid Compute (Vercel) | ⚠️ **MUST ENABLE before prod deploy** | See "Production checklist" below |
 
 ---
@@ -136,7 +136,41 @@ In prod: Vercel dashboard → ai-sdr → Functions → Workflow Runs.
 
 ## Future plans (not implemented)
 
-- **Campaign nurture sequences**: take `app/campaigns/*` to use `start()` instead of cron polling.
+## Campaign workflow v1 (`workflows/campaign-sequence.ts`)
+
+The first real workflow. Reads each campaign's `workflow_nodes` + `workflow_edges` graph from the DB and walks one prospect's path through it. One workflow run per prospect.
+
+**Trigger:** `POST /api/campaigns/:id/start-workflow` (Clerk-authed; verifies campaign ownership + active status; enrolls every prospect with `status='active'` in `campaign_prospects`).
+
+**Supported node types:**
+- `email` — render template with `{{firstName}}` etc., insert into `messages`, call `sendEmail`, mark sent
+- `wait` — `sleep(configJson.duration ?? "1 day")` (ISO-8601 or human strings — "PT3H", "3 days", "1 week")
+- `condition` — inspect last sent message's `openedAt` / `repliedAt`, branch via edge `label` (`"yes"` / `"no"`)
+- `end` — terminus
+
+**Deferred** (workflow pauses prospect, logs warning):
+linkedin_*, ai_decision, manual_task, tag, move_to_campaign.
+
+**Side effects per step (idempotency notes):**
+- `loadGraph` / `loadProspect` — read-only, safe to retry
+- `sendCampaignEmail` — inserts then sends then marks. If sending fails on retry, you may get duplicate `messages` rows in `status='draft'`. Acceptable trade-off for v1; can dedup later via idempotency key on `(campaignId, prospectId, nodeId, attempt#)`.
+- `updateProspectProgress` — single UPDATE, naturally idempotent
+- `checkMessageStatus` — read-only
+
+**Legacy `/execute` route still exists** — polling-based. Migrate campaigns one at a time, verify the workflow path, then delete `/execute` and its support code.
+
+**Known limitations vs the legacy executor:**
+1. Doesn't yet evaluate edge-level `conditionJson` (only node-level conditions). Edges with conditions are treated as unconditional.
+2. `wait` config schema is simplified — only `duration` field. Calendar-based waits ("next Monday 9am") not supported until a custom step computes the target Date.
+3. No throttling between sends. If you enroll 10k prospects, that's 10k workflows starting near-simultaneously; the `sendEmail` rate limiting would need to live in the email-sender lib or as a workflow-level semaphore. Fine for v1 with low volumes.
+4. Campaign edits while prospects are running: the workflow loaded the graph at `loadGraph` time and won't see schema changes. Stop + restart the workflow if you change a live campaign's graph.
+
+## Future plans (not implemented)
+
+- **Edge-level conditions**: evaluate `workflow_edges.conditionJson` to support conditional transitions beyond just `condition` nodes.
+- **LinkedIn node types**: extend the switch with `linkedin_message` / `linkedin_connection` calls (need to wire `lib/linkedin-sender` analogous to email).
+- **AI decision nodes**: `ai_decision` calls into OpenAI in a step, branches on the result. Cookbook has "Durable Agent" pattern.
+- **Throttling / rate limiting**: shared semaphore across all running workflows so we don't blast a domain with thousands of sends/sec.
 - **Async dataset enrichment**: for imports > 10k rows, enqueue per-batch workflows with rate-limited external API calls.
 - **HubSpot / Google Sheets scheduled syncs**: `sleep("1 hour")` loop replaces cron jobs.
 - **Human-in-the-loop approvals**: pause a workflow on "send" button click, resume via webhook when user approves. Cookbook recipe exists.
