@@ -105,6 +105,9 @@ const PALETTE_GROUPS = [
       { type: "extract_entities", label: "Extract Entities" },
       { type: "chunk_text", label: "Chunk Text" },
       { type: "embed", label: "Embed Chunks" },
+      { type: "promote_meetings", label: "→ Meetings (Neon)" },
+      { type: "promote_entities", label: "→ Entities (Neon)" },
+      { type: "promote_chunks", label: "→ Chunks (Neon, pgvector)" },
     ],
   },
   {
@@ -568,6 +571,62 @@ function PipelineNodeConfig({
               <Label htmlFor="emb-dryrun">Dry run (zero-vectors, no OpenAI call)</Label>
             </div>
             <p className="text-xs text-muted-foreground">1536-dim vectors. Per-batch error isolation — survivors continue, failures get embedding_error.</p>
+          </>
+        );
+
+      case "promote_meetings":
+        return (
+          <>
+            <div className="space-y-2">
+              <Label>Workflow on insert</Label>
+              <Input value={String(config.workflowOnInsert ?? "unprocessed")} onChange={(e) => setConfig({ ...config, workflowOnInsert: e.target.value })} />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="pm-classified"
+                checked={Boolean(config.markClassified ?? true)}
+                onChange={(e) => setConfig({ ...config, markClassified: e.target.checked })}
+              />
+              <Label htmlFor="pm-classified">Bump workflow → &apos;classified&apos; when classify_meeting ran</Label>
+            </div>
+            <p className="text-xs text-muted-foreground">Upserts by <code>fireflies_id</code>. Idempotent — re-running updates in place. Adds <code>meeting_db_id</code> to downstream rows.</p>
+          </>
+        );
+
+      case "promote_entities":
+        return (
+          <>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="pe-features"
+                checked={Boolean(config.includeFeatures ?? false)}
+                onChange={(e) => setConfig({ ...config, includeFeatures: e.target.checked })}
+              />
+              <Label htmlFor="pe-features">Include features (noisy — off by default)</Label>
+            </div>
+            <p className="text-xs text-muted-foreground">Upserts entities (person/company/product) keyed on (user, name, type). Records mentions in <code>entity_mentions</code>, bumping count on re-mention. Resolves meeting_id from fireflies_id, so it can run before or after promote_meetings as long as the meeting row exists.</p>
+          </>
+        );
+
+      case "promote_chunks":
+        return (
+          <>
+            <div className="space-y-2">
+              <Label>Embedding model (record-keeping)</Label>
+              <Input value={String(config.embeddingModel ?? "text-embedding-3-small")} onChange={(e) => setConfig({ ...config, embeddingModel: e.target.value })} />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="pc-skip"
+                checked={Boolean(config.skipMissingEmbeddings ?? true)}
+                onChange={(e) => setConfig({ ...config, skipMissingEmbeddings: e.target.checked })}
+              />
+              <Label htmlFor="pc-skip">Skip rows without embedding</Label>
+            </div>
+            <p className="text-xs text-muted-foreground">Writes to <code>meeting_chunks</code> with pgvector(1536). Upserts by (meeting_id, chunk_index). Requires the parent meeting to exist — connect downstream of promote_meetings, or just ensure it ran first.</p>
           </>
         );
 

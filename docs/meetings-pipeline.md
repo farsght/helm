@@ -384,7 +384,10 @@ Before decommissioning netrunner:
 11. `embed` executor — batched OpenAI text-embedding-3-small (1536d, batch=100), dryRun zero-vectors for testing, per-batch error isolation. ✅
 11. `embed` executor — reuse `lib/knowledge-ingest.ts` embedder
 
-**Phase 4 — Promotions + seed pipeline**
+**Phase 4 — Promotions + seed pipeline** ✅ shipped
+12. `promote_meetings` — upsert into meetings by fireflies_id; idempotent; adds meeting_db_id to downstream rows. ✅
+13. `promote_entities` — upsert entities (person/company/product) + entity_mentions; resolves meeting_id by fireflies_id lookup. ✅
+14. `promote_chunks` — write to meeting_chunks with pgvector(1536); upsert by (meeting_id, chunk_index); raw SQL for vector cast. Bumps meetings.enrichment_vector_prepped. ✅
 12. `promote_meetings`, `promote_entities`, `promote_chunks` executors
 13. Seed pipeline created via migration or `scripts/seed-fireflies-pipeline.ts`
 14. End-to-end run against 5 test Fireflies meetings

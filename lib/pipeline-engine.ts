@@ -45,6 +45,9 @@ import { classifyMeeting } from './pipeline-nodes/classify-meeting';
 import { extractEntities } from './pipeline-nodes/extract-entities';
 import { chunkText } from './pipeline-nodes/chunk-text';
 import { embed } from './pipeline-nodes/embed';
+import { promoteMeetings } from './pipeline-nodes/promote-meetings';
+import { promoteEntities } from './pipeline-nodes/promote-entities';
+import { promoteChunks } from './pipeline-nodes/promote-chunks';
 
 // ── Trigger model ────────────────────────────────────────────────────
 //
@@ -175,6 +178,11 @@ registerExecutor('classify_meeting', classifyMeeting);
 registerExecutor('extract_entities', extractEntities);
 registerExecutor('chunk_text', chunkText);
 registerExecutor('embed', embed);
+// Phase 4 — promotions (sinks). These shadow the legacy generic
+// promote_prospects/etc passthroughs registered earlier.
+registerExecutor('promote_meetings', promoteMeetings);
+registerExecutor('promote_entities', promoteEntities);
+registerExecutor('promote_chunks', promoteChunks);
 
 // ── Topological sort ─────────────────────────────────────────────────
 
