@@ -1,16 +1,17 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 12:53 UTC by farsight watchdog_
+_Last updated: 2026-05-14 13:08 UTC by farsight watchdog_
 
 ---
 
-## 🔴 STALL DETECTED — Claude has been stopped for ~106 minutes
+## 🔴 STALL DETECTED — Claude has been stopped for ~121 minutes
 
 Last real commit: `662cc96f` at 11:07 UTC — Tier 4 canvas (visual workflow + agent library)
-Wake events sent at: 11:41 UTC, 11:55 UTC, 12:08 UTC, 12:23 UTC, 12:38 UTC, 12:53 UTC
+Wake events sent at: 11:41 UTC, 11:55 UTC, 12:08 UTC, 12:23 UTC, 12:38 UTC, 12:53 UTC, 13:08 UTC
 
-⚠️ **Working directory gone** — the ai-sdr repo was in a macOS temp dir (`/private/var/folders/_8/.../T/tmp-YZJOqouVeY`) that has been cleaned up. **Re-clone from GitHub before resuming.**
-⚠️ **Repo NOT yet re-cloned** — `~/Projects/ai-sdr` does not exist on Netrunner as of 12:53 UTC.
+⚠️ **Working directory gone** — the ai-sdr repo was in a macOS temp dir (`/private/var/folders/_8/.../T/tmp-YZJOqouVeY`) that has been cleaned up.
+✅ **Repo re-cloned at 13:08 UTC** — `~/Projects/ai-sdr` now exists with `node_modules` installed.
+🔴 **Claude Code NOT INSTALLED on Netrunner** — `claude` binary not found. Cannot auto-restart. **Scott must manually install or launch.**
 
 ---
 
@@ -58,11 +59,13 @@ Wake events sent at: 11:41 UTC, 11:55 UTC, 12:08 UTC, 12:23 UTC, 12:38 UTC, 12:5
 
 ## Resume Instructions
 
-1. `git clone https://github.com/farsght/ai-sdr ~/Projects/ai-sdr`
-2. `cd ~/Projects/ai-sdr && npm install`
-3. Read `USER_SCOPING_SPEC.md` for next tasks
-4. Start with `db/schema.ts` — add userId to settings, tags, messages tables
-5. Run migration, then build /api/settings GET+PUT routes
+1. ✅ Repo already cloned at `~/Projects/ai-sdr` (done by watchdog at 13:08 UTC)
+2. ✅ `npm install` already done
+3. Install Claude Code if needed: `npm install -g @anthropic-ai/claude-code`
+4. `cd ~/Projects/ai-sdr`
+5. Read `USER_SCOPING_SPEC.md` for next tasks
+6. Start with `db/schema.ts` — add userId to settings, tags, messages tables
+7. Run migration, then build /api/settings GET+PUT routes
 
 ---
 
@@ -78,3 +81,4 @@ Wake events sent at: 11:41 UTC, 11:55 UTC, 12:08 UTC, 12:23 UTC, 12:38 UTC, 12:5
 | 12:23 | Stopped | Wake event #4 — repo temp dir GONE, Telegram alert sent |
 | 12:38 | Stopped | Wake event #5 — repo still NOT re-cloned at ~/Projects/ai-sdr |
 | 12:53 | Stopped | Wake event #6 — 106 min stall, repo still missing, Telegram alert sent |
+| 13:08 | Stopped | ✅ Repo re-cloned + npm install done. 🔴 claude binary NOT FOUND on Netrunner — escalated to Scott |
