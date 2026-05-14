@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { DataGridLists, type ListRow } from "./components/data-grid-lists";
+import { DataTableLists, type ListRow } from "./components/data-table-lists";
 
 export function ListsClient() {
   const [lists, setLists] = useState<ListRow[]>([]);
@@ -70,7 +70,7 @@ export function ListsClient() {
         </Button>
       </div>
 
-      <DataGridLists data={lists} onDataChange={setLists} />
+      <DataTableLists data={lists} onDataChange={setLists} />
 
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="bg-card border-border text-foreground">
