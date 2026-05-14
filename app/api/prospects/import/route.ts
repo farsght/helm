@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { prospects } from '@/db/schema';
 
 export async function POST(request: NextRequest) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   try {
     const body = await request.json();
     const { prospects: importProspects } = body;
@@ -11,9 +15,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No prospects provided' }, { status: 400 });
     }
 
-    // Validate and insert prospects
     const validProspects = importProspects.filter(p => p.firstName && p.lastName);
-    
+
     if (validProspects.length === 0) {
       return NextResponse.json({ error: 'No valid prospects found (first_name and last_name required)' }, { status: 400 });
     }
@@ -21,6 +24,7 @@ export async function POST(request: NextRequest) {
     const inserted = [];
     for (const prospect of validProspects) {
       const result = await db.insert(prospects).values({
+        userId,
         firstName: prospect.firstName,
         lastName: prospect.lastName,
         email: prospect.email || null,
@@ -28,18 +32,18 @@ export async function POST(request: NextRequest) {
         title: prospect.title || null,
         linkedinUrl: prospect.linkedinUrl || null,
       }).returning();
-      
+
       inserted.push(result[0]);
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       count: inserted.length,
-      prospects: inserted 
+      prospects: inserted
     });
   } catch (err) {
     console.error('Import prospects error:', err);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Failed to import prospects',
       details: err instanceof Error ? err.message : 'Unknown error'
     }, { status: 500 });
