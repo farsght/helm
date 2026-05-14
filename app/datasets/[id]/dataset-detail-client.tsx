@@ -360,6 +360,7 @@ export function DatasetDetailClient({ id }: { id: string }) {
         table={table}
         tableMeta={tableMeta}
         height={height}
+        stretchColumns
       />
 
       {pageCount > 1 && (
