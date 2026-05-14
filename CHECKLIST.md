@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 09:53 UTC
+> Last updated: 2026-05-14 10:08 UTC
 
 ---
 
@@ -261,8 +261,18 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 | `496c23f0` | **fix: update continual-learning state and improve accessibility in DataGrid component** — DataGrid a11y improvements + state management fixes | `components/data-grid/` | ✅ |
 | `8671363a` | **fix: contain horizontal overflow in app shell** — SidebarInset and main content div overflow containment fix | app shell layout | ✅ |
 | `fe0b5d09` | **feat(email): wire Resend backend with plain-text-first cold outbound** — Resend API integrated for actual email sending; plain-text-first approach for cold outbound deliverability | email/api layer | ✅ |
+| `e306c84b` | **feat(workflows): strict-DAG graph validator + activate/start-workflow gates** — workflow graph validated as strict DAG before activation; start-workflow route enforces gates | workflows/, api/workflows/ | ✅ |
 
 ---
+
+### Review Notes (10:08 UTC)
+- **1 new code commit** since last run (09:53 UTC):
+  - `e306c84b` feat(workflows): strict-DAG graph validator + activate/start-workflow gates (10:05 UTC) — workflow graphs now validated as strict DAGs before activation; start-workflow enforces activation gates
+- **Claude Code: NOT running** (0 processes). Last commit `e306c84b` at 10:05 UTC — 3 min ago. Under 30-min stall threshold. No wake event sent.
+- **SSH to Netrunner** timed out again (consistent pattern) — GitHub API used as source of truth.
+- **Strict-DAG validator** is important safety infrastructure: prevents cycles in campaign step-function graphs before they hit the durable workflow runner. Gate enforcement on activate/start adds production guards.
+- **Phase C theme verification** still pending (human visual pass required).
+- App is stable. No regressions detected.
 
 ### Review Notes (09:53 UTC)
 - **4 new code commits** since last run (09:38 UTC):
@@ -315,10 +325,10 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 
 ---
 
-## 🎉 Implementation Complete + DataOps v1 + Observability + Email
+## 🎉 Implementation Complete + DataOps v1 + Observability + Email + Durable Workflows
 
-All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, Notebooks, Sentry error monitoring, durable campaign workflows, and Resend email backend shipped. App is a full SDR + data ops platform with production observability and actual email sending capability.
+All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, Notebooks, Sentry error monitoring, durable campaign workflows, Resend email backend, and strict-DAG workflow validation shipped. App is a full SDR + data ops platform with production observability, actual email sending, and safe durable execution.
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 09:53 UTC (Claude Code stopped — last code commit ~0 min ago `fe0b5d09` Resend email backend — clean stop, no action)*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 10:08 UTC (Claude Code stopped — last code commit 3 min ago `e306c84b` strict-DAG validator + workflow gates — clean stop, no action)*
