@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { UserButton } from "@clerk/nextjs";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   LayoutDashboard,
   Target,
@@ -127,8 +128,9 @@ export function Sidebar() {
           })}
         </nav>
 
-        <div className={cn("p-4 border-t border-[#3A3A40] flex items-center", collapsed ? "justify-center" : "gap-3")}>
+        <div className={cn("p-4 border-t border-[#3A3A40] flex items-center", collapsed ? "flex-col gap-3" : "gap-3")}>
           <UserButton />
+          <ThemeToggle />
           {!collapsed && (
             <div className="text-xs text-gray-500">
               <p className="mb-1">Keyboard Shortcuts:</p>

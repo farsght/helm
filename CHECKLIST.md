@@ -170,10 +170,16 @@ All P1 and P2 gaps resolved. App is fully functional end-to-end with:
 
 **Why:** Every page and component currently bakes in dark-mode hex values inline. There is no light theme today. Adding a theme switcher requires zero color literals to remain in component code.
 
-### Phase A — Foundation
-- [ ] Audit current color literals: `rg -n "bg-\[#|text-\[#|border-\[#|text-white|text-gray-|bg-gray-" app components | wc -l` (baseline count)
-- [ ] Verify shadcn CSS variables are present in `app/globals.css` (`--background`, `--foreground`, `--card`, `--popover`, `--primary`, `--secondary`, `--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`, light + `.dark` blocks)
-- [ ] Map our brand palette → tokens:
+### Phase A — Foundation ✅
+- [x] Audit current color literals: **647 matches** in `app/` + `components/` (baseline 2026-05-13)
+- [x] Verify shadcn CSS variables are present in `app/globals.css` — `:root` (light) + `.dark` blocks present with full oklch palette
+- [x] **Removed conflicting `@theme` color overrides** that were hardcoding tokens to dark hex (this was the silent blocker preventing the existing `.dark` block from ever applying)
+- [x] `next-themes` installed (`^0.4.6`)
+- [x] `<Providers>` wired in `app/layout.tsx` (`attribute="class"`, `defaultTheme="system"`)
+- [x] `ThemeToggle` component created at `components/theme-toggle.tsx` (Light / Dark / System dropdown)
+- [x] Toggle added to sidebar footer next to `UserButton`
+
+### Phase A.5 — Brand palette mapping (informational; tokens already defined)
   - `#266DF0` (brand blue) → `--primary` + `--ring`
   - `#25252A` (card surface) → `--card` (dark) / white-ish (light)
   - `#1B1B1F` (page bg / input bg) → `--background` (dark) / `--input` background

@@ -4,26 +4,6 @@
 
 @theme {
   --font-family-sans: 'Inter', system-ui, -apple-system, sans-serif;
-
-  --color-background: #1B1B1F;
-  --color-foreground: #FAFAFA;
-  --color-card: #25252A;
-  --color-card-foreground: #FAFAFA;
-  --color-popover: #25252A;
-  --color-popover-foreground: #FAFAFA;
-  --color-primary: #266DF0;
-  --color-primary-foreground: #FFFFFF;
-  --color-secondary: #3A3A40;
-  --color-secondary-foreground: #FAFAFA;
-  --color-muted: #3A3A40;
-  --color-muted-foreground: #A1A1AA;
-  --color-accent: #3A3A40;
-  --color-accent-foreground: #FAFAFA;
-  --color-destructive: #EF4444;
-  --color-destructive-foreground: #FAFAFA;
-  --color-border: #3A3A40;
-  --color-input: #3A3A40;
-  --color-ring: #266DF0;
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
