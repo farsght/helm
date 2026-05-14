@@ -1,14 +1,12 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 17:08 UTC by farsight watchdog_
+_Last updated: 2026-05-14 17:23 UTC by farsight watchdog_
 
 ---
 
-## 🔴 17:08 UTC — Claude stopped 31min, relaunched PID 90473
+## 🔴 17:23 UTC — Claude stopped, P2 work in-flight, relaunched PID 34407
 
-Last remote feature commit `b83618b` (Tier 2 RAG) was 31 min ago — over 30-min threshold. Claude relaunched PID 90473 with task: reconcile local/remote divergence + implement /api/ai/suggest-reply (P2).
-
-⚠️ **GIT CONFLICT**: `git pull --rebase origin main` hit conflict on `476946e`. Rebase aborted. Claude is handling the merge manually.
+Claude was NOT running. `app/api/ai/suggest-reply/route.ts` has uncommitted local changes (P2 work started but not committed). Last feature commit `8c075c8` (Tier 5 sub_workflow recursion) was 67 min ago (16:16 UTC). **Previous rebase conflict on `476946e` was resolved** — it's now on remote as `8c075c8`. Claude relaunched PID 34407 to finish suggest-reply auth fix and commit.
 
 ---
 
@@ -16,15 +14,15 @@ Last remote feature commit `b83618b` (Tier 2 RAG) was 31 min ago — over 30-min
 
 | Commit | Time | Status | Description |
 |---|---|---|---|
+| `8c075c8` | 16:16 UTC | ✅ Remote | feat(workflow): implement sub_workflow inline recursion (Tier 5) |
+| `801f7c6` | 17:11 UTC | ✅ Remote | chore: farsight watchdog — 17:08 UTC 🔴 Claude stopped 31min, relaunched |
+| `763c04c` | 16:53 UTC | ✅ Remote | chore: farsight watchdog — 16:53 UTC ⏳ under threshold |
+| `c462189` | 16:41 UTC | ✅ Remote | chore: farsight watchdog — 16:38 UTC ✅ Tier2 RAG done |
 | `b83618b` | 16:37 UTC | ✅ Remote | feat(rag): Tier 2 — knowledge_chunks pgvector + obsidian_vault dataset ingest + agent retrieval |
-| `5c4b63b` | 16:25 UTC | ✅ Remote | chore: farsight watchdog — 16:23 UTC |
-| `56f42b1` | 16:11 UTC | ✅ Remote | chore: farsight watchdog — 16:08 UTC |
-| `a5aa468` | 15:56 UTC | ✅ Remote | chore: farsight watchdog — 15:53 UTC |
 | `b17b780` | ~15:16 UTC | ✅ Remote | feat(api): add POST /api/campaigns/:id/steps and per-step CRUD route |
 | `41306b2` | ~15:15 UTC | ✅ Remote | fix(api): inject userId on prospect import; verify scoping on prospects/templates/campaigns |
 | `84dbba7` | ~15:15 UTC | ✅ Remote | feat(api): add user-scoped GET/PUT /api/settings |
 | `b118512` | ~15:14 UTC | ✅ Remote | feat(db): add tags (user_id, name) compound unique constraint |
-| `476946e` | ~16:16 UTC | ⚠️ LOCAL ONLY | feat(workflow): implement sub_workflow inline recursion (Tier 5) — diverged from remote |
 
 ### P0 — USER_SCOPING_SPEC.md (ALL DONE ✅)
 
@@ -40,7 +38,7 @@ Last remote feature commit `b83618b` (Tier 2 RAG) was 31 min ago — over 30-min
 - ✅ `sub_workflow` node: inspector, DB schema (errorHandlerCampaignId), execution stub
 - ✅ `wait_for_event` node: durable createHook suspension, deterministic token, POST webhook
 - ✅ Top-level try/catch + `notifyErrorHandler` step
-- ✅ `476946e` — Sub-workflow inline recursion (LOCAL ONLY — not on remote, branch diverged)
+- ✅ `8c075c8` — Sub-workflow inline recursion (pushed to remote ✅)
 - ✅ Tests: 152/157 passing (5 pre-existing failures)
 
 ### Tier 4 Canvas (DONE ✅)
@@ -64,16 +62,16 @@ Last remote feature commit `b83618b` (Tier 2 RAG) was 31 min ago — over 30-min
 ## Pending Work 🔄
 
 ### P1 — Verify & Merge
-- ✅ Local `476946e` (Tier 5 recursion) rebased onto origin/main and pushed (2026-05-14)
+- ✅ Local `476946e` (Tier 5 recursion) resolved + pushed as `8c075c8` ✅
 - [ ] Verify migrations ran cleanly on netrunner DB
 - [ ] Check db/schema.ts for settings + messages userId columns
 
 ### P2 — AI
-- ✅ /api/ai/suggest-reply — already implemented in commit `1ba8777` (PR #20, ancestor of merge base; user-scoped via Clerk; OpenAI gpt-4o-mini; supports both conversationHistory and simplified receivedMessage/prospectName/prospectCompany inputs)
-- ⚠️ `app/api/messages/ai-reply/route.ts` still lacks `auth()` — unscoped duplicate of suggest-reply. Decide: delete, scope, or leave as internal helper.
+- 🔄 `app/api/ai/suggest-reply/route.ts` — MODIFIED LOCALLY, uncommitted. Claude relaunched (PID 34407) to add auth() and commit.
+- ⚠️ `app/api/messages/ai-reply/route.ts` still lacks `auth()` — unscoped duplicate. Decide: delete, scope, or leave as internal helper.
 
 ### Tier 5 — Sub-workflow recursion ✅
-- ✅ Inline recursion implemented (2026-05-14). Extracted per-node loop into `walkGraph(graph, prospect, campaignProspectId, depth)`; sub_workflow case loads sub-graph via new `loadSubGraph` step (skips active-status check), recurses with depth+1. Hard cap MAX_SUB_WORKFLOW_DEPTH=5. Self-invocation blocked. currentNodeId writes only at depth=0. Typecheck clean, lint clean, tests 152/157 (same 5 pre-existing failures).
+- ✅ Inline recursion implemented and pushed (2026-05-14). Extracted per-node loop into `walkGraph(graph, prospect, campaignProspectId, depth)`; sub_workflow case loads sub-graph via new `loadSubGraph` step (skips active-status check), recurses with depth+1. Hard cap MAX_SUB_WORKFLOW_DEPTH=5. Self-invocation blocked. currentNodeId writes only at depth=0. Typecheck clean, lint clean, tests 152/157 (same 5 pre-existing failures).
 
 ---
 
@@ -81,9 +79,9 @@ Last remote feature commit `b83618b` (Tier 2 RAG) was 31 min ago — over 30-min
 
 1. ✅ Repo at ~/Projects/ai-sdr
 2. ✅ Claude binary: v2.1.141
-3. 🔄 Claude PID 90473 — relaunched 17:10 UTC
-4. ⚠️ Rebase conflict on `476946e` — Claude resolving
-5. Next: /api/ai/suggest-reply (P2)
+3. 🔄 Claude PID 34407 — relaunched 17:23 UTC (suggest-reply P2 fix)
+4. ✅ Rebase conflict on `476946e` resolved — now on remote as `8c075c8`
+5. Next: commit suggest-reply auth fix → verify migrations → clean up ai-reply duplicate
 
 ---
 
@@ -113,6 +111,7 @@ Last remote feature commit `b83618b` (Tier 2 RAG) was 31 min ago — over 30-min
 | 15:53 | 🔴→🔄 Wake | 🔴 37 min since last commit. OVER threshold. Claude relaunched PID 45004. Telegram alert sent. |
 | 16:08 | 🔴→🔄 Wake | 🔴 52 min since last feature commit. Clean tree. Claude relaunched PID 55157. Telegram alert sent. |
 | 16:23 | 🔴 Stopped | ✅ Clean exit — `476946e` Tier 5 sub_workflow recursion committed 16:16 UTC (7 min ago). LOCAL ONLY. Under threshold, no wake. |
-| 16:38 | 🔴 Stopped | ✅ Clean exit — `b83618b` Tier 2 RAG committed 16:37 UTC (1 min ago). ⚠️ Local branch diverged from remote. No wake needed. |
+| 16:38 | 🔴 Stopped | ✅ Clean exit — `b83618b` Tier 2 RAG committed 16:37 UTC (1 min ago). ⚠️ Local branch diverged. No wake needed. |
 | 16:53 | 🔴 Stopped | ⏳ Clean exit — last feature commit `b83618b` 16 min ago. Local diverged (`476946e` unpushed). Under 30-min threshold. No action. |
 | 17:08 | 🔴→🔄 Wake | 🔴 31 min since last remote feature commit. OVER threshold. Claude relaunched PID 90473. ⚠️ git rebase conflict on `476946e` — aborted, Claude resolving manually. Telegram alert sent. |
+| 17:23 | 🔴→🔄 Wake | 🔴 0 processes. `suggest-reply/route.ts` modified but uncommitted (P2 in-flight). 67 min since last feature commit. ✅ Rebase resolved — `476946e` now on remote as `8c075c8`. Relaunched PID 34407. Telegram alert sent. |
