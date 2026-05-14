@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronDown, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +23,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { DataGridColumnHeader } from "@/components/data-grid/data-grid-column-header";
 import type { Header, Table } from "@tanstack/react-table";
 import {
   type CellVariant,
@@ -92,10 +91,27 @@ export function VariantMenu<TData extends Record<string, unknown>>({
   const currentVariant = CELL_VARIANTS.find((v) => v.value === variant);
   const isSelectLike = variant === "select" || variant === "multi-select";
 
+  // Derive sort state from header
+  const sortState = header.column.getIsSorted();
+
   return (
     <>
-      <div className="flex w-full items-center justify-between gap-1">
-        <DataGridColumnHeader header={header} table={table} />
+      {/* Self-contained header — does NOT nest DataGridColumnHeader.
+          Both this element and the cells below use CSS var width so they stay in sync. */}
+      <div className="flex size-full items-center justify-between gap-1 overflow-hidden">
+        {/* Left: label + sort indicator */}
+        <button
+          className="flex min-w-0 flex-1 items-center gap-1 truncate text-left text-sm hover:text-foreground"
+          onClick={() => header.column.toggleSorting()}
+          title={label}
+          type="button"
+        >
+          <span className="truncate">{label}</span>
+          {sortState === "asc" && <ChevronUp className="h-3 w-3 shrink-0 text-muted-foreground" />}
+          {sortState === "desc" && <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />}
+        </button>
+
+        {/* Right: variant type icon dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -142,7 +158,7 @@ export function VariantMenu<TData extends Record<string, unknown>>({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </div> {/* end size-full flex container */}
 
       <AlertDialog
         open={!!pending}
