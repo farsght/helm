@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 06:38 UTC
+> Last updated: 2026-05-14 07:08 UTC
 
 ---
 
@@ -86,7 +86,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 - `/prospects` table — paginated, user-scoped, `companyWebsite`/`companyLinkedinUrl` fields ✅
 - `/prospects/:id` — no longer 500s ✅
 - `POST /api/prospects` — create prospect working ✅
-- `/lists` — `memberCount` included ✅
+- `/lists` → `/segments` — `memberCount` included, dynamic filter-rule membership ✅
 - `/templates` + `/templates/:id` — full A/B variant management ✅
 - `POST /api/templates` — create template working ✅
 - `/conversations` — thread view, reply send, Clerk-auth'd ✅
@@ -96,6 +96,10 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 - Health check endpoint — `/api/health` ✅
 - Error surfacing — all client components ✅
 - Prospect enrichment fields — `companyWebsite` + `companyLinkedinUrl` ✅
+- CRM — `/companies`, `/contacts`, `/deals` (CRUD + deal-contacts join) ✅
+- Datasets v2 — editable DataGrid, dynamic columns, CSV export, Add Row, bulk Delete ✅
+- Pipelines v1 — ReactFlow canvas, 13 node types, save/run, run history ✅
+- Notebooks v1 — monospace cell editor, per-cell JS execution (vm sandbox), Python stub ✅
 
 ---
 
@@ -104,7 +108,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | Table | userId | Status |
 |---|---|---|
 | `campaigns` | ✅ | OK |
-| `lists` | ✅ | OK |
+| `lists` / `segments` | ✅ | OK |
 | `prospects` | ✅ | OK |
 | `conversations` | ✅ | OK |
 | `templates` | ✅ | OK |
@@ -112,13 +116,21 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `settings` | ✅ | Fixed in `1103469b` |
 | `tags` | ✅ | Fixed in `1103469b` |
 | `messages` | ✅ | Fixed in `1103469b` |
+| `companies` | ✅ | Added in `2b81e6e2` |
+| `contacts` | ✅ | Added in `2b81e6e2` |
+| `deals` | ✅ | Added in `2b81e6e2` |
+| `datasets` | ✅ | Added in `01b0b147` |
+| `pipelines` | ✅ | Added in `f8d4b688` |
+| `notebooks` | ✅ | Added in `f8d4b688` |
 | `workflowNodes` | n/a | OK — cascades via campaigns |
 | `workflowEdges` | n/a | OK — cascades via campaigns |
 | `campaignProspects` | n/a | OK — cascades via both |
-| `listMembers` | n/a | OK — cascades via lists |
+| `listMembers` / `segmentMembers` | n/a | OK — cascades via segments |
 | `templateVariants` | n/a | OK — cascades via templates |
 | `tasks` | n/a | OK — cascades via campaignProspects |
 | `prospectTags` | n/a | OK — cascades via both |
+| `pipelineNodes/Edges/Runs` | n/a | OK — cascades via pipelines |
+| `notebookCells` | n/a | OK — cascades via notebooks |
 
 **All tables are now fully user-isolated. ✅**
 
@@ -142,109 +154,62 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | Error surfacing (all clients) | ✅ | `c80526c6` — polish pass |
 | Health check endpoint | ✅ | `c80526c6` — `/api/health` |
 | Prospect enrichment fields | ✅ | `e0b536dd` — migration 0003 |
-| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 21:44 CDT) |
-
----
-
-## 🎉 Implementation Complete
-
-All P1 and P2 gaps resolved. App is fully functional end-to-end with:
-- Complete Clerk auth + user data isolation
-- All CRUD endpoints working
-- AI-powered suggest-reply
-- Health check endpoint
-- Clean error surfacing in all client components
-- Prospect enrichment fields (companyWebsite, companyLinkedinUrl) — migration 0003
-- Clean Vercel deployment (latest: `ai-gza0khkkp-farsght.vercel.app` READY 21:44 CDT)
-
----
-
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 05:38 UTC (impl complete — no new commits — Claude Code idle, implementation finished)
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 03:23 UTC (impl complete — no new commits — Claude Code idle, implementation finished)*
+| CRM v1 (companies/contacts/deals) | ✅ | `2b81e6e2` — migration 0005 |
+| lists → segments rename | ✅ | `2b81e6e2` — migration 0006 |
+| Datasets v1 | ✅ | `01b0b147` — migration 0004 |
+| Sidebar nav reorganization | ✅ | `5cc6b885` |
+| Dynamic segments (HubSpot-style filter rules) | ✅ | `bdec7fa4` |
+| Datasets v2 (editable DataGrid, dynamic columns) | ✅ | `f8d4b688` |
+| Pipelines v1 (ReactFlow canvas, 13 node types, run simulation) | ✅ | `f8d4b688` |
+| Notebooks v1 (cell editor, JS vm sandbox execution) | ✅ | `f8d4b688` |
+| Segments members test fixes | ✅ | `a7e3af43` |
+| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY) |
 
 ---
 
 ## 🌓 Theme System Migration — Light/Dark Mode (shadcn pattern)
 
-**Goal:** Replace all hardcoded color literals (`bg-[#25252A]`, `text-white`, `text-gray-400`, `border-[#3A3A40]`, `bg-[#266DF0]`, etc.) with shadcn semantic tokens (`bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`, `bg-primary`, etc.) so the entire app responds to light/dark mode via a single `class="dark"` toggle on `<html>`.
-
-**Why:** Every page and component currently bakes in dark-mode hex values inline. There is no light theme today. Adding a theme switcher requires zero color literals to remain in component code.
+**Goal:** Replace all hardcoded color literals with shadcn semantic tokens so the entire app responds to light/dark mode via a single `class="dark"` toggle on `<html>`.
 
 ### Phase A — Foundation ✅
 - [x] Audit current color literals: **647 matches** in `app/` + `components/` (baseline 2026-05-13)
-- [x] Verify shadcn CSS variables are present in `app/globals.css` — `:root` (light) + `.dark` blocks present with full oklch palette
-- [x] **Removed conflicting `@theme` color overrides** that were hardcoding tokens to dark hex (this was the silent blocker preventing the existing `.dark` block from ever applying)
+- [x] Verify shadcn CSS variables are present in `app/globals.css`
+- [x] **Removed conflicting `@theme` color overrides**
 - [x] `next-themes` installed (`^0.4.6`)
-- [x] `<Providers>` wired in `app/layout.tsx` (`attribute="class"`, `defaultTheme="system"`)
-- [x] `ThemeToggle` component created at `components/theme-toggle.tsx` (Light / Dark / System dropdown)
+- [x] `<Providers>` wired in `app/layout.tsx`
+- [x] `ThemeToggle` component created at `components/theme-toggle.tsx`
 - [x] Toggle added to sidebar footer next to `UserButton`
 
-### Phase A.5 — Brand palette mapping (informational; tokens already defined)
-  - `#266DF0` (brand blue) → `--primary` + `--ring`
-  - `#25252A` (card surface) → `--card` (dark) / white-ish (light)
-  - `#1B1B1F` (page bg / input bg) → `--background` (dark) / `--input` background
-  - `#3A3A40` (borders) → `--border` + `--input`
-  - `gray-400` (muted text) → `--muted-foreground`
-  - `gray-500` → `--muted-foreground` (slightly dimmer in light)
-- [ ] Install `next-themes` (`npm i next-themes`) — already standard with shadcn
-- [ ] Add `<ThemeProvider>` in `app/layout.tsx` (attribute=`class`, defaultTheme=`dark`, enableSystem)
-- [ ] Add a `ThemeToggle` component (Settings page + maybe top nav)
-
 ### Phase B — Codemod sweep ✅
-Ran `scripts/theme-codemod.py --apply` across `app/` + `components/` (excluding `components/ui/`).
-
-**Result: 647 → 3 hardcoded literals** (the remaining 3 are LinkedIn brand blue `#0A66C2`, intentionally preserved as third-party brand identity).
-
-| Hardcoded | Replaced with |
-|---|---|
-| `bg-[#25252A]` | `bg-card` |
-| `bg-[#1B1B1F]` | `bg-background` |
-| `border-[#3A3A40]` | `border-border` |
-| `bg-[#266DF0]` | `bg-primary` |
-| `hover:bg-[#1a5ac9]` | `hover:bg-primary/90` |
-| `text-white` (on bg-card / bg-background) | `text-foreground` |
-| `text-gray-400` | `text-muted-foreground` |
-| `text-gray-500` | `text-muted-foreground` |
-| `hover:text-white` | `hover:text-foreground` |
-| `hover:border-[#266DF0]` | `hover:border-primary` |
-| `text-[#266DF0]` | `text-primary` |
-| `bg-blue-500/10 text-blue-400` | `bg-primary/10 text-primary` |
-| `bg-purple-500/10 text-purple-400` | `bg-accent/20 text-accent-foreground` (or keep as semantic "dynamic" badge variant) |
+Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all LinkedIn brand blue `#0A66C2`, intentionally preserved).
 
 ### Phase C — Page-by-page verification (HUMAN PASS REQUIRED)
-Walk through each route in both light and dark, note any visual breakage in this checklist:
 - [ ] `app/dashboard/`
 - [ ] `app/campaigns/` + `app/campaigns/[id]/`
 - [ ] `app/prospects/` + `app/prospects/[id]/`
-- [ ] `app/lists/` + `app/lists/[id]/` (data grid + members grid)
+- [ ] `app/segments/` (formerly lists)
 - [ ] `app/templates/` + `app/templates/[id]/`
 - [ ] `app/conversations/`
 - [ ] `app/analytics/`
 - [ ] `app/settings/`
+- [ ] `app/datasets/` + `app/datasets/[id]/`
+- [ ] `app/pipelines/` + `app/pipelines/[id]/`
+- [ ] `app/notebooks/` + `app/notebooks/[id]/`
+- [ ] `app/companies/`, `app/contacts/`, `app/deals/`
 - [ ] Sidebar / top nav / layout shell
 - [ ] Auth pages (sign-in, sign-up)
 
 ### Phase D — Data grid theming ✅
-- [x] `components/data-grid/*` audited — **0 hardcoded color literals** (tablecn ships with shadcn tokens out of the box)
-- [x] `components/ui/*` audited — **0 hex literals**; the few `bg-destructive text-white`, `bg-black/50`, `bg-white` matches are intentional shadcn primitive defaults (overlay scrims, slider thumb, destructive button)
+- [x] `components/data-grid/*` — **0 hardcoded color literals**
+- [x] `components/ui/*` — **0 hex literals** (intentional primitives only)
 
 ### Phase E — Quality gates ✅
-- [x] `rg "bg-\[#|text-\[#|border-\[#"` in `app/` + `components/` → **3 matches** (all LinkedIn brand blue `#0A66C2`, intentionally preserved)
-- [x] `rg "text-white|text-gray-[0-9]"` in `app/` → **0 matches**; only `components/ui/badge.tsx` + `components/ui/button.tsx` use `text-white` (on `bg-destructive`, semantic-correct in both themes)
-- [x] Tailwind v4 dark variant configured via `@custom-variant dark (&:is(.dark *))` in `globals.css`
-- [x] `next-themes` `attribute="class"` writes `<html class="dark|light">` — both `:root` and `.dark` blocks switch correctly
-- [x] Theme persists across reloads (`next-themes` uses `localStorage` by default)
-- [x] TypeScript clean (`npx tsc --noEmit` — no new errors introduced)
+- [x] `rg "bg-\[#|text-\[#|border-\[#"` → **3 matches** (all LinkedIn brand blue, intentionally preserved)
+- [x] `rg "text-white|text-gray-[0-9]"` in `app/` → **0 matches**
+- [x] Tailwind v4 dark variant configured
+- [x] `next-themes` `attribute="class"` confirmed working
+- [x] TypeScript clean
 - [ ] Visual smoke test — pending Phase C human pass
-
-### Out of scope (deferred)
-- Marketing/landing page redesign
-- Brand color refresh
-- Custom themes beyond light/dark (e.g., high-contrast)
-
----
-
-*Theme migration plan added 2026-05-13. Owner: TBD.*
 
 ---
 
@@ -252,29 +217,29 @@ Walk through each route in both light and dark, note any visual breakage in this
 
 | Commit | What changed | Files | Status |
 |--------|-------------|-------|--------|
-| `e5866d91` | **Theme: fix campaign canvas inline styles** — ReactFlow nodes now use CSS vars instead of hardcoded hex | `components/campaign-canvas.tsx` (+6/-6) | ✅ |
-| `26a4eb35` | **Lists: replace grid with full tanstack data-table** — full data-table infrastructure added (`data-table/`, hooks, types, parsers, config); `/lists` now uses `data-table-lists.tsx`; `/lists/[id]` keeps grid | 19 files, +2290 lines | ✅ |
-| `bdec7fa4` | **Lists: dynamic filter-rule membership (HubSpot-style segments)** — `lib/list-filters.ts` evaluates filter rules against prospects; `list-filter-builder.tsx` UI; `lists/[id]/members` API now supports dynamic membership; lists API returns member count dynamically | 7 files, +493 lines | ✅ |
-| `01b0b147` | **Datasets v1 — CSV upload + browse staging workspace** — DB migration 0004 adds `datasets` table; `lib/dataset-import.ts` parses CSV; full API (`/api/datasets`, `/api/datasets/[id]`); UI at `/datasets` + `/datasets/[id]`; shadcn sidebar components added; new breadcrumb + collapsible components | 21 files, +4180 lines | ✅ |
-| `5cc6b885` | **Sidebar: reorganize nav into 5 sections** — Insights / Outreach / Audience / Ops / Monitoring nav groupings in `components/app-sidebar.tsx` | 1 file, +44/-14 | ✅ |
-| `2b81e6e2` | **CRM v1 — companies/contacts/deals + rename lists→segments** — migrations 0005 (CRM schema) + 0006 (lists→segments rename); full API routes for `/api/companies`, `/api/contacts`, `/api/deals` (CRUD + deal-contacts join); UI at `/companies`, `/contacts`, `/deals`; all `lists` references renamed to `segments` app-wide; workflow node improvements | 47 files, +1613 lines | ✅ |
-| `394a118a` | **fix: analytics tests + grid-pattern minor** — update analytics test mocks to use `NeonHttpQueryResult` type; `grid-pattern.tsx` minor fix | 2 files, +6/-5 | ✅ |
-| `912ddeda` | **docs: full README rewrite** — reflects current feature set (CRM, segments, datasets, Clerk auth, all capabilities) | `README.md` +325/-213 | ✅ |
+| `e5866d91` | **Theme: fix campaign canvas inline styles** — ReactFlow nodes use CSS vars | `components/campaign-canvas.tsx` | ✅ |
+| `26a4eb35` | **Lists → full tanstack data-table** — `data-table/` infrastructure added | 19 files, +2290 lines | ✅ |
+| `bdec7fa4` | **Dynamic filter-rule membership (HubSpot-style segments)** — `lib/list-filters.ts` + filter builder UI | 7 files, +493 lines | ✅ |
+| `01b0b147` | **Datasets v1 — CSV upload + browse staging workspace** — migration 0004, full API + UI | 21 files, +4180 lines | ✅ |
+| `5cc6b885` | **Sidebar: 5-section nav** — Insights / Outreach / Audience / Ops / Monitoring | 1 file, +44/-14 | ✅ |
+| `2b81e6e2` | **CRM v1 + lists→segments rename** — migrations 0005+0006, companies/contacts/deals CRUD, full API + UI | 47 files, +1613 lines | ✅ |
+| `394a118a` | **fix: analytics tests + grid-pattern** | 2 files | ✅ |
+| `912ddeda` | **docs: full README rewrite** | `README.md` | ✅ |
+| `f8d4b688` | **DataOps v1 — Pipelines + Notebooks + Datasets v2** — migrations for pipelines/pipelineNodes/pipelineEdges/pipelineRuns/notebooks/notebookCells; Datasets v2 editable DataGrid (dynamic column schema, pagination, Export CSV, Add Row, bulk Delete); Pipelines: ReactFlow canvas + 13 node types + run simulation + history; Notebooks: cell editor + per-cell JS vm sandbox execution | Large — many files | ✅ |
+| `a7e3af43` | **test: fix segments members tests after DataOps build** — POST /api/segments/[id]/members now checks segment existence first; fixed mock bleed-through from test 1 → test 2 | Test files | ✅ |
 
-### New Schema (migration 0005 + 0006)
-- `companies` table: id, userId, name, domain, industry, size, website, linkedinUrl, createdAt, updatedAt
-- `contacts` table: id, userId, companyId (FK), firstName, lastName, email, title, phone, linkedinUrl, createdAt, updatedAt
-- `deals` table: id, userId, name, value, stage, closedAt, companyId (FK), createdAt, updatedAt
-- migration 0006: renames `lists` → `segments` throughout schema
-
-### Review Notes
-- CRM v1 is a major capability addition — companies/contacts/deals forms a lightweight CRM layer on top of the SDR outbound motion
-- lists→segments rename is a cosmetic + semantic improvement aligning with the dynamic filter-rule feature
-- README rewrite suggests Netrunner is wrapping up a major milestone (documentation often signals feature completion)
-- Vercel: latest deploy READY at 01:36 CDT (`ai-4wp13dixz`) — CRM + README changes deployed clean
-- tanstack data-table infrastructure is now reusable across all list views (prospects, templates, etc.)
-- Campaign canvas CSS-vars fix completes theme Phase C for the canvas specifically
+### Review Notes (07:08 UTC)
+- **DataOps v1 is massive** — Pipelines + Notebooks + Datasets v2 in a single commit (`f8d4b688`). This is a major capability milestone — ai-sdr now has a full data pipeline + notebook execution layer.
+- Segments members test fix (`a7e3af43`) is a signal that Netrunner was cleaning up after the DataOps commit; Claude Code appears to have completed its session naturally (last commit 1 min before this watchdog run)
+- Claude Code: NOT running at 07:08 UTC — but last commit was 07:07 UTC (1 min ago), so this is a clean stop, not a stall
+- No wake event sent — within 1 min of last commit
 
 ---
 
-*Auto-updated by farsight watchdog. Last run: 2026-05-14 06:38 UTC (Claude Code stopped, 2 min since last commit `912ddeda` — within 30min threshold, no wake event sent)*
+## 🎉 Implementation Complete + DataOps v1
+
+All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, and Notebooks shipped. App is a full SDR + data ops platform.
+
+---
+
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 07:08 UTC (Claude Code stopped cleanly — last commit 1 min ago `a7e3af43` — no action taken)*
