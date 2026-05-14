@@ -25,10 +25,12 @@ import {
   agentDefinitions,
   agentRuns,
   agentSkills,
+  agentKnowledgeLinks,
   agentSkillLinks,
   mcpServers,
   agentMcpLinks,
 } from '@/db/schema';
+import { retrieveContext, formatContextBlock } from './knowledge-retrieval';
 import { McpHttpClient, McpError, expandEnvVars, type McpTool } from '@/lib/mcp-client';
 
 export class AgentNotFoundError extends Error {
@@ -152,6 +154,47 @@ async function loadSkillsForAgent(agentId: number): Promise<string> {
 
   const parts = rows.map((r) => `## ${r.name}\n\n${r.body.trim()}`);
   return `# Skills\n\nThe following skills are available to you:\n\n${parts.join('\n\n')}\n`;
+}
+
+// ── Knowledge / RAG context loading ──────────────────────────────────
+//
+// For every dataset attached via agent_knowledge_links, run vector search
+// scoped by pathPrefix (if set), then concatenate top-K chunks into a
+// system-prompt context block. Query = the rendered prompts so retrieval
+// reflects what the agent is actually about to think about.
+async function loadKnowledgeContextForAgent(
+  agentId: number,
+  queryText: string,
+  variables: Record<string, string | number | boolean | null | undefined>
+): Promise<string> {
+  const links = await db
+    .select({
+      datasetId: agentKnowledgeLinks.datasetId,
+      pathPrefix: agentKnowledgeLinks.pathPrefix,
+      topK: agentKnowledgeLinks.topK,
+    })
+    .from(agentKnowledgeLinks)
+    .where(eq(agentKnowledgeLinks.agentId, agentId));
+
+  if (links.length === 0) return '';
+
+  // Render the query text with variables — same template substitution as the
+  // prompts get, so {{firstName}}, {{company}} etc. resolve and contribute to
+  // retrieval relevance.
+  const renderedQuery = renderTemplate(queryText, variables);
+
+  try {
+    const chunks = await retrieveContext(
+      renderedQuery,
+      links.map((l) => ({ datasetId: l.datasetId, pathPrefix: l.pathPrefix, topK: l.topK })),
+      5
+    );
+    return formatContextBlock(chunks);
+  } catch (err) {
+    console.error('[agent-runtime] knowledge retrieval failed:', err);
+    // Non-fatal — better to run without context than to fail the whole run.
+    return '';
+  }
 }
 
 // ── MCP tool loading ────────────────────────────────────────────────
@@ -344,15 +387,16 @@ export async function runAgent(
   const modelParams = parseModelParams(agent.modelParamsJson);
   const languageModel = resolveModel(agent.model);
 
-  // Load skills + MCP tools in parallel.
-  const [skillsBlock, mcpLoad] = await Promise.all([
+  // Load skills + MCP tools + knowledge in parallel.
+  const [skillsBlock, mcpLoad, knowledgeBlock] = await Promise.all([
     loadSkillsForAgent(agentId),
     loadMcpToolsForAgent(agentId),
+    loadKnowledgeContextForAgent(agentId, agent.systemPrompt + '\n' + agent.userPromptTemplate, context.variables),
   ]);
 
   const baseSystem = renderTemplate(agent.systemPrompt, context.variables);
   const renderedUser = renderTemplate(agent.userPromptTemplate, context.variables);
-  const renderedSystem = [baseSystem, skillsBlock].filter(Boolean).join('\n\n');
+  const renderedSystem = [baseSystem, skillsBlock, knowledgeBlock].filter(Boolean).join('\n\n');
 
   const toolCallLog: AgentToolCall[] = [];
   const toolSet = buildToolSet(mcpLoad.tools, toolCallLog);

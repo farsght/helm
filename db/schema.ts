@@ -549,3 +549,63 @@ export const agentMcpLinks = pgTable('agent_mcp_links', {
   index('agent_mcp_links_agent_id_idx').on(table.agentId),
   uniqueIndex('agent_mcp_links_unique').on(table.agentId, table.mcpServerId),
 ]);
+
+// ── Knowledge / RAG ───────────────────────────────────────────────────────
+//
+// Chunks are produced by a pipeline run from a dataset of source: 'obsidian_vault'
+// (or any other source) → chunk_text → embed → promote_knowledge.
+// Retrieval is vector search filtered by datasetId + optional frontmatter / path
+// prefix. agentKnowledgeLinks attaches an agent to one-or-more datasets so its
+// retrieval scope is narrowed at runtime.
+//
+// embedding is pgvector(1536) — we represent it as text in Drizzle (cast at the
+// SQL layer) since drizzle-orm has no first-class pgvector type yet. All vector
+// ops happen in raw SQL via `sql`-tagged templates in lib/knowledge-retrieval.ts.
+export const knowledgeChunks = pgTable('knowledge_chunks', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+  datasetId: integer('dataset_id').notNull().references(() => datasets.id, { onDelete: 'cascade' }),
+  /** Logical source path inside the dataset (e.g. "Knowledge Base/Sources/foo.md"). */
+  sourcePath: text('source_path').notNull(),
+  /** Position of this chunk within the source file. */
+  chunkIndex: integer('chunk_index').notNull().default(0),
+  totalChunks: integer('total_chunks').notNull().default(1),
+  /** Parsed frontmatter from the source file (mirrored on every chunk for cheap filter queries). */
+  frontmatterJson: jsonb('frontmatter_json'),
+  /** Heading path within the file, when discoverable (e.g. "Pricing > Enterprise"). */
+  headingPath: text('heading_path'),
+  /** The chunk text itself — what gets fed back to the LLM as context. */
+  content: text('content').notNull(),
+  contentHash: text('content_hash').notNull(),
+  tokenCount: integer('token_count').notNull().default(0),
+  /** OpenAI text-embedding-3-small (1536 dims) serialized as pgvector. */
+  embedding: text('embedding'),
+  embeddingModel: text('embedding_model').notNull().default('text-embedding-3-small'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('knowledge_chunks_user_idx').on(table.userId),
+  index('knowledge_chunks_dataset_idx').on(table.datasetId),
+  index('knowledge_chunks_source_path_idx').on(table.sourcePath),
+  uniqueIndex('knowledge_chunks_dataset_path_chunk_idx').on(table.datasetId, table.sourcePath, table.chunkIndex),
+]);
+
+/**
+ * Attach one-or-more knowledge datasets to an agent. At runtime the agent's
+ * retrieval step vector-searches `knowledge_chunks` filtered by these
+ * datasetIds (optionally further filtered via `pathPrefix` or `filterJson`).
+ */
+export const agentKnowledgeLinks = pgTable('agent_knowledge_links', {
+  id: serial('id').primaryKey(),
+  agentId: integer('agent_id').notNull().references(() => agentDefinitions.id, { onDelete: 'cascade' }),
+  datasetId: integer('dataset_id').notNull().references(() => datasets.id, { onDelete: 'cascade' }),
+  /** Optional path prefix to restrict retrieval (e.g. "Bitwage GTM/Competitive"). */
+  pathPrefix: text('path_prefix'),
+  /** Optional frontmatter filter (e.g. {"type": "signal"}). Future use. */
+  filterJson: jsonb('filter_json'),
+  /** Override default top-K for this attachment (null = use agent default of 5). */
+  topK: integer('top_k'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('agent_knowledge_links_agent_idx').on(table.agentId),
+  uniqueIndex('agent_knowledge_links_unique').on(table.agentId, table.datasetId),
+]);

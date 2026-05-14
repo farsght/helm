@@ -85,6 +85,13 @@
       "when": 1778752000000,
       "tag": "0011_tags_user_name_unique",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1778753000000,
+      "tag": "0012_knowledge_rag",
+      "breakpoints": true
     }
   ]
 }
