@@ -1,1 +1,64 @@
+# ai-sdr CHECKLIST.md
 
+_Last updated: 2026-05-14 12:08 UTC by farsight watchdog_
+
+---
+
+## 🔴 STALL DETECTED — Claude has been stopped for ~61 minutes
+
+Last real commit: `662cc96f` at 11:07 UTC — Tier 4 canvas (visual workflow + agent library)
+Wake events sent at: 11:41 UTC, 11:55 UTC, 12:08 UTC
+
+---
+
+## Completed Work ✅
+
+| Commit | Time | Description |
+|---|---|---|
+| `662cc96f` | 11:07 UTC | feat(canvas): Tier 4 — visual workflow + agent library canvases |
+| `def93478` | 11:12 UTC | watchdog: Tier 1+4 agents/MCP runtime + visual canvas noted |
+
+### Tier 4 Canvas (DONE per commit 662cc96f)
+- ✅ FlowNode, ResourceNode, Palette components
+- ✅ auto-layout.ts (dagre LR)
+- ✅ Campaign workflow canvas (/campaigns/[id]/workflow)
+- ✅ Agent library canvas (/agents/[id])
+- ✅ Type-specific inspector panels
+- ✅ Drag-from-palette, click-to-inspect
+- ✅ dagre auto-arrange on empty positions
+- ✅ Removed dead reactflow v11 package
+- Tests: 152/157 passing (5 pre-existing failures)
+
+---
+
+## Pending Work 🔄
+
+### P0 — USER_SCOPING_SPEC.md: userId fixes
+
+**db/schema.ts** — add userId to:
+- [ ] settings table
+- [ ] tags table  
+- [ ] messages table
+- [ ] Run migrations
+
+**API Routes:**
+- [ ] GET/PUT /api/settings (user-scoped)
+- [ ] POST /api/prospects (userId injection)
+- [ ] POST /api/templates (userId injection)
+- [ ] PUT /api/campaigns/:id (userId check)
+- [ ] Campaign steps API (/api/campaigns/[id]/steps/)
+
+### P2 — AI
+- [ ] /api/ai/suggest-reply
+
+---
+
+## Watchdog History
+
+| Time UTC | Claude | Action |
+|---|---|---|
+| 11:08 | Running | Tier 4 canvas just committed |
+| 11:23 | Stopped | Under threshold — no action |
+| 11:38 | Stopped | Stall alert #1 — wake event sent |
+| 11:53 | Stopped | Stall persisting — wake event #2 |
+| 12:08 | Stopped | Wake event #3 — Telegram alert sent |
