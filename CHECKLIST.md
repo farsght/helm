@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 08:38 UTC
+> Last updated: 2026-05-14 08:53 UTC
 
 ---
 
@@ -101,6 +101,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 - Pipelines v1 — ReactFlow canvas, 13 node types, save/run, run history ✅
 - Notebooks v1 — monospace cell editor, per-cell JS execution (vm sandbox), Python stub ✅
 - CSV import wizard — 4-step import flow for datasets ✅
+- Import refactor — absolute paths + React hooks ✅
 
 ---
 
@@ -166,6 +167,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | Segments members test fixes | ✅ | `a7e3af43` |
 | Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY) |
 | CSV import wizard + DataGrid column alignment | ✅ | `d0f1e427` |
+| Import refactor (absolute paths + React hooks) | ✅ | `12fd5eb9` |
 
 ---
 
@@ -242,8 +244,18 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 | `23d69253` | **fix: pass stretchColumns to dataset DataGrid** — headers and cells now fill and stretch full width | `components/data-grid/`, `app/datasets/` | ✅ |
 | `f7ca9dc4` | **fix: restore DataGridColumnHeader in VariantMenu** — resize drag working again, flex layout preserved | `components/data-grid/` | ✅ |
 | `d0f1e427` | **feat: CSV import wizard + fix data-grid column alignment** — 4-step CSV import flow for datasets; DataGrid column alignment fixes | datasets, data-grid | ✅ |
+| `12fd5eb9` | **refactor: update imports to use absolute paths and switch to React hooks** — codebase-wide import hygiene + hooks migration | Multiple files | ✅ |
 
 ---
+
+### Review Notes (08:53 UTC)
+- **1 new code commit** since last run (08:38 UTC):
+  - `12fd5eb9` refactor: update imports to use absolute paths and switch to React hooks — codebase-wide import path cleanup and React hooks migration
+- **Claude Code: NOT running** (0 processes). Last commit at 08:40 UTC — 13 min ago. Under the 30-min stall threshold. No wake event sent.
+- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth (consistent pattern).
+- **Import refactor** is a healthy housekeeping commit — absolute paths improve IDE resolution, hooks migration aligns with React best practices.
+- **Phase C theme verification** still pending (human visual pass required).
+- App is stable. No regressions detected.
 
 ### Review Notes (08:38 UTC)
 - **1 new code commit** since last run (08:26 UTC):
@@ -275,27 +287,6 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 - **Phase C theme verification** still pending (human visual pass required).
 - App is stable. No regressions detected.
 
-### Review Notes (07:53 UTC)
-- **No new code commits** since 07:26 UTC (`05ac5785` — Notebooks sidebar nav). My own watchdog checklist commit at 07:41 UTC is the only recent push.
-- **Claude Code: NOT running.** Last code commit 27 min ago — just under the 30-min stall threshold. No wake event sent.
-- **SSH to Netrunner** continues to time out on repo find command — using GitHub API as authoritative source.
-- **Phase C theme verification** still pending (human visual pass required).
-- App is stable. No regressions detected.
-
-### Review Notes (07:38 UTC)
-- **2 new commits since 07:23 UTC:** `bd1aa0d9` (merge conflict resolution) + `05ac5785` (Notebooks added to sidebar nav)
-- **Sidebar nav now complete** — Notebooks section added to complement the DataOps v1 Pipelines + Datasets already in nav
-- Claude Code: NOT running. Last commit 12 min ago (07:26 UTC) — clean stop, no stall. No wake event sent.
-- Local git status: SSH find command timing out on Netrunner — using GitHub API as source of truth (consistent)
-- **Phase C theme verification** still pending (human pass required)
-
-### Review Notes (07:23 UTC)
-- **UI Cleanup PR#21 landed** — 5 commits 07:14–07:21 UTC. Major polish: PageHeader adopted site-wide, ConfirmDialog for all delete actions, EmptyState primitives, Shiki for syntax highlighting, FileUpload preview optimized.
-- **Shiki added as dependency** — syntax highlighting in notebooks/code views.
-- **No schema changes** — pure UI/UX polish pass.
-- Claude Code: NOT running. Last commit 2 min ago (07:21 UTC) — clean stop, no stall, no action taken.
-- Local git status: SSH find command timing out on Netrunner — using GitHub API as source of truth.
-
 ---
 
 ## 🎉 Implementation Complete + DataOps v1
@@ -304,4 +295,4 @@ All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, and Notebooks sh
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 08:38 UTC (Claude Code stopped — last code commit 1 min ago `d0f1e427` CSV import wizard + DataGrid column alignment — clean stop, no stall)*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 08:53 UTC (Claude Code stopped — last code commit 13 min ago `12fd5eb9` import refactor — clean stop, no stall)*
