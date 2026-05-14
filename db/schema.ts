@@ -453,3 +453,90 @@ export const agentRuns = pgTable('agent_runs', {
   index('agent_runs_agent_id_idx').on(table.agentId),
   index('agent_runs_started_at_idx').on(table.startedAt),
 ]);
+
+// ── Agent Skills (procedural knowledge) ─────────────────────────────
+// Skills are reusable markdown blocks that get loaded into an agent's
+// system prompt. Small (typically <10KB). For larger corpora that need
+// retrieval (RAG), use agent_resources (Tier 2) instead.
+//
+// Skills are user-scoped and many-to-many with agents via agent_skill_links.
+
+export const agentSkills = pgTable('agent_skills', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+  name: text('name').notNull(),
+  description: text('description'),
+  /**
+   * Markdown body. Stuffed into system prompt verbatim when attached.
+   * Soft limit ~10KB; over that, RAG via agent_resources is preferred.
+   */
+  body: text('body').notNull().default(''),
+  /**
+   * Optional category for org (e.g. 'qualification', 'voice', 'objection-handling').
+   */
+  category: text('category'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const agentSkillLinks = pgTable('agent_skill_links', {
+  id: serial('id').primaryKey(),
+  agentId: integer('agent_id').notNull().references(() => agentDefinitions.id, { onDelete: 'cascade' }),
+  skillId: integer('skill_id').notNull().references(() => agentSkills.id, { onDelete: 'cascade' }),
+  /** Order in which skills are concatenated into the system prompt. */
+  position: integer('position').notNull().default(0),
+}, (table) => [
+  index('agent_skill_links_agent_id_idx').on(table.agentId),
+  uniqueIndex('agent_skill_links_unique').on(table.agentId, table.skillId),
+]);
+
+// ── MCP Servers (tool surfaces for agents) ──────────────────────────
+// HTTP MCP servers expose tools that agents can call during their
+// tool-use loop. v1 supports HTTP transport only (no stdio).
+//
+// Same provider may also exist as a Connection (Type A — deterministic
+// platform integration). MCP server entries are Type B — agent-mediated,
+// non-deterministic, runtime tool calls.
+
+export const mcpServers = pgTable('mcp_servers', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+  name: text('name').notNull(),
+  description: text('description'),
+  /** v1: "http" (JSON-RPC over HTTP+SSE). Future: "stdio". */
+  transport: text('transport').notNull().default('http'),
+  url: text('url').notNull(),
+  /**
+   * JSON object of headers (e.g. {"Authorization": "Bearer ..."}).
+   * Stored as text for portability; secrets should be set via env-var
+   * substitution at runtime (e.g. "Bearer ${HUBSPOT_TOKEN}").
+   */
+  authHeadersJson: text('auth_headers_json'),
+  /**
+   * Cached tool list (JSON array). Populated by the introspection
+   * endpoint when the server is added or refreshed. Used to render
+   * tool pickers without re-querying.
+   */
+  toolsCacheJson: text('tools_cache_json'),
+  toolsCachedAt: timestamp('tools_cached_at'),
+  /** Last successful connection check. Null = never verified. */
+  lastVerifiedAt: timestamp('last_verified_at'),
+  /** If non-null, the server is failing — last error message for debugging. */
+  lastErrorMessage: text('last_error_message'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const agentMcpLinks = pgTable('agent_mcp_links', {
+  id: serial('id').primaryKey(),
+  agentId: integer('agent_id').notNull().references(() => agentDefinitions.id, { onDelete: 'cascade' }),
+  mcpServerId: integer('mcp_server_id').notNull().references(() => mcpServers.id, { onDelete: 'cascade' }),
+  /**
+   * Optional whitelist of tool names from this server. If null, all
+   * advertised tools are exposed to the agent. Stored as JSON string array.
+   */
+  enabledToolsJson: text('enabled_tools_json'),
+}, (table) => [
+  index('agent_mcp_links_agent_id_idx').on(table.agentId),
+  uniqueIndex('agent_mcp_links_unique').on(table.agentId, table.mcpServerId),
+]);

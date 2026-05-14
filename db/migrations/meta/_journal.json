@@ -64,6 +64,13 @@
       "when": 1778742000000,
       "tag": "0008_agent_definitions_and_runs",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1778745000000,
+      "tag": "0009_agent_skills_and_mcp_servers",
+      "breakpoints": true
     }
   ]
 }

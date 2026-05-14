@@ -6,11 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Bot, Plus, Edit, Trash2, Play } from 'lucide-react';
+import { Bot, Plus, Edit, Trash2, Play, Layers } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { PageHeader, ConfirmDialog } from '@/components/page';
 import { AgentEditor } from '@/components/agent-editor';
 import { AgentTestRunner } from '@/components/agent-test-runner';
+import { AgentAttachments } from '@/components/agent-attachments';
 
 export interface Agent {
   id: number;
@@ -33,6 +34,7 @@ export function AgentsClient() {
   const [editing, setEditing] = useState<Agent | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [testAgent, setTestAgent] = useState<Agent | null>(null);
+  const [attachAgent, setAttachAgent] = useState<Agent | null>(null);
 
   useEffect(() => {
     fetch('/api/agents').then(r => r.json()).then(data => {
@@ -176,6 +178,15 @@ export function AgentsClient() {
                     <Button
                       size="sm"
                       variant="ghost"
+                      onClick={() => setAttachAgent(agent)}
+                      className="flex-1 text-muted-foreground hover:text-foreground hover:bg-accent"
+                    >
+                      <Layers className="h-4 w-4 mr-1" />
+                      Attach
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
                       onClick={() => handleEdit(agent)}
                       className="flex-1 text-muted-foreground hover:text-foreground hover:bg-accent"
                     >
@@ -234,6 +245,22 @@ export function AgentsClient() {
       <Dialog open={testAgent !== null} onOpenChange={(o) => !o && setTestAgent(null)}>
         <DialogContent className="max-w-2xl bg-background border-border">
           {testAgent && <AgentTestRunner agent={testAgent} onClose={() => setTestAgent(null)} />}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={attachAgent !== null} onOpenChange={(o) => !o && setAttachAgent(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-background border-border">
+          {attachAgent && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-1">Attach to: {attachAgent.name}</h2>
+                <p className="text-sm text-muted-foreground">
+                  Skills augment the system prompt. MCP servers expose tools for the agent's reasoning loop.
+                </p>
+              </div>
+              <AgentAttachments agentId={attachAgent.id} />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

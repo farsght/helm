@@ -7,6 +7,7 @@ import {
   Activity,
   AlertTriangle,
   BarChart3,
+  BookOpen,
   Bot,
   Building2,
   CalendarClock,
@@ -20,6 +21,8 @@ import {
   Layers,
   MegaphoneIcon,
   MessageSquare,
+  Network,
+  Plug,
   ScrollText,
   Settings,
   Target,
@@ -93,7 +96,16 @@ const navGroups: NavGroup[] = [
     defaultOpen: true,
     items: [
       { title: "Library", url: "/agents", icon: Bot },
+      { title: "Skills", url: "/skills", icon: BookOpen },
       { title: "Runs", url: "/agents/runs", icon: Activity },
+    ],
+  },
+  {
+    title: "Integrations",
+    defaultOpen: false,
+    items: [
+      { title: "MCP Servers", url: "/integrations/mcp-servers", icon: Plug },
+      { title: "Connections", url: "/integrations/connections", icon: Network },
     ],
   },
   {
