@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 07:08 UTC
+> Last updated: 2026-05-14 07:23 UTC
 
 ---
 
@@ -228,7 +228,27 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 | `f8d4b688` | **DataOps v1 — Pipelines + Notebooks + Datasets v2** — migrations for pipelines/pipelineNodes/pipelineEdges/pipelineRuns/notebooks/notebookCells; Datasets v2 editable DataGrid (dynamic column schema, pagination, Export CSV, Add Row, bulk Delete); Pipelines: ReactFlow canvas + 13 node types + run simulation + history; Notebooks: cell editor + per-cell JS vm sandbox execution | Large — many files | ✅ |
 | `a7e3af43` | **test: fix segments members tests after DataOps build** — POST /api/segments/[id]/members now checks segment existence first; fixed mock bleed-through from test 1 → test 2 | Test files | ✅ |
 
+| `49c82875` | **Resolve merge conflicts with main** — pre-merge conflict resolution | 2 files | ✅ |
+| `b16b4338` | **Polish: merged datasets conflict resolution** | `app/datasets/datasets-client.tsx` | ✅ |
+| `f8d24b07` | **prospects: move action buttons into PageHeader actions prop** | `app/prospects/prospects-client.tsx` | ✅ |
+| `bf11422c` | **Merge ui-cleanup — PageHeader/EmptyState/ConfirmDialog + datasets DataTable upgrade** | Merge commit | ✅ |
+| `52460868` | **UI cleanup PR#21** — legacy sidebar removed; Shiki syntax highlighter; PageHeader across all clients; ConfirmDialog for delete flows; EmptyState primitives; FileUpload preview perf (useMemo) | 30+ files | ✅ |
+
+### Review Notes (07:23 UTC)
+- **UI Cleanup PR#21 landed** — 5 commits 07:14–07:21 UTC. Major polish: PageHeader adopted site-wide, ConfirmDialog for all delete actions, EmptyState primitives, Shiki for syntax highlighting, FileUpload preview optimized.
+- **Shiki added as dependency** — syntax highlighting in notebooks/code views.
+- **No schema changes** — pure UI/UX polish pass.
+- Claude Code: NOT running. Last commit 2 min ago (07:21 UTC) — clean stop, no stall, no action taken.
+- Local git status: SSH find command timing out on Netrunner — using GitHub API as source of truth.
+
 ### Review Notes (07:08 UTC)
+
+### Review Notes (07:23 UTC)
+- **UI Cleanup PR#21 landed** — 5 commits between 07:14–07:21 UTC. This is a significant polish pass: PageHeader component adopted across all clients, ConfirmDialog for delete actions everywhere, EmptyState primitives, Shiki syntax highlighting, FileUpload preview optimized with useMemo.
+- **Shiki added as dependency** — syntax highlighting for notebooks/code views
+- **No schema changes** — pure UI/UX work
+- Claude Code: NOT running. Last commit 2 min ago (07:21 UTC) — clean stop, no action taken
+- Local git status: SSH find command timing out — using GitHub API for status
 - **DataOps v1 is massive** — Pipelines + Notebooks + Datasets v2 in a single commit (`f8d4b688`). This is a major capability milestone — ai-sdr now has a full data pipeline + notebook execution layer.
 - Segments members test fix (`a7e3af43`) is a signal that Netrunner was cleaning up after the DataOps commit; Claude Code appears to have completed its session naturally (last commit 1 min before this watchdog run)
 - Claude Code: NOT running at 07:08 UTC — but last commit was 07:07 UTC (1 min ago), so this is a clean stop, not a stall
@@ -242,4 +262,4 @@ All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, and Notebooks sh
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 07:08 UTC (Claude Code stopped cleanly — last commit 1 min ago `a7e3af43` — no action taken)*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 07:23 UTC (Claude Code stopped cleanly — last commit 2 min ago `52460868` UI Cleanup PR#21 — no action taken)*
