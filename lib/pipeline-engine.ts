@@ -41,6 +41,7 @@ import type { DbPipelineNode, DbPipelineEdge, Row, PipelineLogEntry, PipelineRun
 // against the executors registry on module load.
 import { firefliesPoll } from './pipeline-nodes/fireflies-poll';
 import { persistRawPair } from './pipeline-nodes/persist-raw-pair';
+import { classifyMeeting } from './pipeline-nodes/classify-meeting';
 
 // ── Executor registry ────────────────────────────────────────────────
 //
@@ -114,6 +115,8 @@ for (const t of [
 // Phase 2a Fireflies meetings nodes — auto-register on module load.
 registerExecutor('fireflies_poll', firefliesPoll);
 registerExecutor('persist_raw_pair', persistRawPair);
+// Phase 2b — classify Fireflies meetings with the netrunner Pass 1 prompt.
+registerExecutor('classify_meeting', classifyMeeting);
 
 // ── Topological sort ─────────────────────────────────────────────────
 

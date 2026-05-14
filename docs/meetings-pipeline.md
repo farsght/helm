@@ -375,7 +375,8 @@ Before decommissioning netrunner:
 7. `persist_raw_pair` executor — writes `Raw/{slug}-{transcript,summary}.md` to vault with frontmatter; `enabled=false` makes it a pass-through ✅
 8. 11 unit tests on slug/transcript/summary rendering + config schema ✅
 
-**Phase 2b — Classify (deferred to its own session)**
+**Phase 2b — Classify** ✅ shipped
+9. `classify_meeting` executor — VERBATIM port of netrunner Pass 1 prompt (single LLM call: meeting_category, subcategory, secondary_tags, domain, usecase, gtm_stage, maturity, access). meeting_class derived from attendee email domains, no LLM needed. prompt_runs audit row per call (latency, model, version tag, input/output JSON). 3-retry linear backoff matching netrunner. 10 unit tests on deriveMeetingClass + config schema. ✅
 
 **Phase 3 — Entities + chunking + embedding**
 9. `extract_entities` executor + inspector
