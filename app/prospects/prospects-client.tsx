@@ -57,7 +57,7 @@ export function ProspectsClient() {
 
   useEffect(() => {
     fetchProspects(1, '');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   const [formData, setFormData] = useState({
@@ -279,33 +279,38 @@ export function ProspectsClient() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <PageHeader title="Prospects" description="Manage your prospect database" />
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="border-border text-muted-foreground hover:text-foreground hover:bg-card"
-            onClick={() => setImportDialogOpen(true)}
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            Import CSV
-          </Button>
-          <Button
-            variant="outline"
-            className="border-border text-muted-foreground hover:text-foreground hover:bg-card"
-            onClick={handleExport}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Export
-          </Button>
-          <Button 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            onClick={() => setAddDialogOpen(true)}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Prospect
-          </Button>
-        </div>
+      <div className="mb-8">
+        <PageHeader
+          title="Prospects"
+          description="Manage your prospect database"
+          actions={
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="border-border text-muted-foreground hover:text-foreground hover:bg-card"
+                onClick={() => setImportDialogOpen(true)}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Import CSV
+              </Button>
+              <Button
+                variant="outline"
+                className="border-border text-muted-foreground hover:text-foreground hover:bg-card"
+                onClick={handleExport}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+              <Button
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                onClick={() => setAddDialogOpen(true)}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add Prospect
+              </Button>
+            </div>
+          }
+        />
       </div>
 
       <div className="flex items-center gap-3 mb-4">
