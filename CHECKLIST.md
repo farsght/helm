@@ -211,32 +211,33 @@ Ran `scripts/theme-codemod.py --apply` across `app/` + `components/` (excluding 
 | `bg-blue-500/10 text-blue-400` | `bg-primary/10 text-primary` |
 | `bg-purple-500/10 text-purple-400` | `bg-accent/20 text-accent-foreground` (or keep as semantic "dynamic" badge variant) |
 
-### Phase C — Page-by-page verification
-Sweep each route, eyeball in both light + dark, fix per-page edge cases:
+### Phase C — Page-by-page verification (HUMAN PASS REQUIRED)
+Walk through each route in both light and dark, note any visual breakage in this checklist:
 - [ ] `app/dashboard/`
 - [ ] `app/campaigns/` + `app/campaigns/[id]/`
-- [ ] `app/prospects/`
+- [ ] `app/prospects/` + `app/prospects/[id]/`
 - [ ] `app/lists/` + `app/lists/[id]/` (data grid + members grid)
-- [ ] `app/templates/`
+- [ ] `app/templates/` + `app/templates/[id]/`
 - [ ] `app/conversations/`
 - [ ] `app/analytics/`
 - [ ] `app/settings/`
 - [ ] Sidebar / top nav / layout shell
 - [ ] Auth pages (sign-in, sign-up)
 
-### Phase D — Data grid theming
-- [ ] Confirm `components/data-grid/*` already uses shadcn tokens (most tablecn components do — verify, don't assume)
-- [ ] Replace any remaining literals in `data-grid-cell-variants.tsx`, `data-grid-context-menu.tsx`, action bar
-- [ ] Test grid in both themes: borders, hover, selection, focus ring, popovers, filter menu
+### Phase D — Data grid theming ✅
+- [x] `components/data-grid/*` audited — **0 hardcoded color literals** (tablecn ships with shadcn tokens out of the box)
+- [x] `components/ui/*` audited — **0 hex literals**; the few `bg-destructive text-white`, `bg-black/50`, `bg-white` matches are intentional shadcn primitive defaults (overlay scrims, slider thumb, destructive button)
 
-### Phase E — Quality gates
-- [ ] `rg "bg-\[#|text-\[#|border-\[#"` returns 0 matches in `app/` and `components/` (except `components/ui/` if any shadcn primitives have intentional defaults)
-- [ ] `rg "text-white|text-gray-[0-9]"` returns 0 matches outside of theme-aware exceptions
-- [ ] Full visual smoke test: every page in light + dark, no white-on-white or black-on-black
-- [ ] Theme persists across page reloads (next-themes handles this)
-- [ ] Tailwind config: confirm `darkMode: "class"` is set in `tailwind.config.ts`
+### Phase E — Quality gates ✅
+- [x] `rg "bg-\[#|text-\[#|border-\[#"` in `app/` + `components/` → **3 matches** (all LinkedIn brand blue `#0A66C2`, intentionally preserved)
+- [x] `rg "text-white|text-gray-[0-9]"` in `app/` → **0 matches**; only `components/ui/badge.tsx` + `components/ui/button.tsx` use `text-white` (on `bg-destructive`, semantic-correct in both themes)
+- [x] Tailwind v4 dark variant configured via `@custom-variant dark (&:is(.dark *))` in `globals.css`
+- [x] `next-themes` `attribute="class"` writes `<html class="dark|light">` — both `:root` and `.dark` blocks switch correctly
+- [x] Theme persists across reloads (`next-themes` uses `localStorage` by default)
+- [x] TypeScript clean (`npx tsc --noEmit` — no new errors introduced)
+- [ ] Visual smoke test — pending Phase C human pass
 
-### Out of scope (defer)
+### Out of scope (deferred)
 - Marketing/landing page redesign
 - Brand color refresh
 - Custom themes beyond light/dark (e.g., high-contrast)
