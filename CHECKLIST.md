@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 10:38 UTC
+> Last updated: 2026-05-14 10:53 UTC
 
 ---
 
@@ -106,6 +106,8 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 - Vercel Workflow SDK — wired via withWorkflow(), smoke test endpoint, Fluid Compute prereq documented ✅
 - Durable campaign sequence workflow — step-function workflow + trigger route ✅
 - Resend email backend — plain-text-first cold outbound wired ✅
+- Strict-DAG graph validator — workflow validation + activate/start gates ✅
+- **AI Agents v1 — data model + runtime + API routes + sidebar integration** ✅
 
 ---
 
@@ -128,6 +130,8 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `datasets` | ✅ | Added in `01b0b147` |
 | `pipelines` | ✅ | Added in `f8d4b688` |
 | `notebooks` | ✅ | Added in `f8d4b688` |
+| `agent_definitions` | ✅ | Added in `ed6d3e0f` |
+| `agent_runs` | ✅ | Added in `ed6d3e0f` |
 | `workflowNodes` | n/a | OK — cascades via campaigns |
 | `workflowEdges` | n/a | OK — cascades via campaigns |
 | `campaignProspects` | n/a | OK — cascades via both |
@@ -176,6 +180,9 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | Vercel Workflow SDK integration | ✅ | `9e358bfe` — withWorkflow() wired, smoke test, Fluid Compute prereq noted |
 | Durable campaign sequence workflow | ✅ | `a2ccbf63` — step-function workflow + `/api/workflows/campaign-sequence/trigger` |
 | Resend email backend | ✅ | `fe0b5d09` — plain-text-first cold outbound wired |
+| Strict-DAG graph validator + workflow gates | ✅ | `e306c84b` — DAG validation before activation, start-workflow guards |
+| AI Agents v1 — data model + runtime + API routes | ✅ | `ed6d3e0f` — agent_definitions + agent_runs tables, runtime executor, API routes |
+| AI Agents v1 — workflow integration + sidebar | ✅ | `8df5f152` — agent node type in workflow canvas, sidebar Agents section |
 
 ---
 
@@ -208,6 +215,7 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 - [ ] `app/pipelines/` + `app/pipelines/[id]/`
 - [ ] `app/notebooks/` + `app/notebooks/[id]/`
 - [ ] `app/companies/`, `app/contacts/`, `app/deals/`
+- [ ] `app/agents/` (new)
 - [ ] Sidebar / top nav / layout shell
 - [ ] Auth pages (sign-in, sign-up)
 
@@ -238,32 +246,45 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 | `394a118a` | **fix: analytics tests + grid-pattern** | 2 files | ✅ |
 | `912ddeda` | **docs: full README rewrite** | `README.md` | ✅ |
 | `f8d4b688` | **DataOps v1 — Pipelines + Notebooks + Datasets v2** — migrations for pipelines/pipelineNodes/pipelineEdges/pipelineRuns/notebooks/notebookCells; Datasets v2 editable DataGrid (dynamic column schema, pagination, Export CSV, Add Row, bulk Delete); Pipelines: ReactFlow canvas + 13 node types + run simulation + history; Notebooks: cell editor + per-cell JS vm sandbox execution | Large — many files | ✅ |
-| `a7e3af43` | **test: fix segments members tests after DataOps build** — POST /api/segments/[id]/members now checks segment existence first; fixed mock bleed-through from test 1 → test 2 | Test files | ✅ |
-| `49c82875` | **Resolve merge conflicts with main** — pre-merge conflict resolution | 2 files | ✅ |
+| `a7e3af43` | **test: fix segments members tests after DataOps build** | Test files | ✅ |
+| `49c82875` | **Resolve merge conflicts with main** | 2 files | ✅ |
 | `b16b4338` | **Polish: merged datasets conflict resolution** | `app/datasets/datasets-client.tsx` | ✅ |
 | `f8d24b07` | **prospects: move action buttons into PageHeader actions prop** | `app/prospects/prospects-client.tsx` | ✅ |
 | `bf11422c` | **Merge ui-cleanup — PageHeader/EmptyState/ConfirmDialog + datasets DataTable upgrade** | Merge commit | ✅ |
 | `52460868` | **UI cleanup PR#21** — legacy sidebar removed; Shiki syntax highlighter; PageHeader across all clients; ConfirmDialog for delete flows; EmptyState primitives; FileUpload preview perf (useMemo) | 30+ files | ✅ |
-| `bd1aa0d9` | **Resolve merge conflicts with main** — post-PR#21 conflict resolution | 2 files | ✅ |
-| `05ac5785` | **feat: add Notebooks section to sidebar navigation** — Notebooks now surfaced in sidebar nav | sidebar component | ✅ |
-| `067feae8` | **feat: column type variant menu with coercion matrix** — datasets data grid column type selector with full type coercion matrix | datasets data-grid | ✅ |
-| `acfa0b95` | **fix: auto-size dataset grid columns from label length + sample + type** — dynamic column width calculation | datasets data-grid | ✅ |
-| `d031bef1` | **fix: VariantMenu — self-contained header, no nested DataGridColumnHeader** — fixes nested header nesting bug | `components/data-grid/` | ✅ |
-| `23d69253` | **fix: pass stretchColumns to dataset DataGrid** — headers and cells now fill and stretch full width | `components/data-grid/`, `app/datasets/` | ✅ |
-| `f7ca9dc4` | **fix: restore DataGridColumnHeader in VariantMenu** — resize drag working again, flex layout preserved | `components/data-grid/` | ✅ |
-| `d0f1e427` | **feat: CSV import wizard + fix data-grid column alignment** — 4-step CSV import flow for datasets; DataGrid column alignment fixes | datasets, data-grid | ✅ |
-| `12fd5eb9` | **refactor: update imports to use absolute paths and switch to React hooks** — codebase-wide import hygiene + hooks migration | Multiple files | ✅ |
-| `14de728f` | **feat: integrate Sentry for error monitoring and tracing** — Sentry config, instrumentation, error tracking wired into Next.js app | Sentry config files | ✅ |
-| `09171e6c` | **refactor: update import paths to use absolute references** — follow-up import cleanup after Sentry integration | Multiple files | ✅ |
-| `d108b3cb` | **docs: add docs/sentry.md** — Sentry wiring reference + pitfalls documentation | `docs/sentry.md` | ✅ |
-| `9e358bfe` | **feat: wire Vercel Workflow SDK** — withWorkflow() wrapping in next.config.ts; Clerk public route for `/.well-known/workflow`; type shim; smoke-test workflow (`workflows/smoke-test.ts`); `POST /api/workflows/test` trigger; `docs/workflows.md` covers wiring, pitfalls, Fluid Compute prereq | 8 files, +353 lines | ✅ |
-| `a2ccbf63` | **feat(workflows): durable campaign sequence workflow + trigger route** — actual step-function campaign sequence workflow wired as durable Vercel Workflow; `POST /api/workflows/campaign-sequence/trigger` route added | workflows/, api/workflows/ | ✅ |
-| `496c23f0` | **fix: update continual-learning state and improve accessibility in DataGrid component** — DataGrid a11y improvements + state management fixes | `components/data-grid/` | ✅ |
-| `8671363a` | **fix: contain horizontal overflow in app shell** — SidebarInset and main content div overflow containment fix | app shell layout | ✅ |
-| `fe0b5d09` | **feat(email): wire Resend backend with plain-text-first cold outbound** — Resend API integrated for actual email sending; plain-text-first approach for cold outbound deliverability | email/api layer | ✅ |
-| `e306c84b` | **feat(workflows): strict-DAG graph validator + activate/start-workflow gates** — workflow graph validated as strict DAG before activation; start-workflow route enforces gates | workflows/, api/workflows/ | ✅ |
+| `bd1aa0d9` | **Resolve merge conflicts with main** | 2 files | ✅ |
+| `05ac5785` | **feat: add Notebooks section to sidebar navigation** | sidebar component | ✅ |
+| `067feae8` | **feat: column type variant menu with coercion matrix** | datasets data-grid | ✅ |
+| `acfa0b95` | **fix: auto-size dataset grid columns from label length + sample + type** | datasets data-grid | ✅ |
+| `d031bef1` | **fix: VariantMenu — self-contained header, no nested DataGridColumnHeader** | `components/data-grid/` | ✅ |
+| `23d69253` | **fix: pass stretchColumns to dataset DataGrid** | `components/data-grid/`, `app/datasets/` | ✅ |
+| `f7ca9dc4` | **fix: restore DataGridColumnHeader in VariantMenu** | `components/data-grid/` | ✅ |
+| `d0f1e427` | **feat: CSV import wizard + fix data-grid column alignment** | datasets, data-grid | ✅ |
+| `12fd5eb9` | **refactor: update imports to use absolute paths and switch to React hooks** | Multiple files | ✅ |
+| `14de728f` | **feat: integrate Sentry for error monitoring and tracing** | Sentry config files | ✅ |
+| `09171e6c` | **refactor: update import paths to use absolute references** | Multiple files | ✅ |
+| `d108b3cb` | **docs: add docs/sentry.md** | `docs/sentry.md` | ✅ |
+| `9e358bfe` | **feat: wire Vercel Workflow SDK** — withWorkflow(), Clerk public route, smoke-test workflow, docs | 8 files, +353 lines | ✅ |
+| `a2ccbf63` | **feat(workflows): durable campaign sequence workflow + trigger route** | workflows/, api/workflows/ | ✅ |
+| `496c23f0` | **fix: continual-learning state + DataGrid a11y improvements** | `components/data-grid/` | ✅ |
+| `8671363a` | **fix: contain horizontal overflow in app shell** | app shell layout | ✅ |
+| `fe0b5d09` | **feat(email): wire Resend backend with plain-text-first cold outbound** | email/api layer | ✅ |
+| `e306c84b` | **feat(workflows): strict-DAG graph validator + activate/start-workflow gates** | workflows/, api/workflows/ | ✅ |
+| `ed6d3e0f` | **feat(agents): increment 1 — data model + runtime + API routes** — `agent_definitions` + `agent_runs` schema tables, runtime executor, full CRUD API | db/schema, db/migrations, app/api/agents/, lib/agents/ | ✅ |
+| `8df5f152` | **feat(agents): add AI agent support in workflow and sidebar** — Agent node type in ReactFlow workflow canvas, Agents section in sidebar nav | workflow canvas, sidebar | ✅ |
 
 ---
+
+### Review Notes (10:53 UTC)
+- **2 new code commits** since last checklist capture:
+  - `ed6d3e0f` 10:20 UTC — `feat(agents): increment 1` — `agent_definitions` + `agent_runs` data model, runtime executor, API routes (was missed in 10:38 run)
+  - `8df5f152` 10:44 UTC — `feat(agents): workflow + sidebar integration` — Agent node type in ReactFlow canvas, Agents sidebar section
+- **Claude Code: NOT running** (0 processes). Last code commit `8df5f152` at 10:44 UTC — **9 min ago. Under 30-min stall threshold. No wake event sent.**
+- **SSH to Netrunner** continues to time out on repo find (SIGKILL) — GitHub API is source of truth (consistent pattern).
+- **AI Agents feature** is significant: adds a full agent runtime layer to the SDR platform — agents can be defined, stored per-user, triggered from campaign workflows. Combined with the existing durable workflow infrastructure, this is a serious capability jump.
+- **Schema note:** `agent_definitions` and `agent_runs` tables appear to have userId scoping (tracked in schema table above).
+- **Phase C theme verification** still pending (human visual pass required). `app/agents/` added to the Phase C checklist.
+- App is stable and feature-complete. Netrunner may still be active — last commit was only 9 min ago.
 
 ### Review Notes (10:38 UTC)
 - **0 new code commits** since last run (10:08 UTC) — no new activity from Netrunner
@@ -275,68 +296,17 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 
 ### Review Notes (10:08 UTC)
 - **1 new code commit** since last run (09:53 UTC):
-  - `e306c84b` feat(workflows): strict-DAG graph validator + activate/start-workflow gates (10:05 UTC) — workflow graphs now validated as strict DAGs before activation; start-workflow enforces activation gates
+  - `e306c84b` feat(workflows): strict-DAG graph validator + activate/start-workflow gates (10:05 UTC)
 - **Claude Code: NOT running** (0 processes). Last commit `e306c84b` at 10:05 UTC — 3 min ago. Under 30-min stall threshold. No wake event sent.
 - **SSH to Netrunner** timed out again (consistent pattern) — GitHub API used as source of truth.
-- **Strict-DAG validator** is important safety infrastructure: prevents cycles in campaign step-function graphs before they hit the durable workflow runner. Gate enforcement on activate/start adds production guards.
-- **Phase C theme verification** still pending (human visual pass required).
-- App is stable. No regressions detected.
-
-### Review Notes (09:53 UTC)
-- **4 new code commits** since last run (09:38 UTC):
-  - `a2ccbf63` feat(workflows): durable campaign sequence workflow + trigger route (09:40 UTC) — the SDK wiring from `9e358bfe` now has a real workflow; campaign sequences are step-function durable
-  - `496c23f0` fix: continual-learning state + DataGrid accessibility improvements (09:43 UTC)
-  - `8671363a` fix: contain horizontal overflow in app shell (09:49 UTC) — layout polish
-  - `fe0b5d09` feat(email): wire Resend backend with plain-text-first cold outbound (09:53 UTC) — **significant**: actual email sending is now wired; plain-text-first is a smart deliverability choice for cold outbound
-- **Claude Code: NOT running** (0 processes). Last commit at 09:53 UTC — just landed (~0 min ago). Clean stop, no stall action needed.
-- **SSH to Netrunner** timed out again on repo find command (SIGKILL) — GitHub API used as source of truth (consistent pattern).
-- **Resend integration** is a major milestone: the SDR can now actually send emails. Plain-text-first cold outbound is the right call for inbox placement.
-- **Durable campaign sequences**: combining `a2ccbf63` with the Workflow SDK means campaigns run as reliable step functions — retries, delays between steps, durable state. Production-grade.
-- **Phase C theme verification** still pending (human visual pass required).
-- App is stable. No regressions detected.
-
-### Review Notes (09:38 UTC)
-- **1 new code commit** since last run (09:23 UTC):
-  - `9e358bfe` feat: wire Vercel Workflow SDK (09:32 UTC) — withWorkflow() wrapping, Clerk public route fix, type shim, smoke-test workflow, POST /api/workflows/test, docs/workflows.md
-- **Claude Code: NOT running** (0 processes). Last commit at 09:32 UTC — 6 min ago. Under the 30-min stall threshold. No wake event sent.
-- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth (consistent pattern).
-- **Vercel Workflow SDK** is a significant infrastructure addition: durable step functions wired into Next.js. Noteworthy pitfall documented — `/.well-known/workflow` must be in Clerk's public routes (same pattern as `/monitoring`). Fluid Compute must be enabled on Vercel before prod deployment.
-- **Phase C theme verification** still pending (human visual pass required).
-- App is stable. No regressions detected.
-
-### Review Notes (09:23 UTC)
-- **3 new code commits** since last run (09:08 UTC) — Sentry integration shipped:
-  - `14de728f` feat: integrate Sentry for error monitoring and tracing (09:11 UTC)
-  - `09171e6c` refactor: update import paths to use absolute references (09:12 UTC)
-  - `d108b3cb` docs: add docs/sentry.md — wiring reference + pitfalls (09:23 UTC)
-- **Claude Code: NOT running** (0 processes). Last commit `d108b3cb` at 09:23 UTC — just landed (0 min ago). Clean stop. No stall action needed.
-- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth (consistent pattern).
-- **Sentry integration** is a meaningful observability addition: error monitoring + distributed tracing now wired into the Next.js app. Includes pitfalls doc — Claude was being thorough.
-- **Phase C theme verification** still pending (human visual pass required).
-- App is stable. No regressions detected.
-
-### Review Notes (09:08 UTC)
-- **0 new code commits** since last run (08:53 UTC) — no new activity from Netrunner
-- **Claude Code: NOT running** (0 processes). Last code commit `12fd5eb9` at 08:40 UTC — 28 min ago. Under the 30-min stall threshold. No wake event sent.
-- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth (consistent pattern).
-- **Phase C theme verification** still pending (human visual pass required).
-- App is stable. Netrunner may be idle or Claude session naturally concluded.
-
-### Review Notes (08:53 UTC)
-- **1 new code commit** since last run (08:38 UTC):
-  - `12fd5eb9` refactor: update imports to use absolute paths and switch to React hooks — codebase-wide import path cleanup and React hooks migration
-- **Claude Code: NOT running** (0 processes). Last commit at 08:40 UTC — 13 min ago. Under the 30-min stall threshold. No wake event sent.
-- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth (consistent pattern).
-- **Import refactor** is a healthy housekeeping commit — absolute paths improve IDE resolution, hooks migration aligns with React best practices.
-- **Phase C theme verification** still pending (human visual pass required).
 - App is stable. No regressions detected.
 
 ---
 
-## 🎉 Implementation Complete + DataOps v1 + Observability + Email + Durable Workflows
+## 🎉 Implementation Complete + DataOps v1 + Observability + Email + Durable Workflows + AI Agents
 
-All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, Notebooks, Sentry error monitoring, durable campaign workflows, Resend email backend, and strict-DAG workflow validation shipped. App is a full SDR + data ops platform with production observability, actual email sending, and safe durable execution.
+All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, Notebooks, Sentry error monitoring, durable campaign workflows, Resend email backend, strict-DAG workflow validation, and **AI Agents v1** shipped. App is a full SDR + data ops platform with production observability, actual email sending, safe durable execution, and an embedded AI agent runtime.
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 10:38 UTC (Claude Code stopped — last code commit 33 min ago `e306c84b` — STALL THRESHOLD EXCEEDED — Telegram sent to Scott)*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 10:53 UTC (Claude Code stopped — last code commit 9 min ago `8df5f152` — under stall threshold)*
