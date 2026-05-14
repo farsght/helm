@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 09:23 UTC
+> Last updated: 2026-05-14 09:38 UTC
 
 ---
 
@@ -103,6 +103,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 - CSV import wizard — 4-step import flow for datasets ✅
 - Import refactor — absolute paths + React hooks ✅
 - Sentry integration — error monitoring + tracing ✅
+- Vercel Workflow SDK — wired via withWorkflow(), smoke test endpoint, Fluid Compute prereq documented ✅
 
 ---
 
@@ -170,6 +171,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | CSV import wizard + DataGrid column alignment | ✅ | `d0f1e427` |
 | Import refactor (absolute paths + React hooks) | ✅ | `12fd5eb9` |
 | Sentry integration + docs | ✅ | `14de728f` + `09171e6c` + `d108b3cb` |
+| Vercel Workflow SDK integration | ✅ | `9e358bfe` — withWorkflow() wired, smoke test, Fluid Compute prereq noted |
 
 ---
 
@@ -250,8 +252,18 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 | `14de728f` | **feat: integrate Sentry for error monitoring and tracing** — Sentry config, instrumentation, error tracking wired into Next.js app | Sentry config files | ✅ |
 | `09171e6c` | **refactor: update import paths to use absolute references** — follow-up import cleanup after Sentry integration | Multiple files | ✅ |
 | `d108b3cb` | **docs: add docs/sentry.md** — Sentry wiring reference + pitfalls documentation | `docs/sentry.md` | ✅ |
+| `9e358bfe` | **feat: wire Vercel Workflow SDK** — withWorkflow() wrapping in next.config.ts; Clerk public route for `/.well-known/workflow`; type shim; smoke-test workflow (`workflows/smoke-test.ts`); `POST /api/workflows/test` trigger; `docs/workflows.md` covers wiring, pitfalls, Fluid Compute prereq | 8 files, +353 lines | ✅ |
 
 ---
+
+### Review Notes (09:38 UTC)
+- **1 new code commit** since last run (09:23 UTC):
+  - `9e358bfe` feat: wire Vercel Workflow SDK (09:32 UTC) — withWorkflow() wrapping, Clerk public route fix, type shim, smoke-test workflow, POST /api/workflows/test, docs/workflows.md
+- **Claude Code: NOT running** (0 processes). Last commit at 09:32 UTC — 6 min ago. Under the 30-min stall threshold. No wake event sent.
+- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth (consistent pattern).
+- **Vercel Workflow SDK** is a significant infrastructure addition: durable step functions wired into Next.js. Noteworthy pitfall documented — `/.well-known/workflow` must be in Clerk's public routes (same pattern as `/monitoring`). Fluid Compute must be enabled on Vercel before prod deployment.
+- **Phase C theme verification** still pending (human visual pass required).
+- App is stable. No regressions detected.
 
 ### Review Notes (09:23 UTC)
 - **3 new code commits** since last run (09:08 UTC) — Sentry integration shipped:
@@ -288,4 +300,4 @@ All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, Notebooks, and S
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 09:23 UTC (Claude Code stopped — last code commit 0 min ago `d108b3cb` sentry docs — clean stop, no action)*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 09:38 UTC (Claude Code stopped — last code commit 6 min ago `9e358bfe` Vercel Workflow SDK — clean stop, no action)*
