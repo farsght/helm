@@ -26,11 +26,11 @@ import {
 } from "@/components/ui/table";
 import { apiFetch } from "@/lib/api";
 import {
-  DataGridListMembers,
-  type ListMemberRow,
+  DataGridSegmentMembers,
+  type SegmentMemberRow,
 } from "./components/data-grid-segment-members";
 
-type ListMeta = {
+type SegmentMeta = {
   id: number;
   name: string;
   description: string | null;
@@ -38,7 +38,7 @@ type ListMeta = {
   filterJson?: string | null;
 };
 
-export default function ListDetailPage({
+export default function SegmentDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -46,12 +46,12 @@ export default function ListDetailPage({
   const { id } = use(params);
   const segmentId = parseInt(id, 10);
 
-  const [list, setList] = useState<ListMeta | null>(null);
-  const [members, setMembers] = useState<ListMemberRow[]>([]);
+  const [segment, setSegment] = useState<SegmentMeta | null>(null);
+  const [members, setMembers] = useState<SegmentMemberRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [addOpen, setAddOpen] = useState(false);
-  const [allProspects, setAllProspects] = useState<ListMemberRow[]>([]);
+  const [allProspects, setAllProspects] = useState<SegmentMemberRow[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
@@ -61,18 +61,18 @@ export default function ListDetailPage({
     async function load() {
       setLoading(true);
       try {
-        const [listsAll, mems] = await Promise.all([
+        const [segmentsAll, mems] = await Promise.all([
           fetch("/api/segments").then((r) => r.json()),
           apiFetch(`/api/segments/${segmentId}/members`),
         ]);
         if (cancelled) return;
-        const found = Array.isArray(listsAll)
-          ? listsAll.find((l: ListMeta) => l.id === segmentId)
+        const found = Array.isArray(segmentsAll)
+          ? segmentsAll.find((l: SegmentMeta) => l.id === segmentId)
           : null;
-        setList(found ?? null);
+        setSegment(found ?? null);
         setMembers(Array.isArray(mems) ? mems : []);
       } catch (err) {
-        console.error("Load list error:", err);
+        console.error("Load segment error:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -122,11 +122,11 @@ export default function ListDetailPage({
   const memberIds = new Set(members.map((m) => m.id));
   const availableProspects = allProspects.filter((p) => !memberIds.has(p.id));
 
-  const isDynamic = list?.type === "dynamic";
+  const isDynamic = segment?.type === "dynamic";
   let parsedFilter: { rules: Array<{ field: string; operator: string; value?: string }> } | null = null;
-  if (isDynamic && list?.filterJson) {
+  if (isDynamic && segment?.filterJson) {
     try {
-      parsedFilter = JSON.parse(list.filterJson);
+      parsedFilter = JSON.parse(segment.filterJson);
     } catch {
       parsedFilter = null;
     }
@@ -144,16 +144,16 @@ export default function ListDetailPage({
           </Link>
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold text-foreground">
-              {list?.name ?? (loading ? "Loading…" : `List #${segmentId}`)}
+              {segment?.name ?? (loading ? "Loading…" : `Segment #${segmentId}`)}
             </h1>
-            {list && (
+            {segment && (
               <Badge variant="secondary" className="capitalize">
-                {list.type}
+                {segment.type}
               </Badge>
             )}
           </div>
-          {list?.description && (
-            <p className="text-muted-foreground mt-1">{list.description}</p>
+          {segment?.description && (
+            <p className="text-muted-foreground mt-1">{segment.description}</p>
           )}
           <p className="text-sm text-muted-foreground mt-1">
             {members.length} member{members.length === 1 ? "" : "s"}
@@ -191,7 +191,7 @@ export default function ListDetailPage({
         )}
       </div>
 
-      <DataGridListMembers
+      <DataGridSegmentMembers
         segmentId={segmentId}
         data={members}
         onDataChange={setMembers}
@@ -200,9 +200,9 @@ export default function ListDetailPage({
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
         <DialogContent className="bg-card border-border text-foreground max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Add Prospects to {list?.name}</DialogTitle>
+            <DialogTitle>Add Prospects to {segment?.name}</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Select prospects to add to this list.
+              Select prospects to add to this segment.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-4">

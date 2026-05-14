@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Building2, Trash2 } from "lucide-react";
+import { PageHeader, EmptyState, ConfirmDialog } from "@/components/page";
 
 type Company = {
   id: number;
@@ -22,6 +23,7 @@ export function CompaniesClient() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ name: '', domain: '', industry: '', employeeCount: '', location: '', website: '' });
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const refetch = () => {
     fetch('/api/companies').then(r => r.json()).then(d => setCompanies(Array.isArray(d) ? d : []));
@@ -48,28 +50,37 @@ export function CompaniesClient() {
     } finally { setLoading(false); }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Delete this company?')) return;
-    const res = await fetch(`/api/companies/${id}`, { method: 'DELETE' });
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    const res = await fetch(`/api/companies/${deleteId}`, { method: 'DELETE' });
     if (res.ok) refetch();
+    setDeleteId(null);
   };
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Companies</h1>
-          <p className="text-sm text-muted-foreground">Organizations you do business with.</p>
-        </div>
-        <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" />New Company</Button>
-      </div>
+      <PageHeader
+        title="Companies"
+        description="Organizations you do business with."
+        actions={
+          <Button onClick={() => setOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />New Company
+          </Button>
+        }
+      />
 
       <div className="border rounded-md bg-card">
         {companies.length === 0 ? (
-          <div className="p-12 text-center text-muted-foreground">
-            <Building2 className="h-10 w-10 mx-auto mb-3 opacity-40" />
-            <p>No companies yet. Add your first one.</p>
-          </div>
+          <EmptyState
+            icon={Building2}
+            title="No companies yet"
+            description="Add your first one to start tracking organizations."
+            action={
+              <Button onClick={() => setOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />New Company
+              </Button>
+            }
+          />
         ) : (
           <table className="w-full text-sm">
             <thead className="border-b bg-muted/50">
@@ -91,7 +102,7 @@ export function CompaniesClient() {
                   <td className="px-4 py-2 text-muted-foreground">{c.employeeCount ?? '—'}</td>
                   <td className="px-4 py-2 text-muted-foreground">{c.location || '—'}</td>
                   <td className="px-4 py-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}>
+                    <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </td>
@@ -119,6 +130,16 @@ export function CompaniesClient() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteId !== null}
+        onOpenChange={(o) => !o && setDeleteId(null)}
+        title="Delete this company?"
+        description="This will also unlink any contacts and deals associated with it. This action cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

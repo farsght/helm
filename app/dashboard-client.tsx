@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowRight, MessageSquare, Calendar, Users, BarChart3 } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useEffect, useState } from "react";
+import { PageHeader } from "@/components/page";
 
 type DashboardData = {
   metrics: {
@@ -140,8 +141,7 @@ export default function DashboardClient() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Welcome back! Here&apos;s what&apos;s happening with your campaigns.</p>
+        <PageHeader title="Dashboard" description={`Welcome back! Here's what's happening with your campaigns.`} />
       </div>
 
       {/* Metrics */}

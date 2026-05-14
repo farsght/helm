@@ -18,7 +18,7 @@ import { apiFetch } from "@/lib/api";
 
 import { DataGridActionBar } from "../../components/data-grid-action-bar";
 
-export type ListMemberRow = {
+export type SegmentMemberRow = {
   id: number;
   firstName: string;
   lastName: string;
@@ -27,23 +27,23 @@ export type ListMemberRow = {
   title: string | null;
 };
 
-interface DataGridListMembersProps {
+interface DataGridSegmentMembersProps {
   segmentId: number;
-  data: ListMemberRow[];
-  onDataChange?: (data: ListMemberRow[]) => void;
+  data: SegmentMemberRow[];
+  onDataChange?: (data: SegmentMemberRow[]) => void;
 }
 
-export function DataGridListMembers({
+export function DataGridSegmentMembers({
   segmentId,
   data,
   onDataChange,
-}: DataGridListMembersProps) {
+}: DataGridSegmentMembersProps) {
   const windowSize = useWindowSize();
-  const filterFn = React.useMemo(() => getFilterFn<ListMemberRow>(), []);
+  const filterFn = React.useMemo(() => getFilterFn<SegmentMemberRow>(), []);
 
-  const columns = React.useMemo<ColumnDef<ListMemberRow>[]>(
+  const columns = React.useMemo<ColumnDef<SegmentMemberRow>[]>(
     () => [
-      getDataGridSelectColumn<ListMemberRow>({ enableRowMarkers: true }),
+      getDataGridSelectColumn<SegmentMemberRow>({ enableRowMarkers: true }),
       {
         id: "firstName",
         accessorKey: "firstName",
@@ -89,11 +89,11 @@ export function DataGridListMembers({
   );
 
   const onRowsDelete = React.useCallback(
-    async (rowsToDelete: ListMemberRow[]) => {
+    async (rowsToDelete: SegmentMemberRow[]) => {
       const ids = rowsToDelete.map((r) => r.id);
       if (
         !confirm(
-          `Remove ${ids.length} member${ids.length === 1 ? "" : "s"} from this list?`,
+          `Remove ${ids.length} member${ids.length === 1 ? "" : "s"} from this segment?`,
         )
       )
         return;
@@ -171,8 +171,8 @@ export function DataGridListMembers({
   );
 }
 
-export async function fetchListMembers(
+export async function fetchSegmentMembers(
   segmentId: number,
-): Promise<ListMemberRow[]> {
+): Promise<SegmentMemberRow[]> {
   return apiFetch(`/api/segments/${segmentId}/members`);
 }

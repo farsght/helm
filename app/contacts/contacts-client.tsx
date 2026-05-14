@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Users, Trash2 } from "lucide-react";
+import { PageHeader, EmptyState, ConfirmDialog } from "@/components/page";
 
 type Contact = {
   id: number;
@@ -34,6 +35,7 @@ export function ContactsClient() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', title: '', companyId: '', lifecycleStage: 'lead',
   });
@@ -69,30 +71,39 @@ export function ContactsClient() {
     } finally { setLoading(false); }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Delete this contact?')) return;
-    const res = await fetch(`/api/contacts/${id}`, { method: 'DELETE' });
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    const res = await fetch(`/api/contacts/${deleteId}`, { method: 'DELETE' });
     if (res.ok) refetch();
+    setDeleteId(null);
   };
 
   const companyName = (id: number | null) => companies.find(c => c.id === id)?.name || '—';
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Contacts</h1>
-          <p className="text-sm text-muted-foreground">People you have a relationship with.</p>
-        </div>
-        <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" />New Contact</Button>
-      </div>
+      <PageHeader
+        title="Contacts"
+        description="People you have a relationship with."
+        actions={
+          <Button onClick={() => setOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />New Contact
+          </Button>
+        }
+      />
 
       <div className="border rounded-md bg-card">
         {contacts.length === 0 ? (
-          <div className="p-12 text-center text-muted-foreground">
-            <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
-            <p>No contacts yet. Add your first one.</p>
-          </div>
+          <EmptyState
+            icon={Users}
+            title="No contacts yet"
+            description="Add your first one to start tracking people."
+            action={
+              <Button onClick={() => setOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />New Contact
+              </Button>
+            }
+          />
         ) : (
           <table className="w-full text-sm">
             <thead className="border-b bg-muted/50">
@@ -118,7 +129,7 @@ export function ContactsClient() {
                     </span>
                   </td>
                   <td className="px-4 py-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(c.id)}>
+                    <Button variant="ghost" size="icon" onClick={() => setDeleteId(c.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </td>
@@ -162,6 +173,16 @@ export function ContactsClient() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteId !== null}
+        onOpenChange={(o) => !o && setDeleteId(null)}
+        title="Delete this contact?"
+        description="This will also remove them from any deals they're attached to. This action cannot be undone."
+        confirmLabel="Delete"
+        destructive
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

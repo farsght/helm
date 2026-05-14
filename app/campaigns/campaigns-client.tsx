@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus, Play, Pause, Target, Loader2 } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { PageHeader } from "@/components/page";
 
 type Campaign = {
   id: number;
@@ -70,19 +71,25 @@ export function CampaignsClient() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Campaigns</h1>
-          <p className="text-muted-foreground mt-1">Manage your outreach campaigns</p>
-        </div>
-        <Button
-          onClick={handleNewCampaign}
-          disabled={creating}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
-        >
-          {creating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-          New Campaign
-        </Button>
+      <div className="mb-8">
+        <PageHeader
+          title="Campaigns"
+          description="Manage your outreach campaigns"
+          actions={
+            <Button
+              onClick={handleNewCampaign}
+              disabled={creating}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {creating ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="mr-2 h-4 w-4" />
+              )}
+              New Campaign
+            </Button>
+          }
+        />
       </div>
 
       {campaigns.length === 0 ? (
