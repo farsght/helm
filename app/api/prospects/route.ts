@@ -71,6 +71,8 @@ export async function POST(request: NextRequest) {
       company: body.company ?? null,
       title: body.title ?? null,
       linkedinUrl: body.linkedinUrl ?? null,
+      companyWebsite: body.companyWebsite ?? null,
+      companyLinkedinUrl: body.companyLinkedinUrl ?? null,
       phone: body.phone ?? null,
       industry: body.industry ?? null,
       location: body.location ?? null,

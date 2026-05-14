@@ -34,6 +34,8 @@ type Prospect = {
   title: string | null;
   industry: string | null;
   linkedinUrl: string | null;
+  companyWebsite: string | null;
+  companyLinkedinUrl: string | null;
   campaignName?: string | null;
   campaignStatus?: string | null;
 };
@@ -64,6 +66,8 @@ export function ProspectsClient() {
     company: '',
     title: '',
     linkedinUrl: '',
+    companyWebsite: '',
+    companyLinkedinUrl: '',
   });
 
   const [editFormData, setEditFormData] = useState({
@@ -73,6 +77,8 @@ export function ProspectsClient() {
     company: '',
     title: '',
     linkedinUrl: '',
+    companyWebsite: '',
+    companyLinkedinUrl: '',
   });
 
   const handleAddProspect = async () => {
@@ -92,6 +98,8 @@ export function ProspectsClient() {
         company: '',
         title: '',
         linkedinUrl: '',
+        companyWebsite: '',
+        companyLinkedinUrl: '',
       });
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error';
@@ -192,6 +200,8 @@ export function ProspectsClient() {
       company: prospect.company || '',
       title: prospect.title || '',
       linkedinUrl: prospect.linkedinUrl || '',
+      companyWebsite: prospect.companyWebsite || '',
+      companyLinkedinUrl: prospect.companyLinkedinUrl || '',
     });
     setEditDialogOpen(true);
   };
@@ -471,6 +481,26 @@ export function ProspectsClient() {
                 placeholder="https://linkedin.com/in/..."
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="companyWebsite">Company Website</Label>
+              <Input
+                id="companyWebsite"
+                value={formData.companyWebsite}
+                onChange={(e) => setFormData({ ...formData, companyWebsite: e.target.value })}
+                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                placeholder="https://example.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="companyLinkedinUrl">Company LinkedIn URL</Label>
+              <Input
+                id="companyLinkedinUrl"
+                value={formData.companyLinkedinUrl}
+                onChange={(e) => setFormData({ ...formData, companyLinkedinUrl: e.target.value })}
+                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                placeholder="https://linkedin.com/company/..."
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -594,6 +624,24 @@ export function ProspectsClient() {
                 value={editFormData.linkedinUrl}
                 onChange={(e) => setEditFormData({ ...editFormData, linkedinUrl: e.target.value })}
                 className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Company Website</Label>
+              <Input
+                value={editFormData.companyWebsite}
+                onChange={(e) => setEditFormData({ ...editFormData, companyWebsite: e.target.value })}
+                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                placeholder="https://example.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Company LinkedIn URL</Label>
+              <Input
+                value={editFormData.companyLinkedinUrl}
+                onChange={(e) => setEditFormData({ ...editFormData, companyLinkedinUrl: e.target.value })}
+                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                placeholder="https://linkedin.com/company/..."
               />
             </div>
           </div>

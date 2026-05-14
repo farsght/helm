@@ -58,6 +58,8 @@ export const prospects = pgTable('prospects', {
   company: text('company'),
   title: text('title'),
   linkedinUrl: text('linkedin_url'),
+  companyWebsite: text('company_website'),
+  companyLinkedinUrl: text('company_linkedin_url'),
   phone: text('phone'),
   industry: text('industry'),
   location: text('location'),

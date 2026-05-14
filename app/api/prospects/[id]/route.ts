@@ -40,6 +40,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         company: body.company,
         title: body.title,
         linkedinUrl: body.linkedinUrl,
+        companyWebsite: body.companyWebsite,
+        companyLinkedinUrl: body.companyLinkedinUrl,
         phone: body.phone,
         industry: body.industry,
         location: body.location,
