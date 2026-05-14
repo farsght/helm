@@ -180,12 +180,17 @@ export function DatasetsClient() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
-        <PageHeader title="Datasets" description="Staging workspace for raw data. Import, inspect, transform, then promote into prospects or segments." />
-        <Button onClick={() => setAddOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Dataset
-        </Button>
+      <div className="mb-6">
+        <PageHeader
+          title="Datasets"
+          description="Staging workspace for raw data. Import, inspect, transform, then promote into prospects or segments."
+          actions={
+            <Button onClick={() => setAddOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Dataset
+            </Button>
+          }
+        />
       </div>
 
       {loading ? (
