@@ -363,17 +363,19 @@ Before decommissioning netrunner:
 
 ## 9. Build phases — order of operations
 
-**Phase 1 — Runtime + schema (foundation)**
-1. Drizzle migration `0013_meetings_pipeline.sql` — schema + indexes
-2. `lib/pipeline-engine/index.ts` — `runPipeline(pipelineId, runId)` topological executor
-3. `lib/pipeline-engine/nodes/index.ts` — executor registry, no-op stubs for existing 15 types
-4. Rewire `/api/pipelines/[id]/run` to delegate
-5. Snapshot test on existing pipelines: no regressions (runs still complete, log shape unchanged)
+**Phase 1 — Runtime + schema (foundation)** ✅ shipped (`dd054e3`)
+1. Drizzle migration `0013_meetings_pipeline.sql` — schema + indexes ✅
+2. `lib/pipeline-engine.ts` — `runPipeline(pipelineId, runId)` topological executor ✅
+3. Executor registry + no-op stubs for the 15 existing UI node types ✅
+4. Rewire `/api/pipelines/[id]/run` to delegate ✅
+5. 9 unit tests on topoSort + registry ✅
 
-**Phase 2 — Fireflies poll + persist + classify**
-6. `fireflies_poll` executor + inspector card + Zod config schema
-7. `persist_raw_pair` executor + inspector
-8. `classify_meeting` executor + inspector + `prompt_runs` writes
+**Phase 2a — Fireflies poll + persist** ✅ shipped
+6. `fireflies_poll` executor + Zod config schema — GraphQL polling, dedupe via Helm's `meetings.fireflies_id`, sequential detail fetch, transcript+summary markdown rendering ✅
+7. `persist_raw_pair` executor — writes `Raw/{slug}-{transcript,summary}.md` to vault with frontmatter; `enabled=false` makes it a pass-through ✅
+8. 11 unit tests on slug/transcript/summary rendering + config schema ✅
+
+**Phase 2b — Classify (deferred to its own session)**
 
 **Phase 3 — Entities + chunking + embedding**
 9. `extract_entities` executor + inspector

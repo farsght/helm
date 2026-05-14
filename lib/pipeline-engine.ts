@@ -32,34 +32,15 @@ import {
 } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
-// Derive row types from the table schemas (schema.ts doesn't export named types).
-type DbPipelineNode = typeof pipelineNodes.$inferSelect;
-type DbPipelineEdge = typeof pipelineEdges.$inferSelect;
+// Re-export shared types from the dedicated types module so external
+// consumers can import them from either location.
+export type { DbPipelineNode, DbPipelineEdge, Row, PipelineLogEntry, PipelineRunContext, NodeExecutor } from './pipeline-engine-types';
+import type { DbPipelineNode, DbPipelineEdge, Row, PipelineLogEntry, PipelineRunContext, NodeExecutor } from './pipeline-engine-types';
 
-// ── Types ────────────────────────────────────────────────────────────
-
-export type Row = Record<string, unknown>;
-
-export interface PipelineLogEntry {
-  nodeId: number;
-  message: string;
-  level: 'info' | 'warn' | 'error';
-}
-
-export interface PipelineRunContext {
-  pipelineId: number;
-  runId: number;
-  userId: string;
-  log: PipelineLogEntry[];
-  rowsErrored: number;
-}
-
-export type NodeExecutor = (
-  config: Record<string, unknown>,
-  inputRows: Row[],
-  node: DbPipelineNode,
-  ctx: PipelineRunContext,
-) => Promise<Row[]>;
+// Bring in the Fireflies-pipeline node executors so they auto-register
+// against the executors registry on module load.
+import { firefliesPoll } from './pipeline-nodes/fireflies-poll';
+import { persistRawPair } from './pipeline-nodes/persist-raw-pair';
 
 // ── Executor registry ────────────────────────────────────────────────
 //
@@ -130,10 +111,14 @@ for (const t of [
   registerExecutor(t, passThrough);
 }
 
+// Phase 2a Fireflies meetings nodes — auto-register on module load.
+registerExecutor('fireflies_poll', firefliesPoll);
+registerExecutor('persist_raw_pair', persistRawPair);
+
 // ── Topological sort ─────────────────────────────────────────────────
 
 function topoSort(nodes: DbPipelineNode[], edges: DbPipelineEdge[]): DbPipelineNode[] {
-  return topoSortGeneric(nodes, edges);
+  return topoSortGeneric<DbPipelineNode, DbPipelineEdge>(nodes, edges);
 }
 
 /**
@@ -161,7 +146,7 @@ export function topoSortGeneric<N extends { id: number }, E extends { sourceNode
   // Stable order: sort root nodes by id for deterministic runs
   queue.sort((a, b) => a - b);
 
-  const sorted: DbPipelineNode[] = [];
+  const sorted: N[] = [];
   while (queue.length > 0) {
     const id = queue.shift()!;
     sorted.push(byId.get(id)!);
