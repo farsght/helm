@@ -7,6 +7,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/cron(.*)',      // cron jobs use internal calls
   '/api/health',        // health check endpoint
   '/monitoring(.*)',    // Sentry tunnelRoute — must bypass auth or events drop
+  '/.well-known/workflow(.*)', // Vercel Workflow SDK runtime routes — must be public
 ])
 
 export default clerkMiddleware(async (auth, request) => {

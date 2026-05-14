@@ -1,11 +1,17 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
+import { withWorkflow } from "workflow/next";
 
 const nextConfig: NextConfig = {
   /* config options here */
 };
 
-export default withSentryConfig(nextConfig, {
+// Compose: workflow inside sentry.
+// Order matters — workflow needs to inject its build-time transforms (the
+// "use workflow" / "use step" directives) BEFORE Sentry wraps the final config.
+// Wrapping Sentry around the workflow-wrapped config means source map upload
+// and runtime instrumentation still see the final composed Next config.
+export default withSentryConfig(withWorkflow(nextConfig), {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
