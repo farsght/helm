@@ -77,6 +77,22 @@ function variantToSchemaType(variant: CellVariant): DatasetColumn["type"] {
   }
 }
 
+/** Estimate column width from label length + inferred type. ~7px per char, min 100, max 400. */
+function calcColumnWidth(col: DatasetColumn): number {
+  const CHAR_PX = 7;
+  const PADDING = 48; // icon + sort arrow + padding
+  const labelPx = col.label.length * CHAR_PX + PADDING;
+  const samplePx = col.sample ? Math.min(col.sample.length * CHAR_PX + PADDING, 320) : 0;
+  const typePx: Record<string, number> = {
+    number: 100,
+    boolean: 100,
+    date: 140,
+    string: 180,
+  };
+  const base = typePx[col.type] ?? 180;
+  return Math.max(base, labelPx, samplePx);
+}
+
 function buildColumns(
   schema: DatasetColumn[],
   variantsRef: React.RefObject<Record<string, CellVariant>>,
@@ -103,7 +119,7 @@ function buildColumns(
           }
         />
       ),
-      minSize: col.type === "number" ? 120 : 180,
+      minSize: calcColumnWidth(col),
       filterFn,
       meta: {
         label: col.label,
