@@ -125,11 +125,11 @@ describe('Enrollment + Execution flow (integration)', () => {
     expect(execBody.processed).toBe(1)
 
     // ── Step 5: Verify message was created ────────────────────────────────────
-    expect(sendEmail).toHaveBeenCalledWith(
-      'jane@corp.com',
-      'Welcome Jane',
-      'Hi Jane!',
-    )
+    expect(sendEmail).toHaveBeenCalledWith({
+      to: 'jane@corp.com',
+      subject: 'Welcome Jane',
+      text: 'Hi Jane!',
+    })
     // db.insert called for the message record
     expect(vi.mocked(db.insert)).toHaveBeenCalled()
   })

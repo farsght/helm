@@ -185,7 +185,7 @@ async function executeNode(campaignId: number, userId: string, campaignProspect:
     case 'email': {
       const subject = config.subject ? replaceVariables(config.subject, prospect) : '';
       const body = replaceVariables(config.body || '', prospect);
-      await sendEmail(prospect.email || '', subject, body);
+      await sendEmail({ to: prospect.email || '', subject, text: body });
       await db.insert(messages).values({
         userId,
         campaignId,

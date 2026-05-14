@@ -165,6 +165,8 @@ linkedin_*, ai_decision, manual_task, tag, move_to_campaign.
 3. No throttling between sends. If you enroll 10k prospects, that's 10k workflows starting near-simultaneously; the `sendEmail` rate limiting would need to live in the email-sender lib or as a workflow-level semaphore. Fine for v1 with low volumes.
 4. Campaign edits while prospects are running: the workflow loaded the graph at `loadGraph` time and won't see schema changes. Stop + restart the workflow if you change a live campaign's graph.
 
+**Email sending:** `email` nodes route through `lib/email-sender.ts` (Resend backend, plain-text by default). See `docs/email.md` for full setup, deliverability checklist, and the `configJson` schema for email nodes. **You must complete the Resend DNS + warmup setup before running real campaigns.**
+
 ## Future plans (not implemented)
 
 - **Edge-level conditions**: evaluate `workflow_edges.conditionJson` to support conditional transitions beyond just `condition` nodes.

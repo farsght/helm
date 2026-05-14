@@ -122,12 +122,12 @@ describe('Email node execution', () => {
     expect(res.status).toBe(200)
     expect(body.processed).toBe(1)
 
-    // sendEmail called with substituted variables
-    expect(sendEmail).toHaveBeenCalledWith(
-      'john@acme.com',
-      'Hi John',
-      'Hello John from Acme',
-    )
+    // sendEmail called with substituted variables (new object signature, text-first)
+    expect(sendEmail).toHaveBeenCalledWith({
+      to: 'john@acme.com',
+      subject: 'Hi John',
+      text: 'Hello John from Acme',
+    })
 
     // Message record inserted
     expect(vi.mocked(db.insert)).toHaveBeenCalled()

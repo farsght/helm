@@ -76,6 +76,16 @@ type EmailConfig = {
   bodyHtml?: string;
   fromName?: string;
   fromEmail?: string;
+  /**
+   * 'text' (default) — plain-text only. Best for cold outbound: no tracking
+   *   pixels, no link wrapping, looks like a 1:1 human message, best inbox
+   *   placement on Gmail/Outlook.
+   * 'html' — HTML only. Adds tracking surface; use for nurture/transactional.
+   * 'both' — multipart/alternative. Recipient client picks. Hedge mode.
+   */
+  format?: "text" | "html" | "both";
+  /** Optional Reply-To override (e.g. real inbox vs sending subdomain). */
+  replyTo?: string;
 };
 
 type WaitConfig = {
@@ -187,7 +197,7 @@ async function sendCampaignEmail(
   graph: GraphSnapshot,
   node: NodeRow,
   prospect: ProspectShape
-): Promise<{ messageId: number }> {
+): Promise<{ messageId: number; providerMessageId: string }> {
   "use step";
 
   if (!prospect.email) {
@@ -202,12 +212,23 @@ async function sendCampaignEmail(
 
   // Variable substitution — minimal v1, expand later.
   const subject = renderTemplate(config.subject ?? "Hello", prospect);
-  const body = renderTemplate(config.body ?? "", prospect);
-  const bodyHtml = config.bodyHtml
+  const textBody = renderTemplate(config.body ?? "", prospect);
+  const htmlBody = config.bodyHtml
     ? renderTemplate(config.bodyHtml, prospect)
-    : `<p>${body.replace(/\n/g, "<br>")}</p>`;
+    : undefined;
 
-  // 1. Record the message first so we have an ID for observability
+  // Default cold-outbound posture: plain text only. Best inbox placement.
+  // Campaign nodes can opt into 'html' or 'both' via config.format.
+  const format = config.format ?? "text";
+  const sendText = format === "text" || format === "both" ? textBody : undefined;
+  const sendHtml =
+    format === "html" || format === "both"
+      ? htmlBody ?? `<p>${textBody.replace(/\n/g, "<br>")}</p>`
+      : undefined;
+
+  // 1. Record the message first so we have an ID for observability.
+  //    Always store both text body and html (if rendered) — the DB row is
+  //    the canonical record of what we composed, not what we transmitted.
   const [msg] = await db
     .insert(messages)
     .values({
@@ -218,30 +239,65 @@ async function sendCampaignEmail(
       channel: "email",
       direction: "outbound",
       subject,
-      body,
-      bodyHtml,
+      body: textBody,
+      bodyHtml: htmlBody,
       status: "draft",
       aiGenerated: false,
       sentAt: null,
     })
     .returning({ id: messages.id });
 
-  // 2. Send. Any thrown error here will trigger the step's retry policy.
-  await sendEmail(
-    prospect.email,
-    subject,
-    bodyHtml,
-    config.fromName,
-    config.fromEmail
-  );
+  // 2. Build From string. Resend's default is RESEND_FROM_EMAIL; per-node
+  //    override via config.fromName + config.fromEmail.
+  const fromName = config.fromName;
+  const fromEmail = config.fromEmail;
+  const fromArg =
+    fromName && fromEmail
+      ? `${fromName} <${fromEmail}>`
+      : fromEmail ?? undefined;
 
-  // 3. Mark sent
+  // 3. Send. Any thrown error bubbles to trigger the step's retry policy.
+  //    EmailConfigError (missing API key, no body) means retries won't
+  //    help — convert to FatalError so the workflow fails fast.
+  let providerMessageId: string;
+  try {
+    const result = await sendEmail({
+      to: prospect.email,
+      subject,
+      text: sendText,
+      html: sendHtml,
+      from: fromArg,
+      replyTo: config.replyTo,
+      tags: [
+        { name: "campaign_id", value: String(graph.campaignId) },
+        { name: "node_id", value: String(node.id) },
+        { name: "prospect_id", value: String(prospect.id) },
+      ],
+    });
+    providerMessageId = result.messageId;
+  } catch (err) {
+    // Mark the message as failed before re-raising so observability is intact
+    await db
+      .update(messages)
+      .set({ status: "failed" })
+      .where(eq(messages.id, msg.id));
+
+    // Config errors are non-retryable
+    if (err instanceof Error && err.name === "EmailConfigError") {
+      throw new FatalError(`Email config error: ${err.message}`);
+    }
+    throw err;
+  }
+
+  // 4. Mark sent. Store provider message ID in body header? For now we
+  //    only need it for webhooks — could add a column later. Keeping the
+  //    return value lets the workflow log it.
   await db
     .update(messages)
     .set({ status: "sent", sentAt: new Date() })
     .where(eq(messages.id, msg.id));
 
-  return { messageId: msg.id };
+  return { messageId: msg.id, providerMessageId };
 }
 
 async function checkMessageStatus(
