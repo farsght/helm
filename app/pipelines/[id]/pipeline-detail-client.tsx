@@ -96,6 +96,17 @@ const PALETTE_GROUPS = [
     ],
   },
   {
+    label: "Meetings",
+    items: [
+      { type: "fireflies_poll", label: "Fireflies Poll" },
+      { type: "persist_raw_pair", label: "Persist Raw (vault)" },
+      { type: "classify_meeting", label: "Classify Meeting" },
+      { type: "extract_entities", label: "Extract Entities" },
+      { type: "chunk_text", label: "Chunk Text" },
+      { type: "embed", label: "Embed Chunks" },
+    ],
+  },
+  {
     label: "Output",
     items: [
       { type: "promote_prospects", label: "→ Prospects" },
@@ -373,6 +384,185 @@ function PipelineNodeConfig({
             <Label>Segment name to create/update</Label>
             <Input value={String(config.segmentName ?? "")} onChange={(e) => setConfig({ ...config, segmentName: e.target.value })} placeholder="e.g. Pipeline Output Q1" />
           </div>
+        );
+
+      // ─── Meetings pipeline nodes ──────────────────────────────────
+      // Form fields mirror the Zod schemas in lib/pipeline-nodes/*.ts.
+
+      case "fireflies_poll":
+        return (
+          <>
+            <div className="space-y-2">
+              <Label>API Key env var</Label>
+              <Input value={String(config.apiKeyEnv ?? "FIREFLIES_API_KEY")} onChange={(e) => setConfig({ ...config, apiKeyEnv: e.target.value })} placeholder="FIREFLIES_API_KEY" />
+            </div>
+            <div className="space-y-2">
+              <Label>Lookback (hours)</Label>
+              <Input type="number" value={String(config.lookbackHours ?? 24)} onChange={(e) => setConfig({ ...config, lookbackHours: parseInt(e.target.value) || 24 })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Max meetings per run</Label>
+              <Input type="number" value={String(config.maxMeetings ?? 50)} onChange={(e) => setConfig({ ...config, maxMeetings: parseInt(e.target.value) || 50 })} />
+            </div>
+            <p className="text-xs text-muted-foreground">Dedupes against meetings.fireflies_id — already-imported meetings are skipped.</p>
+          </>
+        );
+
+      case "persist_raw_pair":
+        return (
+          <>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="prp-enabled"
+                checked={Boolean(config.enabled ?? true)}
+                onChange={(e) => setConfig({ ...config, enabled: e.target.checked })}
+              />
+              <Label htmlFor="prp-enabled">Write to vault (uncheck to pass through)</Label>
+            </div>
+            <div className="space-y-2">
+              <Label>Vault root</Label>
+              <Input value={String(config.vaultRoot ?? "")} onChange={(e) => setConfig({ ...config, vaultRoot: e.target.value })} placeholder="$VAULT_ROOT or absolute path" />
+            </div>
+            <div className="space-y-2">
+              <Label>Subdir</Label>
+              <Input value={String(config.subdir ?? "Knowledge Base/Sources/Fireflies/Raw")} onChange={(e) => setConfig({ ...config, subdir: e.target.value })} />
+            </div>
+            <p className="text-xs text-muted-foreground">Writes transcript + summary markdown pair under {`{vaultRoot}/{subdir}/`}.</p>
+          </>
+        );
+
+      case "classify_meeting":
+        return (
+          <>
+            <div className="space-y-2">
+              <Label>Model</Label>
+              <Input value={String(config.model ?? "gpt-4o-mini")} onChange={(e) => setConfig({ ...config, model: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Prompt version tag</Label>
+              <Input value={String(config.promptVersionTag ?? "netrunner-v1")} onChange={(e) => setConfig({ ...config, promptVersionTag: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Internal domains (comma-separated)</Label>
+              <Input value={String(config.internalDomains ?? "bitwage.co,paystand.com")} onChange={(e) => setConfig({ ...config, internalDomains: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Retry count</Label>
+              <Input type="number" value={String(config.retryCount ?? 3)} onChange={(e) => setConfig({ ...config, retryCount: parseInt(e.target.value) || 0 })} />
+            </div>
+            <div className="space-y-2">
+              <Label>OpenAI API key env var</Label>
+              <Input value={String(config.openaiApiKeyEnv ?? "OPENAI_API_KEY")} onChange={(e) => setConfig({ ...config, openaiApiKeyEnv: e.target.value })} />
+            </div>
+            <p className="text-xs text-muted-foreground">VERBATIM netrunner Pass 1 prompt. Forces gtm_stage=[] for internal meetings.</p>
+          </>
+        );
+
+      case "extract_entities":
+        return (
+          <>
+            <div className="space-y-2">
+              <Label>Model</Label>
+              <Input value={String(config.model ?? "gpt-4o-mini")} onChange={(e) => setConfig({ ...config, model: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Prompt version tag</Label>
+              <Input value={String(config.promptVersionTag ?? "netrunner-v1")} onChange={(e) => setConfig({ ...config, promptVersionTag: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Max input chars</Label>
+              <Input type="number" value={String(config.maxInputChars ?? 12000)} onChange={(e) => setConfig({ ...config, maxInputChars: parseInt(e.target.value) || 12000 })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Retry count</Label>
+              <Input type="number" value={String(config.retryCount ?? 3)} onChange={(e) => setConfig({ ...config, retryCount: parseInt(e.target.value) || 0 })} />
+            </div>
+            <div className="space-y-2">
+              <Label>OpenAI API key env var</Label>
+              <Input value={String(config.openaiApiKeyEnv ?? "OPENAI_API_KEY")} onChange={(e) => setConfig({ ...config, openaiApiKeyEnv: e.target.value })} />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="ee-dryrun"
+                checked={Boolean(config.dryRun ?? false)}
+                onChange={(e) => setConfig({ ...config, dryRun: e.target.checked })}
+              />
+              <Label htmlFor="ee-dryrun">Dry run (emit empty entity stubs, no LLM call)</Label>
+            </div>
+            <p className="text-xs text-muted-foreground">Extracts people / companies / products / features / partner_type. Internal meetings → partner_type=&apos;none&apos;.</p>
+          </>
+        );
+
+      case "chunk_text":
+        return (
+          <>
+            <div className="space-y-2">
+              <Label>Source field</Label>
+              <Input value={String(config.field ?? "transcript")} onChange={(e) => setConfig({ ...config, field: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Source type</Label>
+              <Select value={String(config.sourceType ?? "transcript")} onValueChange={(v) => setConfig({ ...config, sourceType: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="transcript">transcript</SelectItem>
+                  <SelectItem value="summary">summary</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Target tokens per chunk</Label>
+              <Input type="number" value={String(config.targetTokens ?? 512)} onChange={(e) => setConfig({ ...config, targetTokens: parseInt(e.target.value) || 512 })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Overlap tokens</Label>
+              <Input type="number" value={String(config.overlapTokens ?? 64)} onChange={(e) => setConfig({ ...config, overlapTokens: parseInt(e.target.value) || 0 })} />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="ct-section"
+                checked={Boolean(config.sectionAware ?? true)}
+                onChange={(e) => setConfig({ ...config, sectionAware: e.target.checked })}
+              />
+              <Label htmlFor="ct-section">Section-aware (split on ## headers first)</Label>
+            </div>
+            <p className="text-xs text-muted-foreground">Fan-out: 1 input row → N chunk rows. Skips Speaker Analytics &amp; Attendance sections.</p>
+          </>
+        );
+
+      case "embed":
+        return (
+          <>
+            <div className="space-y-2">
+              <Label>Model</Label>
+              <Input value={String(config.model ?? "text-embedding-3-small")} onChange={(e) => setConfig({ ...config, model: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Content field</Label>
+              <Input value={String(config.contentField ?? "content")} onChange={(e) => setConfig({ ...config, contentField: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Batch size</Label>
+              <Input type="number" value={String(config.batchSize ?? 100)} onChange={(e) => setConfig({ ...config, batchSize: parseInt(e.target.value) || 100 })} />
+            </div>
+            <div className="space-y-2">
+              <Label>OpenAI API key env var</Label>
+              <Input value={String(config.openaiApiKeyEnv ?? "OPENAI_API_KEY")} onChange={(e) => setConfig({ ...config, openaiApiKeyEnv: e.target.value })} />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="emb-dryrun"
+                checked={Boolean(config.dryRun ?? false)}
+                onChange={(e) => setConfig({ ...config, dryRun: e.target.checked })}
+              />
+              <Label htmlFor="emb-dryrun">Dry run (zero-vectors, no OpenAI call)</Label>
+            </div>
+            <p className="text-xs text-muted-foreground">1536-dim vectors. Per-batch error isolation — survivors continue, failures get embedding_error.</p>
+          </>
         );
 
       default:
