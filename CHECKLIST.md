@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 08:23 UTC
+> Last updated: 2026-05-14 08:38 UTC
 
 ---
 
@@ -100,6 +100,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 - Datasets v2 — editable DataGrid, dynamic columns, CSV export, Add Row, bulk Delete ✅
 - Pipelines v1 — ReactFlow canvas, 13 node types, save/run, run history ✅
 - Notebooks v1 — monospace cell editor, per-cell JS execution (vm sandbox), Python stub ✅
+- CSV import wizard — 4-step import flow for datasets ✅
 
 ---
 
@@ -164,6 +165,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | Notebooks v1 (cell editor, JS vm sandbox execution) | ✅ | `f8d4b688` |
 | Segments members test fixes | ✅ | `a7e3af43` |
 | Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY) |
+| CSV import wizard + DataGrid column alignment | ✅ | `d0f1e427` |
 
 ---
 
@@ -239,8 +241,18 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 | `d031bef1` | **fix: VariantMenu — self-contained header, no nested DataGridColumnHeader** — fixes nested header nesting bug | `components/data-grid/` | ✅ |
 | `23d69253` | **fix: pass stretchColumns to dataset DataGrid** — headers and cells now fill and stretch full width | `components/data-grid/`, `app/datasets/` | ✅ |
 | `f7ca9dc4` | **fix: restore DataGridColumnHeader in VariantMenu** — resize drag working again, flex layout preserved | `components/data-grid/` | ✅ |
+| `d0f1e427` | **feat: CSV import wizard + fix data-grid column alignment** — 4-step CSV import flow for datasets; DataGrid column alignment fixes | datasets, data-grid | ✅ |
 
 ---
+
+### Review Notes (08:38 UTC)
+- **1 new code commit** since last run (08:26 UTC):
+  - `d0f1e427` feat: CSV import wizard + fix data-grid column alignment — 4-step dataset import flow + column alignment polish
+- **Claude Code: NOT running** (0 processes). Last commit at 08:37 UTC — just 1 min ago. Clean stop, well under the 30-min stall threshold. No wake event sent.
+- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth.
+- **Datasets** receiving significant investment: CSV import wizard now a proper multi-step flow. DataGrid column alignment finalized.
+- **Phase C theme verification** still pending (human visual pass required).
+- App is stable. No regressions detected.
 
 ### Review Notes (08:23 UTC)
 - **2 new code commits** since last run (08:08 UTC) — continued DataGrid column header refinement:
@@ -292,4 +304,4 @@ All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, and Notebooks sh
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 08:23 UTC (Claude Code stopped — last code commit 10 min ago `f7ca9dc4` VariantMenu resize drag fix — clean stop, no stall)*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 08:38 UTC (Claude Code stopped — last code commit 1 min ago `d0f1e427` CSV import wizard + DataGrid column alignment — clean stop, no stall)*
