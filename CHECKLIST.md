@@ -1,14 +1,14 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 14:38 UTC by farsight watchdog_
+_Last updated: 2026-05-14 14:53 UTC by farsight watchdog_
 
 ---
 
-## 🔴 CRITICAL: Claude Binary Not Found on Netrunner (14:38 UTC)
+## 🔴 CRITICAL: Claude Binary Not Found on Netrunner (14:38 UTC) — Still Stalled at 14:53 UTC
 
-Claude Code is NOT installed on netrunner (PATH check + find returned nothing). The 14:23 UTC restart attempt that reported "PID 86716" was a false positive — nohup immediately errored `claude: No such file or directory`. **Scott must manually install claude CLI on netrunner or SSH in and run work manually.**
+Claude Code is NOT installed on netrunner. The `claude` binary does not exist. A `find / -name claude -type f` process (PID 93251) is still running from the previous watchdog attempt — it has not located the binary. **Scott must manually install claude CLI on netrunner or SSH in and run work manually.**
 
-Last feature commit: `7a9d3d5f` at 13:20 UTC — **78 minutes ago**.
+Last feature commit: `7a9d3d5f` at 13:20 UTC — **93 minutes ago**.
 
 ---
 
@@ -69,9 +69,11 @@ Last feature commit: `7a9d3d5f` at 13:20 UTC — **78 minutes ago**.
 
 ## Resume Instructions
 
-1. ✅ Repo at ~/Projects/ai-sdr (pulled to origin/main at 14:38 UTC)
+1. ✅ Repo at ~/Projects/ai-sdr (clean working tree, synced to main)
 2. 🔴 Claude binary NOT FOUND — `claude` not installed on netrunner
-3. **Manual action required:** SSH into netrunner and either install claude or run work manually
+3. **Manual action required:** SSH into netrunner (`ssh netrunner@100.94.178.81 -i ~/.ssh/id_ed25519`) and either:
+   - Install claude CLI: `npm install -g @anthropic-ai/claude-code` or equivalent
+   - Or run work manually from the repo
 4. Next task: USER_SCOPING_SPEC.md — userId on settings/tags/messages + API routes
 
 ---
@@ -94,4 +96,5 @@ Last feature commit: `7a9d3d5f` at 13:20 UTC — **78 minutes ago**.
 | 13:53 | ⚠️ Running | ⚠️ Process count 3→1, no feature commits in 33 min. Watching. |
 | 14:08 | ⚠️ Running | ⚠️ Still 1 process, 48 min since last feature commit. No wake sent — Claude still alive. |
 | 14:23 | 🔴 Stopped | 🔴 Claude dropped to 0. Watchdog attempted nohup restart — FALSE POSITIVE (binary not found). Telegram alert sent. |
-| 14:38 | 🔴 Stopped | 🔴 Confirmed claude binary NOT INSTALLED on netrunner. git pull done (local now at origin/main). Cannot auto-restart. Telegram alert sent. Manual intervention required. |
+| 14:38 | 🔴 Stopped | 🔴 Confirmed claude binary NOT INSTALLED on netrunner. git pull done. Cannot auto-restart. Telegram alert sent. |
+| 14:53 | 🔴 Stopped | 🔴 Still stopped. find/PID 93251 still searching for binary (hasn't found it). Local repo clean. 93 min since last feature commit. Telegram alert sent. Wake event failed (unknown option). |
