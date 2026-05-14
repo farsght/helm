@@ -538,6 +538,8 @@ export async function campaignSequenceWorkflow(
   let current: NodeRow | null =
     graph.nodes.find((n) => n.id === graph.startNodeId) ?? null;
 
+  try {
+
   // Hard cap to prevent runaway loops if a campaign somehow has a cycle.
   // 100 nodes per prospect is way more than any sane sequence.
   for (let i = 0; i < 100; i++) {
@@ -769,4 +771,48 @@ export async function campaignSequenceWorkflow(
   });
 
   return { campaignId, prospectId, status: "completed" };
+
+  } catch (err) {
+    // FatalError already disables retries. For other errors the workflow
+    // runtime will retry per step; this catch only triggers if the retries
+    // exhaust or it's a FatalError. Look up an error-handler campaign and
+    // notify (v1: log only; real fan-out to a separate workflow run is TODO).
+    await notifyErrorHandler(campaignId, prospectId, campaignProspectId, err);
+    throw err;
+  }
+}
+
+/**
+ * v1: log only. Future: enqueue the error-handler campaign for this prospect
+ * by calling its workflow with the error context as a variable.
+ */
+async function notifyErrorHandler(
+  campaignId: number,
+  prospectId: number,
+  campaignProspectId: number,
+  err: unknown
+): Promise<void> {
+  "use step";
+  try {
+    const c = await db
+      .select({ errorHandlerCampaignId: campaigns.errorHandlerCampaignId })
+      .from(campaigns)
+      .where(eq(campaigns.id, campaignId))
+      .limit(1);
+    const handlerId = c[0]?.errorHandlerCampaignId;
+    if (!handlerId) {
+      console.error(
+        `[error-handler] campaign=${campaignId} has no handler; prospect=${prospectId} failed:`,
+        err instanceof Error ? err.message : err
+      );
+      return;
+    }
+    console.error(
+      `[error-handler] would invoke handler campaign=${handlerId} for prospect=${prospectId} (cp=${campaignProspectId}); error:`,
+      err instanceof Error ? err.message : err
+    );
+    // TODO: actually trigger the handler workflow run here.
+  } catch (lookupErr) {
+    console.error("[error-handler] lookup failed:", lookupErr);
+  }
 }

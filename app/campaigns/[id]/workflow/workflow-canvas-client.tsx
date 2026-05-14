@@ -156,7 +156,7 @@ function InnerCanvas({ campaignId }: CanvasProps) {
       data: {
         type: payload.type,
         label: payload.label,
-        config: payload.type === 'ai_agent' ? { agentId: null, decisions: [] } : {},
+        config: defaultConfigForType(payload.type),
       },
     };
     setNodes((nds) => [...nds, newNode]);
@@ -458,6 +458,95 @@ function InspectorPanel({ node, agents, onChange, onDelete, onClose }: Inspector
         />
       )}
 
+      {node.data.type === 'switch' && (
+        <>
+          <SimpleConfigField
+            label="Expression"
+            value={(config.expression as string) ?? ''}
+            placeholder="prospect.title"
+            onChange={(v) => onChange({ config: { ...config, expression: v } })}
+          />
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">Cases</label>
+            {((config.cases as Array<{ label: string; when: string }>) ?? []).map((c, i) => (
+              <div key={i} className="flex gap-1">
+                <input
+                  className="flex-1 bg-input border border-border rounded px-2 py-1 text-xs"
+                  placeholder="label"
+                  value={c.label}
+                  onChange={(e) => {
+                    const cases = [...((config.cases as Array<{ label: string; when: string }>) ?? [])];
+                    cases[i] = { ...cases[i], label: e.target.value };
+                    onChange({ config: { ...config, cases } });
+                  }}
+                />
+                <input
+                  className="flex-1 bg-input border border-border rounded px-2 py-1 text-xs"
+                  placeholder="value to match"
+                  value={c.when}
+                  onChange={(e) => {
+                    const cases = [...((config.cases as Array<{ label: string; when: string }>) ?? [])];
+                    cases[i] = { ...cases[i], when: e.target.value };
+                    onChange({ config: { ...config, cases } });
+                  }}
+                />
+                <button
+                  type="button"
+                  className="text-red-400 hover:text-red-300 text-xs px-1"
+                  onClick={() => {
+                    const cases = ((config.cases as Array<{ label: string; when: string }>) ?? []).filter((_, j) => j !== i);
+                    onChange({ config: { ...config, cases } });
+                  }}
+                >×</button>
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const cases = [...((config.cases as Array<{ label: string; when: string }>) ?? []), { label: `case_${(((config.cases as unknown[]) ?? []).length) + 1}`, when: '' }];
+                onChange({ config: { ...config, cases } });
+              }}
+              className="text-xs"
+            >+ Add case</Button>
+            <label className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
+              <input
+                type="checkbox"
+                checked={!!config.defaultCase}
+                onChange={(e) => onChange({ config: { ...config, defaultCase: e.target.checked } })}
+              />
+              Add fallthrough "default" edge
+            </label>
+          </div>
+        </>
+      )}
+
+      {node.data.type === 'wait_for_event' && (
+        <>
+          <div className="text-xs text-muted-foreground bg-amber-500/10 border border-amber-500/30 rounded p-2">
+            Suspends the workflow until an external event arrives on the hook token <code className="font-mono">wait:&lt;cp_id&gt;:{node.id}</code>. POST to <code className="font-mono">/.well-known/workflow/v1/webhook/&lt;token&gt;</code> to resume.
+          </div>
+          <SimpleConfigField
+            label="Event type"
+            value={(config.eventType as string) ?? ''}
+            placeholder="reply | click | approval | custom"
+            onChange={(v) => onChange({ config: { ...config, eventType: v } })}
+          />
+        </>
+      )}
+
+      {node.data.type === 'sub_workflow' && (
+        <SimpleConfigField
+          label="Sub-campaign ID"
+          value={String((config.subCampaignId as number) ?? '')}
+          placeholder="42"
+          onChange={(v) => {
+            const n = parseInt(v, 10);
+            onChange({ config: { ...config, subCampaignId: isNaN(n) ? undefined : n } });
+          }}
+        />
+      )}
+
       {node.data.errors && node.data.errors.length > 0 && (
         <div className="text-xs text-red-300 bg-red-500/10 border border-red-500/30 rounded p-2 space-y-1">
           {node.data.errors.map((e, i) => (<div key={i}>⚠️ {e}</div>))}
@@ -539,4 +628,27 @@ function AiAgentConfig({ config, agents, onChange }: {
       )}
     </div>
   );
+}
+
+/**
+ * Initial configJson scaffold for a newly-dropped node. Keeps node type
+ * authoring narrow and validator-passing immediately after drop.
+ */
+function defaultConfigForType(type: string): Record<string, unknown> {
+  switch (type) {
+    case 'ai_agent':
+      return { agentId: null, decisions: [] };
+    case 'switch':
+      return { expression: 'prospect.title', cases: [{ label: 'case_1', when: '' }], defaultCase: false };
+    case 'wait_for_event':
+      return { eventType: 'reply' };
+    case 'sub_workflow':
+      return { subCampaignId: null };
+    case 'wait':
+      return { duration: '1 day' };
+    case 'condition':
+      return { check: '' };
+    default:
+      return {};
+  }
 }
