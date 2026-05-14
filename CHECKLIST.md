@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 02:38 UTC
+> Last updated: 2026-05-14 02:53 UTC
 
 ---
 
@@ -67,13 +67,23 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 
 ---
 
+## 🆕 Post-Implementation Enhancements
+
+| Commit | What changed | Status |
+|--------|-------------|--------|
+| `e0b536dd` | **Add `companyWebsite` + `companyLinkedinUrl` to prospects** — schema + migration 0003 + API routes + client | ✅ |
+
+*Commit `e0b536dd` at 02:44 UTC — schema migration 0003 adds two prospect enrichment fields. Files: `db/schema.ts`, `db/migrations/0003_faulty_leopardon.sql`, `db/migrations/meta/*`, `app/api/prospects/route.ts`, `app/api/prospects/[id]/route.ts`, `app/prospects/prospects-client.tsx`.*
+
+---
+
 ## ✅ Full Working End-to-End Status
 
 - Dashboard — real data, user-scoped ✅
 - `/campaigns` list — renders with `prospectCount` + `stepCount` ✅
 - `/campaigns/:id` — no longer 500s ✅
 - `/campaigns/:id/steps` — sequence tab populated ✅
-- `/prospects` table — paginated, user-scoped ✅
+- `/prospects` table — paginated, user-scoped, `companyWebsite`/`companyLinkedinUrl` fields ✅
 - `/prospects/:id` — no longer 500s ✅
 - `POST /api/prospects` — create prospect working ✅
 - `/lists` — `memberCount` included ✅
@@ -85,6 +95,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 - AI suggest-reply — gpt-4o-mini powered ✅
 - Health check endpoint — `/api/health` ✅
 - Error surfacing — all client components ✅
+- Prospect enrichment fields — `companyWebsite` + `companyLinkedinUrl` ✅
 
 ---
 
@@ -130,7 +141,8 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | `POST /api/ai/suggest-reply` | ✅ | `1ba87773` — new route, gpt-4o-mini |
 | Error surfacing (all clients) | ✅ | `c80526c6` — polish pass |
 | Health check endpoint | ✅ | `c80526c6` — `/api/health` |
-| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 16:39 CDT) |
+| Prospect enrichment fields | ✅ | `e0b536dd` — migration 0003 |
+| Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY 21:44 CDT) |
 
 ---
 
@@ -142,8 +154,9 @@ All P1 and P2 gaps resolved. App is fully functional end-to-end with:
 - AI-powered suggest-reply
 - Health check endpoint
 - Clean error surfacing in all client components
-- Clean Vercel deployment (latest: `ai-qu4ykijs2-farsght.vercel.app` READY)
+- Prospect enrichment fields (companyWebsite, companyLinkedinUrl) — migration 0003
+- Clean Vercel deployment (latest: `ai-gza0khkkp-farsght.vercel.app` READY 21:44 CDT)
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 02:38 UTC (impl complete — Claude stopped as expected, no pending work)
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 02:53 UTC (impl complete — 1 new commit since last run: e0b536dd — prospect enrichment fields)*
