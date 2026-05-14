@@ -172,7 +172,9 @@ export const tags = pgTable('tags', {
   userId: text('user_id').notNull().default(''),
   name: text('name').notNull(),
   color: text('color').notNull().default('#3b82f6'),
-});
+}, (table) => [
+  uniqueIndex('tags_user_id_name_unique').on(table.userId, table.name),
+]);
 
 // Prospect Tags
 export const prospectTags = pgTable('prospect_tags', {
