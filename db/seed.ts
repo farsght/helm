@@ -5,7 +5,7 @@ async function seed() {
   console.log('🌱 Seeding database...');
 
   // Create a list
-  const [list] = await db.insert(schema.lists).values({
+  const [list] = await db.insert(schema.segments).values({
     name: 'Tech Startup Founders',
     description: 'Founders of early-stage tech startups',
     type: 'static',
@@ -31,8 +31,8 @@ async function seed() {
   console.log(`✅ Created ${prospects.length} prospects`);
 
   // Add prospects to list
-  await db.insert(schema.listMembers).values(
-    prospects.map(p => ({ listId: list.id, prospectId: p.id }))
+  await db.insert(schema.segmentMembers).values(
+    prospects.map(p => ({ segmentId: list.id, prospectId: p.id }))
   );
   console.log('✅ Added prospects to list');
 
@@ -41,7 +41,7 @@ async function seed() {
     name: 'Q1 Product Launch Outreach',
     description: 'Reaching out to tech founders about our new AI-powered sales automation platform',
     status: 'active',
-    listId: list.id,
+    segmentId: list.id,
     scheduleJson: JSON.stringify({
       timezone: 'America/New_York',
       sendingWindows: [{ start: '09:00', end: '17:00', days: [1, 2, 3, 4, 5] }],
@@ -143,7 +143,7 @@ async function seed() {
     name: 'Cold Email Follow-up Sequence',
     description: 'Follow-up sequence for prospects who didn\'t respond to initial outreach',
     status: 'draft',
-    listId: list.id,
+    segmentId: list.id,
   }).returning();
 
   console.log('✅ Created campaign:', campaign2.name);

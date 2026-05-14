@@ -26,7 +26,7 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Campaigns", href: "/campaigns", icon: Target },
   { name: "Prospects", href: "/prospects", icon: Users },
-  { name: "Lists", href: "/lists", icon: List },
+  { name: "Segments", href: "/segments", icon: List },
   { name: "Templates", href: "/templates", icon: FileText },
   { name: "Conversations", href: "/conversations", icon: MessageSquare },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },

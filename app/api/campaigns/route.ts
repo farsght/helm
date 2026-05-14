@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       status: body.status || 'draft',
       scheduleJson: body.scheduleJson ? JSON.stringify(body.scheduleJson) : null,
       aiPersonaJson: body.aiPersonaJson ? JSON.stringify(body.aiPersonaJson) : null,
-      listId: body.listId,
+      segmentId: body.segmentId,
     }).returning();
     return NextResponse.json(campaign, { status: 201 });
   } catch (err) {

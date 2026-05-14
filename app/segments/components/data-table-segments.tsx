@@ -21,7 +21,7 @@ import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { useDataTable } from "@/hooks/use-data-table";
 import { apiFetch } from "@/lib/api";
 
-export type ListRow = {
+export type SegmentRow = {
   id: number;
   name: string;
   description: string | null;
@@ -32,8 +32,8 @@ export type ListRow = {
 };
 
 interface DataTableListsProps {
-  data: ListRow[];
-  onDataChange?: (data: ListRow[]) => void;
+  data: SegmentRow[];
+  onDataChange?: (data: SegmentRow[]) => void;
 }
 
 export function DataTableLists({ data, onDataChange }: DataTableListsProps) {
@@ -43,7 +43,7 @@ export function DataTableLists({ data, onDataChange }: DataTableListsProps) {
     async (id: number) => {
       if (!confirm("Delete this list?")) return;
       try {
-        await apiFetch(`/api/lists/${id}`, { method: "DELETE" });
+        await apiFetch(`/api/segments/${id}`, { method: "DELETE" });
         onDataChange?.(data.filter((l) => l.id !== id));
         toast.success("List deleted");
       } catch (err) {
@@ -54,7 +54,7 @@ export function DataTableLists({ data, onDataChange }: DataTableListsProps) {
     [data, onDataChange],
   );
 
-  const columns = React.useMemo<ColumnDef<ListRow>[]>(
+  const columns = React.useMemo<ColumnDef<SegmentRow>[]>(
     () => [
       {
         id: "select",
@@ -91,7 +91,7 @@ export function DataTableLists({ data, onDataChange }: DataTableListsProps) {
         ),
         meta: {
           label: "Name",
-          placeholder: "Search lists...",
+          placeholder: "Search segments...",
           variant: "text",
           icon: TextIcon,
         },
@@ -204,7 +204,7 @@ export function DataTableLists({ data, onDataChange }: DataTableListsProps) {
   return (
     <DataTable
       table={table}
-      onRowClick={(row) => router.push(`/lists/${row.original.id}`)}
+      onRowClick={(row) => router.push(`/segments/${row.original.id}`)}
     >
       <DataTableToolbar table={table} />
     </DataTable>

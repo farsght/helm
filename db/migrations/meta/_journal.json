@@ -36,6 +36,20 @@
       "when": 1778737706435,
       "tag": "0004_volatile_pixie",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778739489267,
+      "tag": "0005_cheerful_colonel_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778740022842,
+      "tag": "0006_rename_lists_to_segments",
+      "breakpoints": true
     }
   ]
 }

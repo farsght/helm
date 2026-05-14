@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
-import { ListsClient } from "./lists-client";
+import { SegmentsClient } from "./segments-client";
 
 export default function ListsPage() {
-  return <ListsClient />;
+  return <SegmentsClient />;
 }

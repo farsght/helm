@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
-import { campaigns, campaignProspects, listMembers, prospects } from '@/db/schema';
+import { campaigns, campaignProspects, segmentMembers, prospects } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 async function verifyCampaignOwnership(campaignId: number, userId: string) {
@@ -53,12 +53,12 @@ export async function POST(
     const body = await request.json();
     let prospectIds: number[] = body.prospectIds || [];
 
-    // If listId provided, get all prospects from that list
-    if (body.listId) {
+    // If segmentId provided, get all prospects from that list
+    if (body.segmentId) {
       const members = await db
-        .select({ prospectId: listMembers.prospectId })
-        .from(listMembers)
-        .where(eq(listMembers.listId, body.listId));
+        .select({ prospectId: segmentMembers.prospectId })
+        .from(segmentMembers)
+        .where(eq(segmentMembers.segmentId, body.segmentId));
       prospectIds = [...new Set([...prospectIds, ...members.map(m => m.prospectId)])];
     }
 

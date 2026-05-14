@@ -143,10 +143,10 @@ export function CampaignDetailClient({ id }: { id: string }) {
   const [toggling, setToggling] = useState(false);
   const [executing, setExecuting] = useState(false);
   const [enrollModalOpen, setEnrollModalOpen] = useState(false);
-  const [enrollTab, setEnrollTab] = useState<'lists' | 'prospects'>('lists');
-  const [availableLists, setAvailableLists] = useState<AvailableList[]>([]);
+  const [enrollTab, setEnrollTab] = useState<'segments' | 'prospects'>('segments');
+  const [availableSegments, setAvailableSegments] = useState<AvailableList[]>([]);
   const [availableProspects, setAvailableProspects] = useState<AvailableProspect[]>([]);
-  const [selectedListId, setSelectedListId] = useState<number | null>(null);
+  const [selectedSegmentId, setSelectedSegmentId] = useState<number | null>(null);
   const [selectedProspectIds, setSelectedProspectIds] = useState<number[]>([]);
   const [prospectSearch, setProspectSearch] = useState('');
   const [enrolling, setEnrolling] = useState(false);
@@ -216,13 +216,13 @@ export function CampaignDetailClient({ id }: { id: string }) {
 
   const openEnrollModal = async () => {
     setEnrollModalOpen(true);
-    const [listsRes, prospectsRes] = await Promise.all([
-      fetch('/api/lists'),
+    const [segmentsRes, prospectsRes] = await Promise.all([
+      fetch('/api/segments'),
       fetch('/api/prospects?limit=200'),
     ]);
-    const listsData = await listsRes.json();
+    const segmentsData = await segmentsRes.json();
     const prospectsData = await prospectsRes.json();
-    setAvailableLists(Array.isArray(listsData) ? listsData.map((l: { id: number; name: string; memberCount?: number }) => ({ ...l, memberCount: l.memberCount ?? 0 })) : []);
+    setAvailableSegments(Array.isArray(segmentsData) ? segmentsData.map((l: { id: number; name: string; memberCount?: number }) => ({ ...l, memberCount: l.memberCount ?? 0 })) : []);
     setAvailableProspects(Array.isArray(prospectsData) ? prospectsData : (prospectsData.prospects ?? []));
   };
 
@@ -230,8 +230,8 @@ export function CampaignDetailClient({ id }: { id: string }) {
     if (!campaign) return;
     setEnrolling(true);
     try {
-      const body = enrollTab === 'lists'
-        ? { listId: selectedListId }
+      const body = enrollTab === 'segments'
+        ? { segmentId: selectedSegmentId }
         : { prospectIds: selectedProspectIds };
       const data = await apiFetch(`/api/campaigns/${campaign.id}/prospects`, {
         method: 'POST',
@@ -240,7 +240,7 @@ export function CampaignDetailClient({ id }: { id: string }) {
       });
       alert(`Enrolled ${data.enrolled} prospects`);
       setEnrollModalOpen(false);
-      setSelectedListId(null);
+      setSelectedSegmentId(null);
       setSelectedProspectIds([]);
       await fetchData();
     } catch (err) {
@@ -485,9 +485,9 @@ export function CampaignDetailClient({ id }: { id: string }) {
           <div className="flex gap-2 mb-4">
             <Button
               size="sm"
-              variant={enrollTab === 'lists' ? 'default' : 'outline'}
-              onClick={() => setEnrollTab('lists')}
-              className={enrollTab === 'lists' ? 'bg-primary' : 'border-border text-muted-foreground'}
+              variant={enrollTab === 'segments' ? 'default' : 'outline'}
+              onClick={() => setEnrollTab('segments')}
+              className={enrollTab === 'segments' ? 'bg-primary' : 'border-border text-muted-foreground'}
             >
               From List
             </Button>
@@ -501,17 +501,17 @@ export function CampaignDetailClient({ id }: { id: string }) {
             </Button>
           </div>
 
-          {enrollTab === 'lists' ? (
+          {enrollTab === 'segments' ? (
             <div className="space-y-2 max-h-80 overflow-y-auto">
-              {availableLists.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">No lists available</p>
+              {availableSegments.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No segments available</p>
               ) : (
-                availableLists.map(list => (
+                availableSegments.map(list => (
                   <div
                     key={list.id}
-                    onClick={() => setSelectedListId(list.id)}
+                    onClick={() => setSelectedSegmentId(list.id)}
                     className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
-                      selectedListId === list.id
+                      selectedSegmentId === list.id
                         ? 'border-primary bg-primary/10'
                         : 'border-border bg-background hover:border-primary/50'
                     }`}
@@ -576,7 +576,7 @@ export function CampaignDetailClient({ id }: { id: string }) {
             </Button>
             <Button
               onClick={handleEnroll}
-              disabled={enrolling || (enrollTab === 'lists' ? !selectedListId : selectedProspectIds.length === 0)}
+              disabled={enrolling || (enrollTab === 'segments' ? !selectedSegmentId : selectedProspectIds.length === 0)}
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {enrolling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

@@ -1,5 +1,5 @@
 /**
- * Shared filter types + SQL builder for dynamic lists.
+ * Shared filter types + SQL builder for dynamic segments.
  * v1: single AND-group, finite operator set, prospects table only.
  */
 
@@ -38,7 +38,7 @@ export interface FilterRule {
   value?: string;
 }
 
-export interface ListFilter {
+export interface SegmentFilter {
   /** v1 supports only "and". v2 will add "or" + nested groups. */
   logic: "and";
   rules: FilterRule[];
@@ -106,7 +106,7 @@ export function buildRuleCondition(rule: FilterRule): SQL | null {
 }
 
 /** Build a combined SQL `WHERE` condition from the filter, or null if no usable rules. */
-export function buildFilterCondition(filter: ListFilter | null | undefined): SQL | null {
+export function buildFilterCondition(filter: SegmentFilter | null | undefined): SQL | null {
   if (!filter || !Array.isArray(filter.rules) || filter.rules.length === 0) {
     return null;
   }
@@ -118,8 +118,8 @@ export function buildFilterCondition(filter: ListFilter | null | undefined): SQL
   return and(...conds) ?? null;
 }
 
-/** Parse the JSON column to a ListFilter, tolerating bad data. */
-export function parseFilter(raw: string | null | undefined): ListFilter | null {
+/** Parse the JSON column to a SegmentFilter, tolerating bad data. */
+export function parseFilter(raw: string | null | undefined): SegmentFilter | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw);

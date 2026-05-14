@@ -28,7 +28,7 @@ import { apiFetch } from "@/lib/api";
 import {
   DataGridListMembers,
   type ListMemberRow,
-} from "./components/data-grid-list-members";
+} from "./components/data-grid-segment-members";
 
 type ListMeta = {
   id: number;
@@ -44,7 +44,7 @@ export default function ListDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const listId = parseInt(id, 10);
+  const segmentId = parseInt(id, 10);
 
   const [list, setList] = useState<ListMeta | null>(null);
   const [members, setMembers] = useState<ListMemberRow[]>([]);
@@ -62,12 +62,12 @@ export default function ListDetailPage({
       setLoading(true);
       try {
         const [listsAll, mems] = await Promise.all([
-          fetch("/api/lists").then((r) => r.json()),
-          apiFetch(`/api/lists/${listId}/members`),
+          fetch("/api/segments").then((r) => r.json()),
+          apiFetch(`/api/segments/${segmentId}/members`),
         ]);
         if (cancelled) return;
         const found = Array.isArray(listsAll)
-          ? listsAll.find((l: ListMeta) => l.id === listId)
+          ? listsAll.find((l: ListMeta) => l.id === segmentId)
           : null;
         setList(found ?? null);
         setMembers(Array.isArray(mems) ? mems : []);
@@ -81,7 +81,7 @@ export default function ListDetailPage({
     return () => {
       cancelled = true;
     };
-  }, [listId]);
+  }, [segmentId]);
 
   const openAddProspects = async () => {
     setAddOpen(true);
@@ -102,12 +102,12 @@ export default function ListDetailPage({
     if (selectedIds.length === 0) return;
     setAdding(true);
     try {
-      await apiFetch(`/api/lists/${listId}/members`, {
+      await apiFetch(`/api/segments/${segmentId}/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prospectIds: selectedIds }),
       });
-      const refreshed = await apiFetch(`/api/lists/${listId}/members`);
+      const refreshed = await apiFetch(`/api/segments/${segmentId}/members`);
       setMembers(refreshed);
       setAddOpen(false);
       setSelectedIds([]);
@@ -137,14 +137,14 @@ export default function ListDetailPage({
       <div className="flex items-start justify-between mb-6">
         <div>
           <Link
-            href="/lists"
+            href="/segments"
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-2"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back to Lists
+            <ArrowLeft className="h-4 w-4 mr-1" /> Back to Segments
           </Link>
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold text-foreground">
-              {list?.name ?? (loading ? "Loading…" : `List #${listId}`)}
+              {list?.name ?? (loading ? "Loading…" : `List #${segmentId}`)}
             </h1>
             {list && (
               <Badge variant="secondary" className="capitalize">
@@ -192,7 +192,7 @@ export default function ListDetailPage({
       </div>
 
       <DataGridListMembers
-        listId={listId}
+        segmentId={segmentId}
         data={members}
         onDataChange={setMembers}
       />

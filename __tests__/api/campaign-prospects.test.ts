@@ -45,10 +45,10 @@ describe('POST /api/campaigns/[id]/prospects', () => {
     expect(body.total).toBe(2)
   })
 
-  it('enroll via listId fetches list members then enrolls them', async () => {
+  it('enroll via segmentId fetches list members then enrolls them', async () => {
     vi.mocked(db.select)
       .mockReturnValueOnce(q([mockCampaign]) as ReturnType<typeof db.select>)                // ownership
-      .mockReturnValueOnce(q([{ prospectId: 5 }, { prospectId: 6 }]) as ReturnType<typeof db.select>) // listMembers
+      .mockReturnValueOnce(q([{ prospectId: 5 }, { prospectId: 6 }]) as ReturnType<typeof db.select>) // segmentMembers
       .mockReturnValueOnce(q([]) as ReturnType<typeof db.select>)                            // existing p5
       .mockReturnValueOnce(q([]) as ReturnType<typeof db.select>)                            // existing p6
     vi.mocked(db.insert).mockReturnValue(q([{ id: 1 }]) as ReturnType<typeof db.insert>)
@@ -56,7 +56,7 @@ describe('POST /api/campaigns/[id]/prospects', () => {
     const req = new NextRequest('http://localhost/api/campaigns/1/prospects', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ listId: 3 }),
+      body: JSON.stringify({ segmentId: 3 }),
     })
     const res = await POST(req, PARAMS_1)
     const body = await res.json()
@@ -65,7 +65,7 @@ describe('POST /api/campaigns/[id]/prospects', () => {
     expect(body.enrolled).toBe(2)
   })
 
-  it('with both prospectIds and listId: deduplicates and enrolls unique set', async () => {
+  it('with both prospectIds and segmentId: deduplicates and enrolls unique set', async () => {
     vi.mocked(db.select)
       .mockReturnValueOnce(q([mockCampaign]) as ReturnType<typeof db.select>)
       .mockReturnValueOnce(q([{ prospectId: 20 }, { prospectId: 30 }]) as ReturnType<typeof db.select>)
@@ -76,7 +76,7 @@ describe('POST /api/campaigns/[id]/prospects', () => {
     const req = new NextRequest('http://localhost/api/campaigns/1/prospects', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prospectIds: [20], listId: 3 }),
+      body: JSON.stringify({ prospectIds: [20], segmentId: 3 }),
     })
     const res = await POST(req, PARAMS_1)
     const body = await res.json()
@@ -105,7 +105,7 @@ describe('POST /api/campaigns/[id]/prospects', () => {
     expect(vi.mocked(db.insert)).not.toHaveBeenCalled()
   })
 
-  it('returns 400 when no prospectIds and no listId provided', async () => {
+  it('returns 400 when no prospectIds and no segmentId provided', async () => {
     vi.mocked(db.select).mockReturnValue(q([mockCampaign]) as ReturnType<typeof db.select>)
 
     const req = new NextRequest('http://localhost/api/campaigns/1/prospects', {

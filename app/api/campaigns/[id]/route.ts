@@ -38,7 +38,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (body.name !== undefined) updates.name = body.name;
     if (body.description !== undefined) updates.description = body.description;
     if (body.status !== undefined) updates.status = body.status;
-    if (body.listId !== undefined) updates.listId = body.listId;
+    if (body.segmentId !== undefined) updates.segmentId = body.segmentId;
     if ('scheduleJson' in body) {
       updates.scheduleJson = body.scheduleJson ? JSON.stringify(body.scheduleJson) : null;
     }

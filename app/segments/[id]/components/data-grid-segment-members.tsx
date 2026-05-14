@@ -28,13 +28,13 @@ export type ListMemberRow = {
 };
 
 interface DataGridListMembersProps {
-  listId: number;
+  segmentId: number;
   data: ListMemberRow[];
   onDataChange?: (data: ListMemberRow[]) => void;
 }
 
 export function DataGridListMembers({
-  listId,
+  segmentId,
   data,
   onDataChange,
 }: DataGridListMembersProps) {
@@ -100,7 +100,7 @@ export function DataGridListMembers({
       try {
         await Promise.all(
           ids.map((prospectId) =>
-            fetch(`/api/lists/${listId}/members`, {
+            fetch(`/api/segments/${segmentId}/members`, {
               method: "DELETE",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ prospectId }),
@@ -116,7 +116,7 @@ export function DataGridListMembers({
         toast.error(`Failed to remove: ${msg}`);
       }
     },
-    [data, listId, onDataChange],
+    [data, segmentId, onDataChange],
   );
 
   const { table, tableMeta, ...dataGridProps } = useDataGrid({
@@ -172,7 +172,7 @@ export function DataGridListMembers({
 }
 
 export async function fetchListMembers(
-  listId: number,
+  segmentId: number,
 ): Promise<ListMemberRow[]> {
-  return apiFetch(`/api/lists/${listId}/members`);
+  return apiFetch(`/api/segments/${segmentId}/members`);
 }

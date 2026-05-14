@@ -59,26 +59,29 @@ export const WorkflowNode = memo(({ data }: { data: WorkflowNodeData }) => {
 
   return (
     <div
-      className={`px-4 py-3 rounded-lg border-2 ${colorClass} bg-card min-w-[180px] shadow-lg transition-all hover:shadow-xl hover:scale-105`}
+      className={`relative flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-md border-2 ${colorClass} bg-card w-[120px] h-[65px] shadow-sm transition-all hover:shadow-md`}
     >
       <Handle
         type="target"
         position={Position.Left}
-        className="!w-3 !h-3 !bg-primary !border-2 !border-white"
+        className="!w-2.5 !h-2.5 !bg-primary !border-2 !border-background"
       />
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className="h-4 w-4" />
-        <span className="font-medium text-foreground text-sm">{data.label}</span>
-      </div>
-      {data.prospectCount && data.prospectCount > 0 && (
-        <Badge variant="secondary" className="mt-2 text-xs bg-primary/20 text-primary">
-          {data.prospectCount} prospects
+      <Icon className="h-4 w-4 shrink-0" />
+      <span className="font-medium text-foreground text-[11px] text-center leading-tight line-clamp-2 break-words">
+        {data.label}
+      </span>
+      {typeof data.prospectCount === "number" && data.prospectCount > 0 && (
+        <Badge
+          variant="secondary"
+          className="absolute -top-1.5 -right-1.5 text-[10px] h-4 px-1.5 bg-primary text-primary-foreground"
+        >
+          {data.prospectCount}
         </Badge>
       )}
       <Handle
         type="source"
         position={Position.Right}
-        className="!w-3 !h-3 !bg-primary !border-2 !border-white"
+        className="!w-2.5 !h-2.5 !bg-primary !border-2 !border-background"
       />
     </div>
   );

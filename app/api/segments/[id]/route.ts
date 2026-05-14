@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
-import { lists, listMembers } from '@/db/schema';
+import { segments, segmentMembers } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -10,7 +10,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const { id } = await params;
-    const [existing] = await db.select().from(lists).where(and(eq(lists.id, parseInt(id)), eq(lists.userId, userId)));
+    const [existing] = await db.select().from(segments).where(and(eq(segments.id, parseInt(id)), eq(segments.userId, userId)));
     if (!existing) return NextResponse.json({ error: 'List not found' }, { status: 404 });
 
     const body = await request.json();
@@ -29,9 +29,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         body.filterJson === null ? null : JSON.stringify(body.filterJson);
     }
     const [updated] = await db
-      .update(lists)
+      .update(segments)
       .set(updatePayload)
-      .where(and(eq(lists.id, parseInt(id)), eq(lists.userId, userId)))
+      .where(and(eq(segments.id, parseInt(id)), eq(segments.userId, userId)))
       .returning();
     return NextResponse.json(updated);
   } catch (err) {
@@ -46,11 +46,11 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
 
   try {
     const { id } = await params;
-    const [existing] = await db.select().from(lists).where(and(eq(lists.id, parseInt(id)), eq(lists.userId, userId)));
+    const [existing] = await db.select().from(segments).where(and(eq(segments.id, parseInt(id)), eq(segments.userId, userId)));
     if (!existing) return NextResponse.json({ error: 'List not found' }, { status: 404 });
 
-    await db.delete(listMembers).where(eq(listMembers.listId, parseInt(id)));
-    await db.delete(lists).where(and(eq(lists.id, parseInt(id)), eq(lists.userId, userId)));
+    await db.delete(segmentMembers).where(eq(segmentMembers.segmentId, parseInt(id)));
+    await db.delete(segments).where(and(eq(segments.id, parseInt(id)), eq(segments.userId, userId)));
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Delete list error:', err);

@@ -16,14 +16,14 @@ import {
   FILTERABLE_FIELDS,
   FILTER_OPERATORS,
   type FilterRule,
-  type ListFilter,
+  type SegmentFilter,
   type FilterableField,
   type FilterOperator,
-} from "@/lib/list-filters";
+} from "@/lib/segment-filters";
 
 interface ListFilterBuilderProps {
-  value: ListFilter;
-  onChange: (next: ListFilter) => void;
+  value: SegmentFilter;
+  onChange: (next: SegmentFilter) => void;
 }
 
 const EMPTY_RULE: FilterRule = {

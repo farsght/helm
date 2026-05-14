@@ -84,7 +84,7 @@ const navGroups: NavGroup[] = [
       { title: "Companies", url: "/companies", icon: Building2 },
       { title: "Contacts", url: "/contacts", icon: Contact },
       { title: "Deals", url: "/deals", icon: HandCoins },
-      { title: "Segments", url: "/lists", icon: Layers },
+      { title: "Segments", url: "/segments", icon: Layers },
     ],
   },
   {

@@ -195,6 +195,9 @@ export function CampaignCanvas({ initialNodes, initialEdges }: CampaignCanvasPro
         onInit={setReactFlowInstance}
         nodeTypes={nodeTypes}
         fitView
+        fitViewOptions={{ padding: 0.2, maxZoom: 1, minZoom: 0.5 }}
+        minZoom={0.2}
+        maxZoom={1.5}
         className="bg-background"
         style={{ background: "var(--background)" }}
       >

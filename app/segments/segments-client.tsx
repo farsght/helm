@@ -16,25 +16,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
 import { apiFetch } from "@/lib/api";
-import { DataTableLists, type ListRow } from "./components/data-table-lists";
-import { ListFilterBuilder } from "./components/list-filter-builder";
-import type { ListFilter } from "@/lib/list-filters";
+import { DataTableLists, type SegmentRow } from "./components/data-table-segments";
+import { ListFilterBuilder } from "./components/segment-filter-builder";
+import type { SegmentFilter } from "@/lib/segment-filters";
 
-const EMPTY_FILTER: ListFilter = { logic: "and", rules: [] };
+const EMPTY_FILTER: SegmentFilter = { logic: "and", rules: [] };
 
-export function ListsClient() {
-  const [lists, setLists] = useState<ListRow[]>([]);
+export function SegmentsClient() {
+  const [segments, setLists] = useState<SegmentRow[]>([]);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '' });
   const [listType, setListType] = useState<"static" | "dynamic">("static");
-  const [filter, setFilter] = useState<ListFilter>(EMPTY_FILTER);
+  const [filter, setFilter] = useState<SegmentFilter>(EMPTY_FILTER);
 
   useEffect(() => {
-    fetch('/api/lists')
+    fetch('/api/segments')
       .then(r => r.json())
       .then(data => setLists(Array.isArray(data) ? data : []))
-      .catch(err => console.error('Fetch lists error:', err));
+      .catch(err => console.error('Fetch segments error:', err));
   }, []);
 
   const resetForm = () => {
@@ -50,7 +50,7 @@ export function ListsClient() {
         name: string;
         description: string;
         type: "static" | "dynamic";
-        filterJson?: ListFilter;
+        filterJson?: SegmentFilter;
       } = {
         name: formData.name,
         description: formData.description,
@@ -59,12 +59,12 @@ export function ListsClient() {
       if (listType === "dynamic") {
         payload.filterJson = filter;
       }
-      const newList = await apiFetch('/api/lists', {
+      const newList = await apiFetch('/api/segments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      setLists([{ ...newList, memberCount: 0 }, ...lists]);
+      setLists([{ ...newList, memberCount: 0 }, ...segments]);
       setCreateDialogOpen(false);
       resetForm();
     } catch (error) {
@@ -84,8 +84,8 @@ export function ListsClient() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Lists</h1>
-          <p className="text-muted-foreground mt-1">Organize prospects into lists</p>
+          <h1 className="text-3xl font-bold text-foreground">Segments</h1>
+          <p className="text-muted-foreground mt-1">Organize prospects into segments</p>
         </div>
         <Button
           className="bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -96,7 +96,7 @@ export function ListsClient() {
         </Button>
       </div>
 
-      <DataTableLists data={lists} onDataChange={setLists} />
+      <DataTableLists data={segments} onDataChange={setLists} />
 
       <Dialog
         open={createDialogOpen}

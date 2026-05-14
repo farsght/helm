@@ -9,7 +9,7 @@ export const campaigns = pgTable('campaigns', {
   status: text('status').notNull().default('draft'), // draft, active, paused, completed, archived
   scheduleJson: text('schedule_json'),
   aiPersonaJson: text('ai_persona_json'),
-  listId: integer('list_id').references(() => lists.id),
+  segmentId: integer('segment_id').references(() => segments.id),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -36,8 +36,8 @@ export const workflowEdges = pgTable('workflow_edges', {
   label: text('label'),
 });
 
-// Lists
-export const lists = pgTable('lists', {
+// Segments
+export const segments = pgTable('segments', {
   id: serial('id').primaryKey(),
   userId: text('user_id').notNull().default(''),
   name: text('name').notNull(),
@@ -69,9 +69,9 @@ export const prospects = pgTable('prospects', {
 });
 
 // List Members
-export const listMembers = pgTable('list_members', {
+export const segmentMembers = pgTable('segment_members', {
   id: serial('id').primaryKey(),
-  listId: integer('list_id').notNull().references(() => lists.id, { onDelete: 'cascade' }),
+  segmentId: integer('segment_id').notNull().references(() => segments.id, { onDelete: 'cascade' }),
   prospectId: integer('prospect_id').notNull().references(() => prospects.id, { onDelete: 'cascade' }),
   addedAt: timestamp('added_at').notNull().defaultNow(),
 });
@@ -223,4 +223,88 @@ export const datasetRows = pgTable('dataset_rows', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (t) => [
   index('dataset_rows_dataset_id_idx').on(t.datasetId),
+]);
+
+// ── CRM: Companies, Contacts, Deals ────────────────────────────────────
+// v1 CRM entities. Sits alongside `prospects` (which remains the
+// top-of-funnel sourced-lead bucket). Promote prospects → contacts later.
+
+export const companies = pgTable('companies', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+  name: text('name').notNull(),
+  domain: text('domain'),                                    // primary dedupe key
+  industry: text('industry'),
+  employeeCount: integer('employee_count'),
+  sizeBand: text('size_band'),                               // '1-10', '11-50', '51-200', '201-500', '501-1000', '1001-5000', '5000+'
+  website: text('website'),
+  linkedinUrl: text('linkedin_url'),
+  location: text('location'),
+  description: text('description'),
+  customFieldsJson: jsonb('custom_fields_json'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('companies_user_id_idx').on(t.userId),
+  index('companies_domain_idx').on(t.domain),
+]);
+
+export const contacts = pgTable('contacts', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+  companyId: integer('company_id').references(() => companies.id, { onDelete: 'set null' }),
+  firstName: text('first_name').notNull(),
+  lastName: text('last_name').notNull(),
+  email: text('email'),
+  title: text('title'),
+  linkedinUrl: text('linkedin_url'),
+  phone: text('phone'),
+  location: text('location'),
+  lifecycleStage: text('lifecycle_stage').notNull().default('lead'), // lead, mql, sql, opportunity, customer, evangelist, other
+  ownerId: text('owner_id'),                                  // optional, future multi-user
+  customFieldsJson: jsonb('custom_fields_json'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('contacts_user_id_idx').on(t.userId),
+  index('contacts_company_id_idx').on(t.companyId),
+  index('contacts_email_idx').on(t.email),
+]);
+
+export const deals = pgTable('deals', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+  name: text('name').notNull(),
+  companyId: integer('company_id').references(() => companies.id, { onDelete: 'set null' }),
+  primaryContactId: integer('primary_contact_id').references(() => contacts.id, { onDelete: 'set null' }),
+  stage: text('stage').notNull().default('discovery'), // discovery, qualified, proposal, negotiation, closed_won, closed_lost
+  amountCents: integer('amount_cents'),                       // store as integer cents to avoid float drift
+  currency: text('currency').notNull().default('USD'),
+  probability: integer('probability'),                        // 0-100, optional
+  expectedCloseDate: timestamp('expected_close_date'),
+  closedAt: timestamp('closed_at'),
+  source: text('source'),                                     // referral, outbound, inbound, partner, ...
+  ownerId: text('owner_id'),
+  description: text('description'),
+  customFieldsJson: jsonb('custom_fields_json'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('deals_user_id_idx').on(t.userId),
+  index('deals_company_id_idx').on(t.companyId),
+  index('deals_stage_idx').on(t.stage),
+]);
+
+// Many-to-many between deals and contacts (a deal can have multiple stakeholders,
+// a contact can be on multiple deals).
+export const dealContacts = pgTable('deal_contacts', {
+  id: serial('id').primaryKey(),
+  dealId: integer('deal_id').notNull().references(() => deals.id, { onDelete: 'cascade' }),
+  contactId: integer('contact_id').notNull().references(() => contacts.id, { onDelete: 'cascade' }),
+  role: text('role'),                                         // champion, decision_maker, influencer, blocker, end_user
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (t) => [
+  uniqueIndex('deal_contacts_deal_contact_unique').on(t.dealId, t.contactId),
+  index('deal_contacts_deal_id_idx').on(t.dealId),
+  index('deal_contacts_contact_id_idx').on(t.contactId),
 ]);

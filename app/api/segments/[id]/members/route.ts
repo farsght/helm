@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
-import { listMembers, lists, prospects } from '@/db/schema';
+import { segmentMembers, segments, prospects } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { buildFilterCondition, parseFilter } from '@/lib/list-filters';
+import { buildFilterCondition, parseFilter } from '@/lib/segment-filters';
 
 export async function GET(
   request: NextRequest,
@@ -14,16 +14,16 @@ export async function GET(
 
   try {
     const { id } = await params;
-    const listId = parseInt(id);
+    const segmentId = parseInt(id);
 
-    if (isNaN(listId)) {
+    if (isNaN(segmentId)) {
       return NextResponse.json({ error: 'Invalid list ID' }, { status: 400 });
     }
 
     const [list] = await db
       .select()
-      .from(lists)
-      .where(and(eq(lists.id, listId), eq(lists.userId, userId)));
+      .from(segments)
+      .where(and(eq(segments.id, segmentId), eq(segments.userId, userId)));
     if (!list) {
       return NextResponse.json({ error: 'List not found' }, { status: 404 });
     }
@@ -56,9 +56,9 @@ export async function GET(
         company: prospects.company,
         title: prospects.title,
       })
-      .from(listMembers)
-      .innerJoin(prospects, eq(listMembers.prospectId, prospects.id))
-      .where(eq(listMembers.listId, listId));
+      .from(segmentMembers)
+      .innerJoin(prospects, eq(segmentMembers.prospectId, prospects.id))
+      .where(eq(segmentMembers.segmentId, segmentId));
 
     return NextResponse.json(members);
   } catch (err) {
@@ -76,11 +76,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   try {
     const { id } = await params;
-    const listId = parseInt(id);
+    const segmentId = parseInt(id);
     const [list] = await db
       .select()
-      .from(lists)
-      .where(and(eq(lists.id, listId), eq(lists.userId, userId)));
+      .from(segments)
+      .where(and(eq(segments.id, segmentId), eq(segments.userId, userId)));
     if (!list) return NextResponse.json({ error: 'List not found' }, { status: 404 });
     if (list.type === 'dynamic') {
       return NextResponse.json(
@@ -94,12 +94,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     let added = 0;
     for (const prospectId of prospectIds as number[]) {
       const existing = await db
-        .select({ id: listMembers.id })
-        .from(listMembers)
-        .where(and(eq(listMembers.listId, listId), eq(listMembers.prospectId, prospectId)))
+        .select({ id: segmentMembers.id })
+        .from(segmentMembers)
+        .where(and(eq(segmentMembers.segmentId, segmentId), eq(segmentMembers.prospectId, prospectId)))
         .limit(1);
       if (existing.length === 0) {
-        await db.insert(listMembers).values({ listId, prospectId });
+        await db.insert(segmentMembers).values({ segmentId, prospectId });
         added++;
       }
     }
@@ -117,11 +117,11 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
   try {
     const { id } = await params;
-    const listId = parseInt(id);
+    const segmentId = parseInt(id);
     const [list] = await db
       .select()
-      .from(lists)
-      .where(and(eq(lists.id, listId), eq(lists.userId, userId)));
+      .from(segments)
+      .where(and(eq(segments.id, segmentId), eq(segments.userId, userId)));
     if (!list) return NextResponse.json({ error: 'List not found' }, { status: 404 });
     if (list.type === 'dynamic') {
       return NextResponse.json(
@@ -132,8 +132,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     const { prospectId } = await request.json();
     await db
-      .delete(listMembers)
-      .where(and(eq(listMembers.listId, listId), eq(listMembers.prospectId, prospectId)));
+      .delete(segmentMembers)
+      .where(and(eq(segmentMembers.segmentId, segmentId), eq(segmentMembers.prospectId, prospectId)));
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Remove list member error:', err);

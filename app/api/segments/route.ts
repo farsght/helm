@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
-import { lists, listMembers, prospects } from '@/db/schema';
+import { segments, segmentMembers, prospects } from '@/db/schema';
 import { eq, sql, and } from 'drizzle-orm';
-import { buildFilterCondition, parseFilter } from '@/lib/list-filters';
+import { buildFilterCondition, parseFilter } from '@/lib/segment-filters';
 
 export async function GET() {
   const { userId } = await auth();
@@ -12,9 +12,9 @@ export async function GET() {
   try {
     const allLists = await db
       .select()
-      .from(lists)
-      .where(eq(lists.userId, userId))
-      .orderBy(sql`${lists.createdAt} DESC`);
+      .from(segments)
+      .where(eq(segments.userId, userId))
+      .orderBy(sql`${segments.createdAt} DESC`);
 
     const listsWithCounts = await Promise.all(
       allLists.map(async (list) => {
@@ -32,8 +32,8 @@ export async function GET() {
         } else {
           const [row] = await db
             .select({ count: sql<number>`count(*)::int` })
-            .from(listMembers)
-            .where(eq(listMembers.listId, list.id));
+            .from(segmentMembers)
+            .where(eq(segmentMembers.segmentId, list.id));
           memberCount = row?.count ?? 0;
         }
         return { ...list, memberCount };
@@ -42,8 +42,8 @@ export async function GET() {
 
     return NextResponse.json(listsWithCounts);
   } catch (err) {
-    console.error('Fetch lists error:', err);
-    return NextResponse.json({ error: 'Failed to fetch lists' }, { status: 500 });
+    console.error('Fetch segments error:', err);
+    return NextResponse.json({ error: 'Failed to fetch segments' }, { status: 500 });
   }
 }
 
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         : null;
 
     const [list] = await db
-      .insert(lists)
+      .insert(segments)
       .values({
         userId,
         name: body.name,

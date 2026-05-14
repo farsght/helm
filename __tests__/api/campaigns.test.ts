@@ -67,16 +67,16 @@ describe('POST /api/campaigns', () => {
   })
 
   it('passes provided fields through to the DB insert', async () => {
-    const created = { id: 2, name: 'Outreach Q1', status: 'draft', description: 'desc', listId: 5 }
+    const created = { id: 2, name: 'Outreach Q1', status: 'draft', description: 'desc', segmentId: 5 }
     vi.mocked(db.insert).mockReturnValue(q([created]) as ReturnType<typeof db.insert>)
     const req = new NextRequest('http://localhost/api/campaigns', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: 'Outreach Q1', description: 'desc', listId: 5 }),
+      body: JSON.stringify({ name: 'Outreach Q1', description: 'desc', segmentId: 5 }),
     })
     const res = await POST(req)
     const body = await res.json()
-    expect(body.listId).toBe(5)
+    expect(body.segmentId).toBe(5)
     expect(body.description).toBe('desc')
   })
 })
