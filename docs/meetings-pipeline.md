@@ -378,9 +378,10 @@ Before decommissioning netrunner:
 **Phase 2b — Classify** ✅ shipped
 9. `classify_meeting` executor — VERBATIM port of netrunner Pass 1 prompt (single LLM call: meeting_category, subcategory, secondary_tags, domain, usecase, gtm_stage, maturity, access). meeting_class derived from attendee email domains, no LLM needed. prompt_runs audit row per call (latency, model, version tag, input/output JSON). 3-retry linear backoff matching netrunner. 10 unit tests on deriveMeetingClass + config schema. ✅
 
-**Phase 3 — Entities + chunking + embedding**
-9. `extract_entities` executor + inspector
-10. `chunk_text` executor (fan-out semantics — first node that emits >1 row per input)
+**Phase 3 — Entities + chunking + embedding** ✅ shipped (`f576fa6`)
+9. `extract_entities` executor — VERBATIM port of netrunner ENTITY_PROMPT (Pass 2 of enrich-fireflies.ts). Internal-meeting rule: partner_type='none' when meeting_class='internal'. prompt_runs audit + 3-retry backoff. ✅
+10. `chunk_text` executor (fan-out semantics — first node that emits >1 row per input) — section-aware (## H2 → char windows), skips Speaker Analytics/Attendance, no-overlap for Action Items. Deterministic chunk IDs. ✅
+11. `embed` executor — batched OpenAI text-embedding-3-small (1536d, batch=100), dryRun zero-vectors for testing, per-batch error isolation. ✅
 11. `embed` executor — reuse `lib/knowledge-ingest.ts` embedder
 
 **Phase 4 — Promotions + seed pipeline**
