@@ -17,7 +17,7 @@ export default withSentryConfig(withWorkflow(nextConfig), {
 
   org: "bitwage",
 
-  project: "ai-sdr",
+  project: "helm",
 
   authToken: process.env.SENTRY_AUTH_TOKEN,
 
