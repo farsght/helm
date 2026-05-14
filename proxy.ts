@@ -6,6 +6,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/webhooks(.*)',  // email tracking webhooks don't need auth
   '/api/cron(.*)',      // cron jobs use internal calls
   '/api/health',        // health check endpoint
+  '/monitoring(.*)',    // Sentry tunnelRoute — must bypass auth or events drop
 ])
 
 export default clerkMiddleware(async (auth, request) => {
