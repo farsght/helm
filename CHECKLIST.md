@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 06:08 UTC
+> Last updated: 2026-05-14 06:23 UTC
 
 ---
 
@@ -245,3 +245,29 @@ Walk through each route in both light and dark, note any visual breakage in this
 ---
 
 *Theme migration plan added 2026-05-13. Owner: TBD.*
+
+---
+
+## 🆕 Post-Theme Feature Enhancements (2026-05-14)
+
+| Commit | What changed | Files | Status |
+|--------|-------------|-------|--------|
+| `e5866d91` | **Theme: fix campaign canvas inline styles** — ReactFlow nodes now use CSS vars instead of hardcoded hex | `components/campaign-canvas.tsx` (+6/-6) | ✅ |
+| `26a4eb35` | **Lists: replace grid with full tanstack data-table** — full data-table infrastructure added (`data-table/`, hooks, types, parsers, config); `/lists` now uses `data-table-lists.tsx`; `/lists/[id]` keeps grid | 19 files, +2290 lines | ✅ |
+| `bdec7fa4` | **Lists: dynamic filter-rule membership (HubSpot-style segments)** — `lib/list-filters.ts` evaluates filter rules against prospects; `list-filter-builder.tsx` UI; `lists/[id]/members` API now supports dynamic membership; lists API returns member count dynamically | 7 files, +493 lines | ✅ |
+| `01b0b147` | **Datasets v1 — CSV upload + browse staging workspace** — DB migration 0004 adds `datasets` table; `lib/dataset-import.ts` parses CSV; full API (`/api/datasets`, `/api/datasets/[id]`); UI at `/datasets` + `/datasets/[id]`; shadcn sidebar components added; new breadcrumb + collapsible components | 21 files, +4180 lines | ✅ |
+| `5cc6b885` | **Sidebar: reorganize nav into 5 sections** — Insights / Outreach / Audience / Ops / Monitoring nav groupings in `components/app-sidebar.tsx` | 1 file, +44/-14 | ✅ |
+
+### New Schema (migration 0004)
+- `datasets` table: id, userId, name, description, sourceType (csv/hubspot/salesforce/manual), status (staging/active/archived), rowCount, columns (jsonb), createdAt, updatedAt
+
+### Review Notes
+- Datasets is a staging workspace, not yet connected to campaign targeting — import first, integrate later
+- Dynamic list membership (filter rules) is a significant capability leap — lists are now live segments, not static member lists
+- tanstack data-table infrastructure is now reusable across all list views (prospects, templates, etc.)
+- Campaign canvas CSS-vars fix completes theme Phase C for the canvas specifically
+- Latest Vercel deploy: `ai-mderlbyvs` ERROR (01:10 CDT), prior deploy `ai-p2nduusqs` READY (01:09 CDT) — likely mid-deploy on new commits
+
+---
+
+*Auto-updated by farsight watchdog. Last run: 2026-05-14 06:23 UTC (Claude Code stopped, 15 min since last commit — within 30min threshold, no wake event sent)*
