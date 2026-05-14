@@ -73,17 +73,17 @@ export function Sidebar() {
     <>
       <div
         className={cn(
-          "flex h-full flex-col  border-r border-[#3A3A40] transition-all duration-300",
+          "flex h-full flex-col  border-r border-border transition-all duration-300",
           collapsed ? "w-16" : "w-64"
         )}
       >
-        <div className="flex h-16 items-center justify-between px-4 border-b border-[#3A3A40]">
-          {!collapsed && <h1 className="text-xl font-bold text-white">AI SDR</h1>}
+        <div className="flex h-16 items-center justify-between px-4 border-b border-border">
+          {!collapsed && <h1 className="text-xl font-bold text-foreground">AI SDR</h1>}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setCollapsed(!collapsed)}
-            className="text-gray-800 hover:text-white hover:bg-[#25252A]"
+            className="text-foreground hover:text-foreground hover:bg-card"
           >
             <ChevronLeft className={cn("h-5 w-5 transition-transform", collapsed && "rotate-180")} />
           </Button>
@@ -93,12 +93,12 @@ export function Sidebar() {
           <div className="px-3 py-3">
             <Button
               variant="outline"
-              className="w-full justify-start gap-2 border-[#3A3A40] text-gray-400 hover:text-white hover:bg-[#25252A]"
+              className="w-full justify-start gap-2 border-border text-muted-foreground hover:text-foreground hover:bg-card"
               onClick={() => setSearchOpen(true)}
             >
               <Search className="h-4 w-4" />
               <span>Search</span>
-              <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-[#3A3A40] bg-[#25252A] px-1.5 font-mono text-[10px] font-medium text-gray-400">
+              <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-card px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
                 <span className="text-xs">⌘</span>K
               </kbd>
             </Button>
@@ -115,8 +115,8 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-[#266DF0] text-white"
-                    : "text-gray-400 hover:bg-[#25252A] hover:text-white",
+                    ? "bg-primary text-foreground"
+                    : "text-muted-foreground hover:bg-card hover:text-foreground",
                   collapsed && "justify-center"
                 )}
                 title={collapsed ? item.name : undefined}
@@ -128,14 +128,14 @@ export function Sidebar() {
           })}
         </nav>
 
-        <div className={cn("p-4 border-t border-[#3A3A40] flex items-center", collapsed ? "flex-col gap-3" : "gap-3")}>
+        <div className={cn("p-4 border-t border-border flex items-center", collapsed ? "flex-col gap-3" : "gap-3")}>
           <UserButton />
           <ThemeToggle />
           {!collapsed && (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               <p className="mb-1">Keyboard Shortcuts:</p>
-              <p><kbd className="text-gray-400">⌘K</kbd> Search</p>
-              <p><kbd className="text-gray-400">Esc</kbd> Close panels</p>
+              <p><kbd className="text-muted-foreground">⌘K</kbd> Search</p>
+              <p><kbd className="text-muted-foreground">Esc</kbd> Close panels</p>
             </div>
           )}
         </div>
@@ -143,7 +143,7 @@ export function Sidebar() {
 
       {/* Search Dialog */}
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <DialogContent className="bg-[#1B1B1F] border-[#3A3A40] text-white max-w-2xl">
+        <DialogContent className="bg-background border-border text-foreground max-w-2xl">
           <DialogHeader>
             <DialogTitle>Quick Search</DialogTitle>
           </DialogHeader>
@@ -152,21 +152,21 @@ export function Sidebar() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search pages, campaigns, prospects..."
-              className="bg-[#25252A] border-[#3A3A40] text-white"
+              className="bg-card border-border text-foreground"
               autoFocus
             />
             <div className="space-y-1">
               {filteredNav.length === 0 ? (
-                <p className="text-gray-400 text-sm text-center py-4">No results found</p>
+                <p className="text-muted-foreground text-sm text-center py-4">No results found</p>
               ) : (
                 filteredNav.map((item) => (
                   <button
                     key={item.href}
                     onClick={() => handleSearchSelect(item.href)}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left hover:bg-[#25252A] transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left hover:bg-card transition-colors"
                   >
-                    <item.icon className="h-5 w-5 text-gray-400" />
-                    <span className="text-white">{item.name}</span>
+                    <item.icon className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-foreground">{item.name}</span>
                   </button>
                 ))
               )}

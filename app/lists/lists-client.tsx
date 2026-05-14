@@ -58,11 +58,11 @@ export function ListsClient() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white">Lists</h1>
-          <p className="text-gray-400 mt-1">Organize prospects into lists</p>
+          <h1 className="text-3xl font-bold text-foreground">Lists</h1>
+          <p className="text-muted-foreground mt-1">Organize prospects into lists</p>
         </div>
         <Button
-          className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
           onClick={() => setCreateDialogOpen(true)}
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -73,10 +73,10 @@ export function ListsClient() {
       <DataGridLists data={lists} onDataChange={setLists} />
 
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="bg-[#25252A] border-[#3A3A40] text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Create New List</DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-muted-foreground">
               Create a new list to organize your prospects
             </DialogDescription>
           </DialogHeader>
@@ -87,7 +87,7 @@ export function ListsClient() {
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
                 placeholder="e.g., Tech Founders Q1 2024"
               />
             </div>
@@ -97,7 +97,7 @@ export function ListsClient() {
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
                 placeholder="Optional description of this list"
                 rows={3}
               />
@@ -107,14 +107,14 @@ export function ListsClient() {
             <Button
               variant="outline"
               onClick={() => setCreateDialogOpen(false)}
-              className="border-[#3A3A40] text-gray-400"
+              className="border-border text-muted-foreground"
             >
               Cancel
             </Button>
             <Button
               onClick={handleCreateList}
               disabled={loading || !formData.name}
-              className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {loading ? 'Creating...' : 'Create List'}
             </Button>

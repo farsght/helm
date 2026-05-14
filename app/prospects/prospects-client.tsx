@@ -276,13 +276,13 @@ export function ProspectsClient() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Prospects</h1>
-          <p className="text-gray-400 mt-1">Manage your prospect database</p>
+          <h1 className="text-3xl font-bold text-foreground">Prospects</h1>
+          <p className="text-muted-foreground mt-1">Manage your prospect database</p>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
-            className="border-[#3A3A40] text-gray-400 hover:text-white hover:bg-[#25252A]"
+            className="border-border text-muted-foreground hover:text-foreground hover:bg-card"
             onClick={() => setImportDialogOpen(true)}
           >
             <Upload className="mr-2 h-4 w-4" />
@@ -290,14 +290,14 @@ export function ProspectsClient() {
           </Button>
           <Button
             variant="outline"
-            className="border-[#3A3A40] text-gray-400 hover:text-white hover:bg-[#25252A]"
+            className="border-border text-muted-foreground hover:text-foreground hover:bg-card"
             onClick={handleExport}
           >
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
           <Button 
-            className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
             onClick={() => setAddDialogOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -311,40 +311,40 @@ export function ProspectsClient() {
           placeholder="Search by name, email, or company..."
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
-          className="bg-[#25252A] border-[#3A3A40] text-white max-w-md"
+          className="bg-card border-border text-foreground max-w-md"
         />
-        <span className="text-gray-400 text-sm">{total} prospects</span>
+        <span className="text-muted-foreground text-sm">{total} prospects</span>
       </div>
 
-      <Card className="bg-[#25252A] border-[#3A3A40]">
+      <Card className="bg-card border-border">
         <Table>
           <TableHeader>
-            <TableRow className="border-[#3A3A40] hover:bg-transparent">
-              <TableHead className="text-gray-400">Name</TableHead>
-              <TableHead className="text-gray-400">Email</TableHead>
-              <TableHead className="text-gray-400">Company</TableHead>
-              <TableHead className="text-gray-400">Title</TableHead>
-              <TableHead className="text-gray-400">Industry</TableHead>
-              <TableHead className="text-gray-400">Campaign</TableHead>
-              <TableHead className="text-gray-400">Status</TableHead>
-              <TableHead className="text-gray-400">Actions</TableHead>
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-muted-foreground">Name</TableHead>
+              <TableHead className="text-muted-foreground">Email</TableHead>
+              <TableHead className="text-muted-foreground">Company</TableHead>
+              <TableHead className="text-muted-foreground">Title</TableHead>
+              <TableHead className="text-muted-foreground">Industry</TableHead>
+              <TableHead className="text-muted-foreground">Campaign</TableHead>
+              <TableHead className="text-muted-foreground">Status</TableHead>
+              <TableHead className="text-muted-foreground">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {prospects.map((prospect) => (
               <TableRow
                 key={prospect.id}
-                className="border-[#3A3A40] hover:bg-[#1B1B1F] cursor-pointer"
+                className="border-border hover:bg-background cursor-pointer"
                 onClick={() => window.location.href = `/prospects/${prospect.id}`}
               >
-                <TableCell className="text-white font-medium">
+                <TableCell className="text-foreground font-medium">
                   {prospect.firstName} {prospect.lastName}
                 </TableCell>
-                <TableCell className="text-gray-400">{prospect.email}</TableCell>
-                <TableCell className="text-gray-400">{prospect.company}</TableCell>
-                <TableCell className="text-gray-400">{prospect.title}</TableCell>
-                <TableCell className="text-gray-400">{prospect.industry}</TableCell>
-                <TableCell className="text-gray-400">
+                <TableCell className="text-muted-foreground">{prospect.email}</TableCell>
+                <TableCell className="text-muted-foreground">{prospect.company}</TableCell>
+                <TableCell className="text-muted-foreground">{prospect.title}</TableCell>
+                <TableCell className="text-muted-foreground">{prospect.industry}</TableCell>
+                <TableCell className="text-muted-foreground">
                   {prospect.campaignName || "—"}
                 </TableCell>
                 <TableCell>
@@ -353,7 +353,7 @@ export function ProspectsClient() {
                       {prospect.campaignStatus}
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="bg-gray-500/10 text-gray-400">
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground">
                       Not enrolled
                     </Badge>
                   )}
@@ -364,7 +364,7 @@ export function ProspectsClient() {
                       size="sm"
                       variant="ghost"
                       onClick={() => openEditDialog(prospect)}
-                      className="h-7 w-7 p-0 text-gray-400 hover:text-white"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
@@ -372,7 +372,7 @@ export function ProspectsClient() {
                       size="sm"
                       variant="ghost"
                       onClick={() => handleDeleteProspect(prospect.id)}
-                      className="h-7 w-7 p-0 text-gray-400 hover:text-red-400"
+                      className="h-7 w-7 p-0 text-muted-foreground hover:text-red-400"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -387,7 +387,7 @@ export function ProspectsClient() {
       {/* Pagination */}
       {total > limit && (
         <div className="flex items-center justify-between mt-4">
-          <span className="text-gray-400 text-sm">
+          <span className="text-muted-foreground text-sm">
             Page {page} of {Math.ceil(total / limit)}
           </span>
           <div className="flex gap-2">
@@ -396,7 +396,7 @@ export function ProspectsClient() {
               variant="outline"
               disabled={page <= 1 || searching}
               onClick={() => fetchProspects(page - 1, search)}
-              className="border-[#3A3A40] text-gray-400"
+              className="border-border text-muted-foreground"
             >
               Previous
             </Button>
@@ -405,7 +405,7 @@ export function ProspectsClient() {
               variant="outline"
               disabled={page >= Math.ceil(total / limit) || searching}
               onClick={() => fetchProspects(page + 1, search)}
-              className="border-[#3A3A40] text-gray-400"
+              className="border-border text-muted-foreground"
             >
               Next
             </Button>
@@ -415,10 +415,10 @@ export function ProspectsClient() {
 
       {/* Add Prospect Dialog */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="bg-[#25252A] border-[#3A3A40] text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Add New Prospect</DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-muted-foreground">
               Enter the prospect&apos;s information below
             </DialogDescription>
           </DialogHeader>
@@ -430,7 +430,7 @@ export function ProspectsClient() {
                   id="firstName"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                  className="bg-background border-border text-foreground"
                 />
               </div>
               <div className="space-y-2">
@@ -439,7 +439,7 @@ export function ProspectsClient() {
                   id="lastName"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                  className="bg-background border-border text-foreground"
                 />
               </div>
             </div>
@@ -450,7 +450,7 @@ export function ProspectsClient() {
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
               />
             </div>
             <div className="space-y-2">
@@ -459,7 +459,7 @@ export function ProspectsClient() {
                 id="company"
                 value={formData.company}
                 onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
               />
             </div>
             <div className="space-y-2">
@@ -468,7 +468,7 @@ export function ProspectsClient() {
                 id="title"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
               />
             </div>
             <div className="space-y-2">
@@ -477,7 +477,7 @@ export function ProspectsClient() {
                 id="linkedinUrl"
                 value={formData.linkedinUrl}
                 onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
                 placeholder="https://linkedin.com/in/..."
               />
             </div>
@@ -487,7 +487,7 @@ export function ProspectsClient() {
                 id="companyWebsite"
                 value={formData.companyWebsite}
                 onChange={(e) => setFormData({ ...formData, companyWebsite: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
                 placeholder="https://example.com"
               />
             </div>
@@ -497,7 +497,7 @@ export function ProspectsClient() {
                 id="companyLinkedinUrl"
                 value={formData.companyLinkedinUrl}
                 onChange={(e) => setFormData({ ...formData, companyLinkedinUrl: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
                 placeholder="https://linkedin.com/company/..."
               />
             </div>
@@ -506,14 +506,14 @@ export function ProspectsClient() {
             <Button
               variant="outline"
               onClick={() => setAddDialogOpen(false)}
-              className="border-[#3A3A40] text-gray-400"
+              className="border-border text-muted-foreground"
             >
               Cancel
             </Button>
             <Button
               onClick={handleAddProspect}
               disabled={loading || !formData.firstName || !formData.lastName}
-              className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {loading ? 'Adding...' : 'Add Prospect'}
             </Button>
@@ -523,10 +523,10 @@ export function ProspectsClient() {
 
       {/* Import CSV Dialog */}
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-        <DialogContent className="bg-[#25252A] border-[#3A3A40] text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Import Prospects from CSV</DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-muted-foreground">
               Upload a CSV file with columns: first_name, last_name, email, company, title, linkedin_url
             </DialogDescription>
           </DialogHeader>
@@ -535,10 +535,10 @@ export function ProspectsClient() {
               type="file"
               accept=".csv"
               onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
-              className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+              className="bg-background border-border text-foreground"
             />
             {csvFile && (
-              <p className="text-sm text-gray-400 mt-2">
+              <p className="text-sm text-muted-foreground mt-2">
                 Selected: {csvFile.name} ({(csvFile.size / 1024).toFixed(1)} KB)
               </p>
             )}
@@ -550,14 +550,14 @@ export function ProspectsClient() {
                 setImportDialogOpen(false);
                 setCsvFile(null);
               }}
-              className="border-[#3A3A40] text-gray-400"
+              className="border-border text-muted-foreground"
             >
               Cancel
             </Button>
             <Button
               onClick={handleImportCSV}
               disabled={loading || !csvFile}
-              className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {loading ? 'Importing...' : 'Import'}
             </Button>
@@ -567,10 +567,10 @@ export function ProspectsClient() {
 
       {/* Edit Prospect Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="bg-[#25252A] border-[#3A3A40] text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>Edit Prospect</DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-muted-foreground">
               Update prospect information
             </DialogDescription>
           </DialogHeader>
@@ -581,7 +581,7 @@ export function ProspectsClient() {
                 <Input
                   value={editFormData.firstName}
                   onChange={(e) => setEditFormData({ ...editFormData, firstName: e.target.value })}
-                  className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                  className="bg-background border-border text-foreground"
                 />
               </div>
               <div className="space-y-2">
@@ -589,7 +589,7 @@ export function ProspectsClient() {
                 <Input
                   value={editFormData.lastName}
                   onChange={(e) => setEditFormData({ ...editFormData, lastName: e.target.value })}
-                  className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                  className="bg-background border-border text-foreground"
                 />
               </div>
             </div>
@@ -599,7 +599,7 @@ export function ProspectsClient() {
                 type="email"
                 value={editFormData.email}
                 onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
               />
             </div>
             <div className="space-y-2">
@@ -607,7 +607,7 @@ export function ProspectsClient() {
               <Input
                 value={editFormData.company}
                 onChange={(e) => setEditFormData({ ...editFormData, company: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
               />
             </div>
             <div className="space-y-2">
@@ -615,7 +615,7 @@ export function ProspectsClient() {
               <Input
                 value={editFormData.title}
                 onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
               />
             </div>
             <div className="space-y-2">
@@ -623,7 +623,7 @@ export function ProspectsClient() {
               <Input
                 value={editFormData.linkedinUrl}
                 onChange={(e) => setEditFormData({ ...editFormData, linkedinUrl: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
               />
             </div>
             <div className="space-y-2">
@@ -631,7 +631,7 @@ export function ProspectsClient() {
               <Input
                 value={editFormData.companyWebsite}
                 onChange={(e) => setEditFormData({ ...editFormData, companyWebsite: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
                 placeholder="https://example.com"
               />
             </div>
@@ -640,7 +640,7 @@ export function ProspectsClient() {
               <Input
                 value={editFormData.companyLinkedinUrl}
                 onChange={(e) => setEditFormData({ ...editFormData, companyLinkedinUrl: e.target.value })}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+                className="bg-background border-border text-foreground"
                 placeholder="https://linkedin.com/company/..."
               />
             </div>
@@ -649,14 +649,14 @@ export function ProspectsClient() {
             <Button
               variant="outline"
               onClick={() => setEditDialogOpen(false)}
-              className="border-[#3A3A40] text-gray-400"
+              className="border-border text-muted-foreground"
             >
               Cancel
             </Button>
             <Button
               onClick={handleEditProspect}
               disabled={loading || !editFormData.firstName || !editFormData.lastName}
-              className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {loading ? 'Saving...' : 'Save Changes'}
             </Button>

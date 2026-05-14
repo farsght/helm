@@ -131,9 +131,9 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
     });
 
     return (
-      <Card className="bg-[#25252A] border-[#3A3A40]">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white text-sm">Preview with Sample Data</CardTitle>
+          <CardTitle className="text-foreground text-sm">Preview with Sample Data</CardTitle>
           <CardDescription className="text-xs">
             {SAMPLE_PROSPECT.firstName} {SAMPLE_PROSPECT.lastName} • {SAMPLE_PROSPECT.title} at {SAMPLE_PROSPECT.company}
           </CardDescription>
@@ -141,13 +141,13 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
         <CardContent className="space-y-4">
           {channel === 'email' && previewSubject && (
             <div>
-              <Label className="text-gray-400 text-xs">Subject</Label>
-              <p className="text-white mt-1 font-medium">{previewSubject}</p>
+              <Label className="text-muted-foreground text-xs">Subject</Label>
+              <p className="text-foreground mt-1 font-medium">{previewSubject}</p>
             </div>
           )}
           <div>
-            <Label className="text-gray-400 text-xs">Message</Label>
-            <div className="text-white mt-1 whitespace-pre-wrap bg-[#1B1B1F] p-4 rounded-md border border-[#3A3A40]">
+            <Label className="text-muted-foreground text-xs">Message</Label>
+            <div className="text-foreground mt-1 whitespace-pre-wrap bg-background p-4 rounded-md border border-border">
               {previewBody}
             </div>
           </div>
@@ -161,21 +161,21 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-foreground">
             {template ? 'Edit Template' : 'Create Template'}
           </h2>
-          <p className="text-gray-400 text-sm mt-1">
+          <p className="text-muted-foreground text-sm mt-1">
             Build reusable message templates with variables
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="ghost" onClick={onCancel} className="text-gray-400 hover:text-white">
+          <Button variant="ghost" onClick={onCancel} className="text-muted-foreground hover:text-foreground">
             Cancel
           </Button>
           <Button 
             onClick={handleSave} 
             disabled={saving}
-            className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {saving ? 'Saving...' : 'Save Template'}
           </Button>
@@ -183,25 +183,25 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
       </div>
 
       {/* Basic Info */}
-      <Card className="bg-[#25252A] border-[#3A3A40]">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-white">Template Details</CardTitle>
+          <CardTitle className="text-foreground">Template Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-gray-400">Template Name</Label>
+              <Label className="text-muted-foreground">Template Name</Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Initial Outreach - VP Sales"
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white mt-1"
+                className="bg-background border-border text-foreground mt-1"
               />
             </div>
             <div>
-              <Label className="text-gray-400">Channel</Label>
+              <Label className="text-muted-foreground">Channel</Label>
               <Select value={channel} onValueChange={(v: 'email' | 'linkedin') => setChannel(v)}>
-                <SelectTrigger className="bg-[#1B1B1F] border-[#3A3A40] text-white mt-1">
+                <SelectTrigger className="bg-background border-border text-foreground mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -216,7 +216,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
 
       {/* Editor Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'edit' | 'preview')}>
-        <TabsList className="bg-[#25252A]">
+        <TabsList className="bg-card">
           <TabsTrigger value="edit">Edit</TabsTrigger>
           <TabsTrigger value="preview">
             <Eye className="h-4 w-4 mr-1" />
@@ -225,15 +225,15 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
         </TabsList>
 
         <TabsContent value="edit" className="space-y-4 mt-4">
-          <Card className="bg-[#25252A] border-[#3A3A40]">
+          <Card className="bg-card border-border">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-white">Message Content</CardTitle>
+                <CardTitle className="text-foreground">Message Content</CardTitle>
                 <Button
                   size="sm"
                   onClick={generateWithAI}
                   disabled={generating}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  className="bg-purple-600 hover:bg-purple-700 text-foreground"
                 >
                   <Sparkles className="h-4 w-4 mr-1" />
                   {generating ? 'Generating...' : 'Generate with AI'}
@@ -243,29 +243,29 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
             <CardContent className="space-y-4">
               {channel === 'email' && (
                 <div>
-                  <Label className="text-gray-400">Subject Line</Label>
+                  <Label className="text-muted-foreground">Subject Line</Label>
                   <Input
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     placeholder="Enter subject line..."
-                    className="bg-[#1B1B1F] border-[#3A3A40] text-white mt-1"
+                    className="bg-background border-border text-foreground mt-1"
                   />
                 </div>
               )}
               
               <div>
-                <Label className="text-gray-400">Message Body</Label>
+                <Label className="text-muted-foreground">Message Body</Label>
                 <Textarea
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
                   placeholder={`Write your ${channel} message here...`}
                   rows={12}
-                  className="bg-[#1B1B1F] border-[#3A3A40] text-white mt-1 font-mono"
+                  className="bg-background border-border text-foreground mt-1 font-mono"
                 />
               </div>
 
               <div>
-                <Label className="text-gray-400 mb-2 block">Insert Variables</Label>
+                <Label className="text-muted-foreground mb-2 block">Insert Variables</Label>
                 <div className="flex flex-wrap gap-2">
                   {AVAILABLE_VARIABLES.map((variable) => (
                     <Button
@@ -273,7 +273,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
                       size="sm"
                       variant="outline"
                       onClick={() => insertVariable(variable)}
-                      className="bg-[#1B1B1F] border-[#3A3A40] text-[#266DF0] hover:bg-[#266DF0] hover:text-white text-xs"
+                      className="bg-background border-border text-primary hover:bg-primary hover:text-foreground text-xs"
                     >
                       <Plus className="h-3 w-3 mr-1" />
                       {variable}

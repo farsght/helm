@@ -40,11 +40,11 @@ interface Conversation {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  new: 'bg-blue-500/10 text-blue-400',
+  new: 'bg-primary/10 text-primary',
   in_progress: 'bg-yellow-500/10 text-yellow-400',
   interested: 'bg-green-500/10 text-green-400',
   meeting_booked: 'bg-purple-500/10 text-purple-400',
-  not_interested: 'bg-gray-500/10 text-gray-400',
+  not_interested: 'bg-muted text-muted-foreground',
 };
 
 export function ConversationsClient() {
@@ -184,15 +184,15 @@ export function ConversationsClient() {
   return (
     <div className="flex h-screen">
       {/* Conversation List */}
-      <div className="w-96 border-r border-[#3A3A40] bg-[#1B1B1F]">
-        <div className="p-6 border-b border-[#3A3A40]">
-          <h1 className="text-2xl font-bold text-white">Conversations</h1>
-          <p className="text-gray-400 text-sm mt-1">All prospect interactions</p>
+      <div className="w-96 border-r border-border bg-background">
+        <div className="p-6 border-b border-border">
+          <h1 className="text-2xl font-bold text-foreground">Conversations</h1>
+          <p className="text-muted-foreground text-sm mt-1">All prospect interactions</p>
         </div>
         <ScrollArea className="h-[calc(100vh-100px)]">
           <div className="p-4 space-y-2">
             {conversations.length === 0 ? (
-              <p className="text-gray-400 text-sm p-4 text-center">No conversations yet</p>
+              <p className="text-muted-foreground text-sm p-4 text-center">No conversations yet</p>
             ) : (
               conversations.map(({ conversation, prospect }) => (
                 <Card
@@ -200,29 +200,29 @@ export function ConversationsClient() {
                   onClick={() => setSelectedConversation({ conversation, prospect })}
                   className={`p-4 cursor-pointer transition-colors ${
                     selectedConversation?.conversation.id === conversation.id
-                      ? 'bg-[#266DF0]/20 border-[#266DF0]'
-                      : 'bg-[#25252A] border-[#3A3A40] hover:border-[#266DF0]'
+                      ? 'bg-primary/20 border-primary'
+                      : 'bg-card border-border hover:border-primary'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <h3 className="font-medium text-white">
+                      <h3 className="font-medium text-foreground">
                         {prospect.firstName} {prospect.lastName}
                       </h3>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         {prospect.title} {prospect.company ? `at ${prospect.company}` : ''}
                       </p>
                     </div>
                     <Badge
                       variant="secondary"
-                      className={STATUS_COLORS[conversation.status] || 'bg-gray-500/10 text-gray-400'}
+                      className={STATUS_COLORS[conversation.status] || 'bg-muted text-muted-foreground'}
                     >
                       {conversation.status.replace('_', ' ')}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2 mt-2">
-                    <Mail className="h-3 w-3 text-gray-400" />
-                    <span className="text-xs text-gray-400">
+                    <Mail className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">
                       {conversation.lastMessageAt
                         ? new Date(conversation.lastMessageAt).toLocaleDateString()
                         : 'No messages'}
@@ -236,17 +236,17 @@ export function ConversationsClient() {
       </div>
 
       {/* Message Thread */}
-      <div className="flex-1 flex flex-col bg-[#1B1B1F]">
+      <div className="flex-1 flex flex-col bg-background">
         {selectedConversation ? (
           <>
             {/* Header */}
-            <div className="p-6 border-b border-[#3A3A40]">
+            <div className="p-6 border-b border-border">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-white">
+                  <h2 className="text-xl font-bold text-foreground">
                     {selectedConversation.prospect.firstName} {selectedConversation.prospect.lastName}
                   </h2>
-                  <p className="text-gray-400 text-sm mt-1">
+                  <p className="text-muted-foreground text-sm mt-1">
                     {selectedConversation.prospect.title}{' '}
                     {selectedConversation.prospect.company && `at ${selectedConversation.prospect.company}`}
                   </p>
@@ -255,7 +255,7 @@ export function ConversationsClient() {
                   value={selectedConversation.conversation.status}
                   onValueChange={(v) => handleStatusChange(selectedConversation.conversation.id, v)}
                 >
-                  <SelectTrigger className="w-48 bg-[#25252A] border-[#3A3A40] text-white">
+                  <SelectTrigger className="w-48 bg-card border-border text-foreground">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -273,7 +273,7 @@ export function ConversationsClient() {
             <ScrollArea className="flex-1 p-6">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
-                  <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+                  <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
                 </div>
               ) : (
                 <div className="space-y-4 max-w-3xl">
@@ -285,8 +285,8 @@ export function ConversationsClient() {
                       <div
                         className={`max-w-[70%] rounded-lg p-4 ${
                           message.direction === 'outbound'
-                            ? 'bg-[#266DF0] text-white'
-                            : 'bg-[#25252A] text-white border border-[#3A3A40]'
+                            ? 'bg-primary text-foreground'
+                            : 'bg-card text-foreground border border-border'
                         }`}
                       >
                         <div className="flex items-center gap-2 mb-2">
@@ -322,14 +322,14 @@ export function ConversationsClient() {
                   <Sparkles className="h-5 w-5 text-purple-400 flex-shrink-0 mt-1" />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-purple-400 mb-2">AI Suggested Reply</p>
-                    <p className="text-sm text-white whitespace-pre-wrap bg-[#25252A] p-3 rounded-md border border-[#3A3A40]">
+                    <p className="text-sm text-foreground whitespace-pre-wrap bg-card p-3 rounded-md border border-border">
                       {aiSuggestion}
                     </p>
                   </div>
                   <Button
                     size="sm"
                     onClick={useAISuggestion}
-                    className="bg-purple-600 hover:bg-purple-700 text-white flex-shrink-0"
+                    className="bg-purple-600 hover:bg-purple-700 text-foreground flex-shrink-0"
                   >
                     Use This Reply
                   </Button>
@@ -338,11 +338,11 @@ export function ConversationsClient() {
             )}
 
             {/* Reply Composer */}
-            <div className="p-6 border-t border-[#3A3A40]">
+            <div className="p-6 border-t border-border">
               <div className="max-w-3xl space-y-3">
                 <div className="flex items-center gap-2 mb-2">
                   <Select value={tone} onValueChange={(v: 'professional' | 'casual' | 'friendly' | 'direct') => setTone(v)}>
-                    <SelectTrigger className="w-48 bg-[#25252A] border-[#3A3A40] text-white text-sm">
+                    <SelectTrigger className="w-48 bg-card border-border text-foreground text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -357,7 +357,7 @@ export function ConversationsClient() {
                     variant="outline"
                     onClick={() => generateAISuggestion(messages, selectedConversation.prospect)}
                     disabled={generatingAI}
-                    className="bg-[#25252A] border-[#3A3A40] text-purple-400 hover:bg-purple-500/10"
+                    className="bg-card border-border text-purple-400 hover:bg-purple-500/10"
                   >
                     {generatingAI ? (
                       <>
@@ -377,13 +377,13 @@ export function ConversationsClient() {
                   onChange={(e) => setReplyText(e.target.value)}
                   placeholder="Type your reply..."
                   rows={4}
-                  className="bg-[#25252A] border-[#3A3A40] text-white"
+                  className="bg-card border-border text-foreground"
                 />
                 <div className="flex justify-end">
                   <Button
                     onClick={handleSendReply}
                     disabled={sending || !replyText.trim()}
-                    className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     {sending ? (
                       <>
@@ -404,11 +404,11 @@ export function ConversationsClient() {
         ) : (
           <div className="flex-1 p-6 flex items-center justify-center">
             <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-[#25252A] flex items-center justify-center mx-auto mb-4">
-                <Mail className="h-8 w-8 text-gray-600" />
+              <div className="w-16 h-16 rounded-full bg-card flex items-center justify-center mx-auto mb-4">
+                <Mail className="h-8 w-8 text-muted-foreground/60" />
               </div>
-              <h3 className="text-lg font-medium text-white mb-2">No conversation selected</h3>
-              <p className="text-gray-400 text-sm">
+              <h3 className="text-lg font-medium text-foreground mb-2">No conversation selected</h3>
+              <p className="text-muted-foreground text-sm">
                 Choose a conversation from the list to view the message thread
               </p>
             </div>

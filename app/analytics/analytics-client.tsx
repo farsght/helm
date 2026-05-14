@@ -68,17 +68,17 @@ export function AnalyticsClient() {
     return (
       <div className="p-8">
         <div className="mb-8">
-          <div className="h-9 w-48 bg-[#25252A] rounded animate-pulse" />
-          <div className="h-5 w-96 bg-[#25252A] rounded animate-pulse mt-2" />
+          <div className="h-9 w-48 bg-card rounded animate-pulse" />
+          <div className="h-5 w-96 bg-card rounded animate-pulse mt-2" />
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="bg-[#25252A] border-[#3A3A40]">
+            <Card key={i} className="bg-card border-border">
               <CardHeader className="pb-2">
-                <div className="h-4 w-24 bg-[#1B1B1F] rounded animate-pulse" />
+                <div className="h-4 w-24 bg-background rounded animate-pulse" />
               </CardHeader>
               <CardContent>
-                <div className="h-8 w-16 bg-[#1B1B1F] rounded animate-pulse" />
+                <div className="h-8 w-16 bg-background rounded animate-pulse" />
               </CardContent>
             </Card>
           ))}
@@ -90,15 +90,15 @@ export function AnalyticsClient() {
   if (error) {
     return (
       <div className="p-8">
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Error Loading Analytics</CardTitle>
+            <CardTitle className="text-foreground">Error Loading Analytics</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-400">{error}</p>
+            <p className="text-muted-foreground">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-[#266DF0] text-white rounded hover:bg-[#1e5bc4]"
+              className="mt-4 px-4 py-2 bg-primary text-foreground rounded hover:bg-primary/90"
             >
               Retry
             </button>
@@ -115,52 +115,52 @@ export function AnalyticsClient() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Analytics</h1>
-        <p className="text-gray-400 mt-1">Track your campaign performance and insights across all campaigns</p>
+        <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
+        <p className="text-muted-foreground mt-1">Track your campaign performance and insights across all campaigns</p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Total Sent</CardTitle>
-            <Mail className="h-4 w-4 text-gray-400" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Sent</CardTitle>
+            <Mail className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{data?.summary?.totalSent ?? 0}</div>
+            <div className="text-2xl font-bold text-foreground">{data?.summary?.totalSent ?? 0}</div>
             <p className="text-xs text-green-500 mt-1">All campaigns</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Open Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-gray-400" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Open Rate</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{(data?.summary?.openRate ?? 0).toFixed(1)}%</div>
+            <div className="text-2xl font-bold text-foreground">{(data?.summary?.openRate ?? 0).toFixed(1)}%</div>
             <p className="text-xs text-green-500 mt-1">+3.2% from last month</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Reply Rate</CardTitle>
-            <BarChart3 className="h-4 w-4 text-gray-400" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Reply Rate</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{(data?.summary?.replyRate ?? 0).toFixed(1)}%</div>
+            <div className="text-2xl font-bold text-foreground">{(data?.summary?.replyRate ?? 0).toFixed(1)}%</div>
             <p className="text-xs text-green-500 mt-1">+5.1% from last month</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Meetings Booked</CardTitle>
-            <Users className="h-4 w-4 text-gray-400" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Meetings Booked</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{data?.summary?.meetingsBooked ?? 0}</div>
+            <div className="text-2xl font-bold text-foreground">{data?.summary?.meetingsBooked ?? 0}</div>
             <p className="text-xs text-green-500 mt-1">
               {(data?.summary?.totalSent ?? 0) > 0 ? (((data?.summary?.meetingsBooked ?? 0) / (data?.summary?.totalSent ?? 1)) * 100).toFixed(1) : '0.0'}% conversion
             </p>
@@ -169,10 +169,10 @@ export function AnalyticsClient() {
       </div>
 
       {/* Overall Funnel */}
-      <Card className="bg-[#25252A] border-[#3A3A40] mb-8">
+      <Card className="bg-card border-border mb-8">
         <CardHeader>
-          <CardTitle className="text-white">Overall Conversion Funnel</CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardTitle className="text-foreground">Overall Conversion Funnel</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Aggregate funnel across all campaigns
           </CardDescription>
         </CardHeader>
@@ -181,19 +181,19 @@ export function AnalyticsClient() {
             {(data?.funnel ?? []).map((step) => (
               <div key={step.step} className="relative">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-white">{step.step}</span>
+                  <span className="text-sm font-medium text-foreground">{step.step}</span>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-gray-400">{step.count} prospects</span>
-                    <span className="text-sm font-medium text-[#266DF0]">{step.percentage.toFixed(1)}%</span>
+                    <span className="text-sm text-muted-foreground">{step.count} prospects</span>
+                    <span className="text-sm font-medium text-primary">{step.percentage.toFixed(1)}%</span>
                   </div>
                 </div>
-                <div className="relative h-10 rounded-lg overflow-hidden bg-[#1B1B1F]">
+                <div className="relative h-10 rounded-lg overflow-hidden bg-background">
                   <div
                     className="absolute inset-y-0 left-0 bg-gradient-to-r from-[#266DF0] to-[#1a5ac9] transition-all"
                     style={{ width: `${step.percentage}%` }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-white font-medium text-sm">{step.count}</span>
+                    <span className="text-foreground font-medium text-sm">{step.count}</span>
                   </div>
                 </div>
               </div>
@@ -203,10 +203,10 @@ export function AnalyticsClient() {
       </Card>
 
       {/* Trends Chart */}
-      <Card className="bg-[#25252A] border-[#3A3A40] mb-8">
+      <Card className="bg-card border-border mb-8">
         <CardHeader>
-          <CardTitle className="text-white">Performance Trends (Last 30 Days)</CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardTitle className="text-foreground">Performance Trends (Last 30 Days)</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Track your outreach activity and engagement over time
           </CardDescription>
         </CardHeader>
@@ -231,10 +231,10 @@ export function AnalyticsClient() {
 
       <div className="grid gap-8 lg:grid-cols-2 mb-8">
         {/* Top Templates */}
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Best Performing Templates</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Best Performing Templates</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Sorted by reply rate
             </CardDescription>
           </CardHeader>
@@ -255,10 +255,10 @@ export function AnalyticsClient() {
         </Card>
 
         {/* Reply Rate by Industry */}
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Reply Rate by Industry</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Reply Rate by Industry</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Which industries respond best
             </CardDescription>
           </CardHeader>
@@ -294,26 +294,26 @@ export function AnalyticsClient() {
 
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Reply Rate by Title */}
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Reply Rate by Job Title</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Reply Rate by Job Title</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Top responding job titles
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {(data?.replyRateByTitle ?? []).map((item, index) => (
-                <div key={item.title} className="flex items-center justify-between p-3 rounded-lg bg-[#1B1B1F]">
+                <div key={item.title} className="flex items-center justify-between p-3 rounded-lg bg-background">
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-[#266DF0]/10 text-[#266DF0] text-xs font-bold">
+                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold">
                       {index + 1}
                     </div>
-                    <span className="text-sm font-medium text-white">{item.title}</span>
+                    <span className="text-sm font-medium text-foreground">{item.title}</span>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-[#266DF0]">{item.replyRate.toFixed(1)}%</p>
-                    <p className="text-xs text-gray-400">{item.count} sent</p>
+                    <p className="text-sm font-bold text-primary">{item.replyRate.toFixed(1)}%</p>
+                    <p className="text-xs text-muted-foreground">{item.count} sent</p>
                   </div>
                 </div>
               ))}
@@ -322,10 +322,10 @@ export function AnalyticsClient() {
         </Card>
 
         {/* Best Sending Times */}
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Best Sending Times</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Best Sending Times</CardTitle>
+            <CardDescription className="text-muted-foreground">
               When do prospects engage most
             </CardDescription>
           </CardHeader>
@@ -333,7 +333,7 @@ export function AnalyticsClient() {
             <div className="grid grid-cols-7 gap-2">
               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
                 <div key={day} className="text-center">
-                  <p className="text-xs text-gray-400 mb-2">{day}</p>
+                  <p className="text-xs text-muted-foreground mb-2">{day}</p>
                   <div className="space-y-1">
                     {[9, 12, 15, 18].map((hour) => {
                       const dataPoint = (data?.sendingTimeHeatmap ?? []).find(
@@ -355,7 +355,7 @@ export function AnalyticsClient() {
                 </div>
               ))}
             </div>
-            <div className="flex items-center justify-center gap-4 mt-4 text-xs text-gray-400">
+            <div className="flex items-center justify-center gap-4 mt-4 text-xs text-muted-foreground">
               <span>9 AM</span>
               <span>12 PM</span>
               <span>3 PM</span>

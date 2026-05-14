@@ -190,10 +190,12 @@ All P1 and P2 gaps resolved. App is fully functional end-to-end with:
 - [ ] Add `<ThemeProvider>` in `app/layout.tsx` (attribute=`class`, defaultTheme=`dark`, enableSystem)
 - [ ] Add a `ThemeToggle` component (Settings page + maybe top nav)
 
-### Phase B — Codemod sweep (mechanical, low-risk)
-Run a scripted find/replace across `app/**/*.tsx` and `components/**/*.tsx`:
+### Phase B — Codemod sweep ✅
+Ran `scripts/theme-codemod.py --apply` across `app/` + `components/` (excluding `components/ui/`).
 
-| Hardcoded | Replace with |
+**Result: 647 → 3 hardcoded literals** (the remaining 3 are LinkedIn brand blue `#0A66C2`, intentionally preserved as third-party brand identity).
+
+| Hardcoded | Replaced with |
 |---|---|
 | `bg-[#25252A]` | `bg-card` |
 | `bg-[#1B1B1F]` | `bg-background` |

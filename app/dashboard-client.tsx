@@ -68,17 +68,17 @@ export default function DashboardClient() {
     return (
       <div className="p-8">
         <div className="mb-8">
-          <div className="h-9 w-48 bg-[#25252A] rounded animate-pulse" />
-          <div className="h-5 w-96 bg-[#25252A] rounded animate-pulse mt-2" />
+          <div className="h-9 w-48 bg-card rounded animate-pulse" />
+          <div className="h-5 w-96 bg-card rounded animate-pulse mt-2" />
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
           {[...Array(4)].map((_, i) => (
-            <Card key={i} className="bg-[#25252A] border-[#3A3A40]">
+            <Card key={i} className="bg-card border-border">
               <CardHeader className="pb-2">
-                <div className="h-4 w-24 bg-[#1B1B1F] rounded animate-pulse" />
+                <div className="h-4 w-24 bg-background rounded animate-pulse" />
               </CardHeader>
               <CardContent>
-                <div className="h-8 w-16 bg-[#1B1B1F] rounded animate-pulse" />
+                <div className="h-8 w-16 bg-background rounded animate-pulse" />
               </CardContent>
             </Card>
           ))}
@@ -90,15 +90,15 @@ export default function DashboardClient() {
   if (error) {
     return (
       <div className="p-8">
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Error Loading Dashboard</CardTitle>
+            <CardTitle className="text-foreground">Error Loading Dashboard</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-400">{error}</p>
+            <p className="text-muted-foreground">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-[#266DF0] text-white rounded hover:bg-[#1e5bc4]"
+              className="mt-4 px-4 py-2 bg-primary text-foreground rounded hover:bg-primary/90"
             >
               Retry
             </button>
@@ -140,22 +140,22 @@ export default function DashboardClient() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-        <p className="text-gray-400 mt-1">Welcome back! Here&apos;s what&apos;s happening with your campaigns.</p>
+        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground mt-1">Welcome back! Here&apos;s what&apos;s happening with your campaigns.</p>
       </div>
 
       {/* Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {metrics.map((metric) => (
-          <Card key={metric.name} className="bg-[#25252A] border-[#3A3A40]">
+          <Card key={metric.name} className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 {metric.name}
               </CardTitle>
-              <metric.icon className="h-4 w-4 text-gray-400" />
+              <metric.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{metric.value}</div>
+              <div className="text-2xl font-bold text-foreground">{metric.value}</div>
               <p className="text-xs text-green-500 mt-1">{metric.change} from last week</p>
             </CardContent>
           </Card>
@@ -164,10 +164,10 @@ export default function DashboardClient() {
 
       {/* Messages Sent vs Replies Chart */}
       <div className="grid gap-8 lg:grid-cols-2 mb-8">
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Messages & Replies (Last 30 Days)</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Messages & Replies (Last 30 Days)</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Track your outreach effectiveness
             </CardDescription>
           </CardHeader>
@@ -190,10 +190,10 @@ export default function DashboardClient() {
         </Card>
 
         {/* Campaign Performance */}
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Campaign Performance</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Campaign Performance</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Compare your active campaigns
             </CardDescription>
           </CardHeader>
@@ -219,20 +219,20 @@ export default function DashboardClient() {
 
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Active Campaigns */}
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Active Campaigns</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Active Campaigns</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Your currently running campaigns
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {data.campaigns.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-400 text-sm mb-4">No campaigns yet</p>
+                <p className="text-muted-foreground text-sm mb-4">No campaigns yet</p>
                 <Link
                   href="/campaigns"
-                  className="inline-flex items-center gap-2 text-[#266DF0] hover:text-[#1e5bc4] text-sm font-medium"
+                  className="inline-flex items-center gap-2 text-primary hover:text-primary/90 text-sm font-medium"
                 >
                   Create your first campaign
                   <ArrowRight className="h-4 w-4" />
@@ -243,11 +243,11 @@ export default function DashboardClient() {
                 <Link
                   key={campaign.id}
                   href={`/campaigns/${campaign.id}`}
-                  className="flex items-center justify-between p-4 rounded-lg bg-[#1B1B1F] hover:bg-[#2A2A30] transition-colors border border-[#3A3A40]"
+                  className="flex items-center justify-between p-4 rounded-lg bg-background hover:bg-accent transition-colors border border-border"
                 >
                   <div className="flex-1">
-                    <h3 className="font-medium text-white">{campaign.name}</h3>
-                    <p className="text-sm text-gray-400 mt-1">
+                    <h3 className="font-medium text-foreground">{campaign.name}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
                       {campaign.description || 'No description'} • {campaign.prospectCount} prospects
                     </p>
                   </div>
@@ -257,12 +257,12 @@ export default function DashboardClient() {
                       className={
                         campaign.status === 'active'
                           ? 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
-                          : 'bg-gray-500/10 text-gray-400'
+                          : 'bg-muted text-muted-foreground'
                       }
                     >
                       {campaign.status}
                     </Badge>
-                    <ArrowRight className="h-5 w-5 text-gray-400" />
+                    <ArrowRight className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </Link>
               ))
@@ -271,39 +271,39 @@ export default function DashboardClient() {
         </Card>
 
         {/* Recent Conversations */}
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Needs Attention</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Needs Attention</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Recent conversations with unread replies
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {data.recentConversations.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-400 text-sm">All caught up! 🎉</p>
+                <p className="text-muted-foreground text-sm">All caught up! 🎉</p>
               </div>
             ) : (
               data.recentConversations.map((conversation) => (
                 <Link
                   key={conversation.id}
                   href={`/conversations`}
-                  className="flex items-center justify-between p-4 rounded-lg bg-[#1B1B1F] hover:bg-[#2A2A30] transition-colors border border-[#3A3A40]"
+                  className="flex items-center justify-between p-4 rounded-lg bg-background hover:bg-accent transition-colors border border-border"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-white">{conversation.prospectName}</h3>
+                      <h3 className="font-medium text-foreground">{conversation.prospectName}</h3>
                       {conversation.unread && (
-                        <div className="w-2 h-2 rounded-full bg-[#266DF0]" />
+                        <div className="w-2 h-2 rounded-full bg-primary" />
                       )}
                     </div>
-                    <p className="text-sm text-gray-400 mt-1 line-clamp-1">
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
                       {conversation.lastMessage}
                     </p>
                   </div>
                   <Badge
                     variant="secondary"
-                    className="bg-blue-500/10 text-blue-400"
+                    className="bg-primary/10 text-primary"
                   >
                     {conversation.status}
                   </Badge>

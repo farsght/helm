@@ -126,22 +126,22 @@ export default function ListDetailPage({
         <div>
           <Link
             href="/lists"
-            className="inline-flex items-center text-sm text-gray-400 hover:text-white mb-2"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-2"
           >
             <ArrowLeft className="h-4 w-4 mr-1" /> Back to Lists
           </Link>
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl font-bold text-foreground">
             {list?.name ?? (loading ? "Loading…" : `List #${listId}`)}
           </h1>
           {list?.description && (
-            <p className="text-gray-400 mt-1">{list.description}</p>
+            <p className="text-muted-foreground mt-1">{list.description}</p>
           )}
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {members.length} member{members.length === 1 ? "" : "s"}
           </p>
         </div>
         <Button
-          className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
           onClick={openAddProspects}
         >
           <UserPlus className="mr-2 h-4 w-4" />
@@ -156,10 +156,10 @@ export default function ListDetailPage({
       />
 
       <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent className="bg-[#25252A] border-[#3A3A40] text-white max-w-2xl">
+        <DialogContent className="bg-card border-border text-foreground max-w-2xl">
           <DialogHeader>
             <DialogTitle>Add Prospects to {list?.name}</DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-muted-foreground">
               Select prospects to add to this list.
             </DialogDescription>
           </DialogHeader>
@@ -168,16 +168,16 @@ export default function ListDetailPage({
               placeholder="Search prospects..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-[#1B1B1F] border-[#3A3A40] text-white"
+              className="bg-background border-border text-foreground"
             />
             <div className="max-h-80 overflow-y-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-[#3A3A40]">
+                  <TableRow className="border-border">
                     <TableHead className="w-10"></TableHead>
-                    <TableHead className="text-gray-400">Name</TableHead>
-                    <TableHead className="text-gray-400">Company</TableHead>
-                    <TableHead className="text-gray-400">Email</TableHead>
+                    <TableHead className="text-muted-foreground">Name</TableHead>
+                    <TableHead className="text-muted-foreground">Company</TableHead>
+                    <TableHead className="text-muted-foreground">Email</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -190,7 +190,7 @@ export default function ListDetailPage({
                           .includes(search.toLowerCase()),
                     )
                     .map((p) => (
-                      <TableRow key={p.id} className="border-[#3A3A40]">
+                      <TableRow key={p.id} className="border-border">
                         <TableCell>
                           <Checkbox
                             checked={selectedIds.includes(p.id)}
@@ -203,13 +203,13 @@ export default function ListDetailPage({
                             }}
                           />
                         </TableCell>
-                        <TableCell className="text-white">
+                        <TableCell className="text-foreground">
                           {p.firstName} {p.lastName}
                         </TableCell>
-                        <TableCell className="text-gray-400">
+                        <TableCell className="text-muted-foreground">
                           {p.company || "—"}
                         </TableCell>
-                        <TableCell className="text-gray-400">
+                        <TableCell className="text-muted-foreground">
                           {p.email || "—"}
                         </TableCell>
                       </TableRow>
@@ -217,7 +217,7 @@ export default function ListDetailPage({
                 </TableBody>
               </Table>
             </div>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-muted-foreground">
               {selectedIds.length} selected
             </p>
           </div>
@@ -225,14 +225,14 @@ export default function ListDetailPage({
             <Button
               variant="outline"
               onClick={() => setAddOpen(false)}
-              className="border-[#3A3A40] text-gray-400"
+              className="border-border text-muted-foreground"
             >
               Cancel
             </Button>
             <Button
               onClick={handleAddProspects}
               disabled={adding || selectedIds.length === 0}
-              className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {adding
                 ? "Adding..."

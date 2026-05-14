@@ -65,14 +65,14 @@ export function ProspectDetailClient({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (!prospect) {
     return (
-      <div className="p-8 text-center text-gray-400">Prospect not found.</div>
+      <div className="p-8 text-center text-muted-foreground">Prospect not found.</div>
     );
   }
 
@@ -80,66 +80,66 @@ export function ProspectDetailClient({ id }: { id: string }) {
     <div className="p-8 max-w-5xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
         <Link href="/prospects">
-          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl font-bold text-foreground">
             {prospect.firstName} {prospect.lastName}
           </h1>
           {prospect.title && prospect.company && (
-            <p className="text-gray-400 mt-1">{prospect.title} at {prospect.company}</p>
+            <p className="text-muted-foreground mt-1">{prospect.title} at {prospect.company}</p>
           )}
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
         {/* Profile Card */}
-        <Card className="bg-[#25252A] border-[#3A3A40] md:col-span-1">
+        <Card className="bg-card border-border md:col-span-1">
           <CardHeader>
-            <CardTitle className="text-white text-lg">Contact Info</CardTitle>
+            <CardTitle className="text-foreground text-lg">Contact Info</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {prospect.email && (
               <div className="flex items-center gap-2 text-sm">
-                <Mail className="h-4 w-4 text-blue-400 shrink-0" />
-                <span className="text-gray-300 break-all">{prospect.email}</span>
+                <Mail className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-muted-foreground break-all">{prospect.email}</span>
               </div>
             )}
             {prospect.linkedinUrl && (
               <div className="flex items-center gap-2 text-sm">
                 <Linkedin className="h-4 w-4 text-purple-400 shrink-0" />
-                <a href={prospect.linkedinUrl} target="_blank" rel="noreferrer" className="text-[#266DF0] hover:underline break-all">
+                <a href={prospect.linkedinUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline break-all">
                   LinkedIn Profile
                 </a>
               </div>
             )}
             {prospect.phone && (
               <div className="flex items-center gap-2 text-sm">
-                <Phone className="h-4 w-4 text-gray-400 shrink-0" />
-                <span className="text-gray-300">{prospect.phone}</span>
+                <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground">{prospect.phone}</span>
               </div>
             )}
             {prospect.company && (
               <div className="flex items-center gap-2 text-sm">
-                <Building className="h-4 w-4 text-gray-400 shrink-0" />
-                <span className="text-gray-300">{prospect.company}</span>
+                <Building className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground">{prospect.company}</span>
               </div>
             )}
             {prospect.location && (
               <div className="flex items-center gap-2 text-sm">
-                <MapPin className="h-4 w-4 text-gray-400 shrink-0" />
-                <span className="text-gray-300">{prospect.location}</span>
+                <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-muted-foreground">{prospect.location}</span>
               </div>
             )}
             {prospect.industry && (
               <div className="text-sm">
-                <span className="text-gray-400">Industry: </span>
-                <span className="text-gray-300">{prospect.industry}</span>
+                <span className="text-muted-foreground">Industry: </span>
+                <span className="text-muted-foreground">{prospect.industry}</span>
               </div>
             )}
-            <div className="text-sm text-gray-500 pt-2 border-t border-[#3A3A40]">
+            <div className="text-sm text-muted-foreground pt-2 border-t border-border">
               Added {new Date(prospect.createdAt).toLocaleDateString()}
             </div>
           </CardContent>
@@ -148,28 +148,28 @@ export function ProspectDetailClient({ id }: { id: string }) {
         {/* Right column */}
         <div className="md:col-span-2 space-y-6">
           {/* Campaign History */}
-          <Card className="bg-[#25252A] border-[#3A3A40]">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white text-lg">Campaign History</CardTitle>
+              <CardTitle className="text-foreground text-lg">Campaign History</CardTitle>
             </CardHeader>
             <CardContent>
               {campaignHistory.length === 0 ? (
-                <p className="text-gray-400 text-sm">Not enrolled in any campaigns</p>
+                <p className="text-muted-foreground text-sm">Not enrolled in any campaigns</p>
               ) : (
                 <div className="space-y-2">
                   {campaignHistory.map(({ campaign, enrollment }) => (
-                    <div key={campaign.id} className="flex items-center justify-between p-3 rounded-lg bg-[#1B1B1F] border border-[#3A3A40]">
+                    <div key={campaign.id} className="flex items-center justify-between p-3 rounded-lg bg-background border border-border">
                       <div>
-                        <Link href={`/campaigns/${campaign.id}`} className="text-white font-medium hover:text-[#266DF0]">
+                        <Link href={`/campaigns/${campaign.id}`} className="text-foreground font-medium hover:text-primary">
                           {campaign.name}
                         </Link>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           Enrolled {new Date(enrollment.enrolledAt).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex gap-2">
-                        <Badge className="bg-blue-500/10 text-blue-400">{enrollment.status}</Badge>
-                        <Badge className={campaign.status === 'active' ? 'bg-green-500/10 text-green-400' : 'bg-gray-500/10 text-gray-400'}>
+                        <Badge className="bg-primary/10 text-primary">{enrollment.status}</Badge>
+                        <Badge className={campaign.status === 'active' ? 'bg-green-500/10 text-green-400' : 'bg-muted text-muted-foreground'}>
                           {campaign.status}
                         </Badge>
                       </div>
@@ -181,35 +181,35 @@ export function ProspectDetailClient({ id }: { id: string }) {
           </Card>
 
           {/* Messages */}
-          <Card className="bg-[#25252A] border-[#3A3A40]">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white text-lg">Messages ({messages.length})</CardTitle>
+              <CardTitle className="text-foreground text-lg">Messages ({messages.length})</CardTitle>
             </CardHeader>
             <CardContent>
               {messages.length === 0 ? (
-                <p className="text-gray-400 text-sm">No messages yet</p>
+                <p className="text-muted-foreground text-sm">No messages yet</p>
               ) : (
                 <div className="space-y-3">
                   {messages.map((msg) => (
-                    <div key={msg.id} className="p-3 rounded-lg bg-[#1B1B1F] border border-[#3A3A40]">
+                    <div key={msg.id} className="p-3 rounded-lg bg-background border border-border">
                       <div className="flex items-center gap-2 mb-2">
                         {msg.channel === 'email' ? (
-                          <Mail className="h-4 w-4 text-blue-400" />
+                          <Mail className="h-4 w-4 text-primary" />
                         ) : (
                           <Linkedin className="h-4 w-4 text-purple-400" />
                         )}
-                        <span className="text-sm text-gray-400 capitalize">{msg.direction} · {msg.channel}</span>
-                        <Badge variant="secondary" className="ml-auto text-xs bg-[#25252A] text-gray-400">
+                        <span className="text-sm text-muted-foreground capitalize">{msg.direction} · {msg.channel}</span>
+                        <Badge variant="secondary" className="ml-auto text-xs bg-card text-muted-foreground">
                           {msg.status}
                         </Badge>
                       </div>
                       {msg.subject && (
-                        <p className="text-sm font-medium text-white mb-1">{msg.subject}</p>
+                        <p className="text-sm font-medium text-foreground mb-1">{msg.subject}</p>
                       )}
                       {msg.body && (
-                        <p className="text-sm text-gray-400 line-clamp-2">{msg.body}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{msg.body}</p>
                       )}
-                      <p className="text-xs text-gray-500 mt-2">
+                      <p className="text-xs text-muted-foreground mt-2">
                         {msg.sentAt ? new Date(msg.sentAt).toLocaleString() : new Date(msg.createdAt).toLocaleString()}
                       </p>
                     </div>

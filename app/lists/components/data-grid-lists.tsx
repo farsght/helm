@@ -59,7 +59,7 @@ export function DataGridLists({ data, onDataChange }: DataGridListsProps) {
         cell: ({ row }) => (
           <Link
             href={`/lists/${row.original.id}`}
-            className="text-[#266DF0] hover:underline font-medium"
+            className="text-primary hover:underline font-medium"
             onClick={(e) => e.stopPropagation()}
           >
             {row.original.name}

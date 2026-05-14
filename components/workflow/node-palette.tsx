@@ -37,9 +37,9 @@ export function NodePalette() {
   };
 
   return (
-    <Card className="absolute left-4 top-4 z-10 w-64 bg-[#25252A] border-[#3A3A40] shadow-xl">
+    <Card className="absolute left-4 top-4 z-10 w-64 bg-card border-border shadow-xl">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm text-white">Add Step</CardTitle>
+        <CardTitle className="text-sm text-foreground">Add Step</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-[calc(100vh-200px)]">
@@ -49,10 +49,10 @@ export function NodePalette() {
                 key={node.type}
                 draggable
                 onDragStart={(e) => onDragStart(e, node.type)}
-                className="flex items-center gap-2 p-2 rounded-md bg-[#1B1B1F] hover:bg-[#3A3A40] cursor-grab active:cursor-grabbing transition-colors border border-transparent hover:border-[#266DF0]"
+                className="flex items-center gap-2 p-2 rounded-md bg-background hover:bg-accent cursor-grab active:cursor-grabbing transition-colors border border-transparent hover:border-primary"
               >
-                <node.icon className="h-4 w-4 text-gray-400" />
-                <span className="text-sm text-white">{node.label}</span>
+                <node.icon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">{node.label}</span>
               </div>
             ))}
           </div>

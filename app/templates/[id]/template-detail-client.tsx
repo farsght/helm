@@ -70,14 +70,14 @@ export function TemplateDetailClient({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (!template) {
     return (
-      <div className="p-8 text-center text-gray-400">Template not found.</div>
+      <div className="p-8 text-center text-muted-foreground">Template not found.</div>
     );
   }
 
@@ -87,23 +87,23 @@ export function TemplateDetailClient({ id }: { id: string }) {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <Link href="/templates">
-            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
           <div>
             <div className="flex items-center gap-3">
               {template.channel === 'email' ? (
-                <Mail className="h-6 w-6 text-blue-400" />
+                <Mail className="h-6 w-6 text-primary" />
               ) : (
                 <Linkedin className="h-6 w-6 text-purple-400" />
               )}
-              <h1 className="text-2xl font-bold text-white">{template.name}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{template.name}</h1>
               <Badge
                 variant="secondary"
                 className={
                   template.channel === 'email'
-                    ? 'bg-blue-500/10 text-blue-400'
+                    ? 'bg-primary/10 text-primary'
                     : 'bg-purple-500/10 text-purple-400'
                 }
               >
@@ -125,14 +125,14 @@ export function TemplateDetailClient({ id }: { id: string }) {
                   });
                 }}
                 variant="outline"
-                className="border-[#3A3A40]"
+                className="border-border"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="bg-[#266DF0] hover:bg-[#1a5ac9]"
+                className="bg-primary hover:bg-primary/90"
               >
                 <Save className="mr-2 h-4 w-4" />
                 {saving ? 'Saving...' : 'Save Changes'}
@@ -141,7 +141,7 @@ export function TemplateDetailClient({ id }: { id: string }) {
           ) : (
             <Button
               onClick={() => setEditing(true)}
-              className="bg-[#266DF0] hover:bg-[#1a5ac9]"
+              className="bg-primary hover:bg-primary/90"
             >
               Edit Template
             </Button>
@@ -151,50 +151,50 @@ export function TemplateDetailClient({ id }: { id: string }) {
 
       {/* Template Content */}
       <div className="grid gap-6 mb-8">
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Base Template</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-foreground">Base Template</CardTitle>
+            <CardDescription className="text-muted-foreground">
               This is the default template. Create variants below for A/B testing.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="name" className="text-gray-400">Template Name</Label>
+              <Label htmlFor="name" className="text-muted-foreground">Template Name</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 disabled={!editing}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white mt-2"
+                className="bg-background border-border text-foreground mt-2"
               />
             </div>
 
             {template.channel === 'email' && (
               <div>
-                <Label htmlFor="subject" className="text-gray-400">Subject Line</Label>
+                <Label htmlFor="subject" className="text-muted-foreground">Subject Line</Label>
                 <Input
                   id="subject"
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   disabled={!editing}
                   placeholder="Enter subject line"
-                  className="bg-[#1B1B1F] border-[#3A3A40] text-white mt-2"
+                  className="bg-background border-border text-foreground mt-2"
                 />
               </div>
             )}
 
             <div>
-              <Label htmlFor="body" className="text-gray-400">Message Body</Label>
+              <Label htmlFor="body" className="text-muted-foreground">Message Body</Label>
               <Textarea
                 id="body"
                 value={formData.body}
                 onChange={(e) => setFormData({ ...formData, body: e.target.value })}
                 disabled={!editing}
                 rows={12}
-                className="bg-[#1B1B1F] border-[#3A3A40] text-white mt-2 resize-none font-mono text-sm"
+                className="bg-background border-border text-foreground mt-2 resize-none font-mono text-sm"
               />
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 Available variables: {'{'}firstName{'}'}, {'{'}lastName{'}'}, {'{'}company{'}'}, {'{'}title{'}'}
               </p>
             </div>

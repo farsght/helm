@@ -180,7 +180,7 @@ export function CampaignCanvas({ initialNodes, initialEdges }: CampaignCanvasPro
   };
 
   return (
-    <div className="relative w-full h-full bg-[#1B1B1F]">
+    <div className="relative w-full h-full bg-background">
       <NodePalette />
       <ReactFlow
         nodes={nodes}
@@ -195,7 +195,7 @@ export function CampaignCanvas({ initialNodes, initialEdges }: CampaignCanvasPro
         onInit={setReactFlowInstance}
         nodeTypes={nodeTypes}
         fitView
-        className="bg-[#1B1B1F]"
+        className="bg-background"
         style={{ background: "#1B1B1F" }}
       >
         <Background
@@ -214,14 +214,14 @@ export function CampaignCanvas({ initialNodes, initialEdges }: CampaignCanvasPro
         />
         <Controls
           showInteractive={false}
-          className="bg-[#25252A] border border-[#3A3A40] [&>button]:bg-[#25252A] [&>button]:border-[#3A3A40] [&>button]:text-white [&>button:hover]:bg-[#3A3A40]"
+          className="bg-card border border-border [&>button]:bg-card [&>button]:border-border [&>button]:text-foreground [&>button:hover]:bg-accent"
         />
         <Panel position="top-right" className="flex gap-2">
           <Button
             onClick={handleZoomIn}
             size="icon"
             variant="outline"
-            className="bg-[#25252A] border-[#3A3A40] text-white hover:bg-[#3A3A40]"
+            className="bg-card border-border text-foreground hover:bg-accent"
           >
             <ZoomIn className="h-4 w-4" />
           </Button>
@@ -229,7 +229,7 @@ export function CampaignCanvas({ initialNodes, initialEdges }: CampaignCanvasPro
             onClick={handleZoomOut}
             size="icon"
             variant="outline"
-            className="bg-[#25252A] border-[#3A3A40] text-white hover:bg-[#3A3A40]"
+            className="bg-card border-border text-foreground hover:bg-accent"
           >
             <ZoomOut className="h-4 w-4" />
           </Button>
@@ -237,7 +237,7 @@ export function CampaignCanvas({ initialNodes, initialEdges }: CampaignCanvasPro
             onClick={handleFitView}
             size="icon"
             variant="outline"
-            className="bg-[#25252A] border-[#3A3A40] text-white hover:bg-[#3A3A40]"
+            className="bg-card border-border text-foreground hover:bg-accent"
           >
             <Maximize className="h-4 w-4" />
           </Button>

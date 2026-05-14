@@ -72,13 +72,13 @@ export function CampaignsClient() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Campaigns</h1>
-          <p className="text-gray-400 mt-1">Manage your outreach campaigns</p>
+          <h1 className="text-3xl font-bold text-foreground">Campaigns</h1>
+          <p className="text-muted-foreground mt-1">Manage your outreach campaigns</p>
         </div>
         <Button
           onClick={handleNewCampaign}
           disabled={creating}
-          className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           {creating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
           New Campaign
@@ -86,17 +86,17 @@ export function CampaignsClient() {
       </div>
 
       {campaigns.length === 0 ? (
-        <Card className="bg-[#25252A] border-[#3A3A40]">
+        <Card className="bg-card border-border">
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <Target className="h-12 w-12 text-gray-600 mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">No campaigns yet</h3>
-            <p className="text-gray-400 text-sm text-center max-w-md mb-6">
+            <Target className="h-12 w-12 text-muted-foreground/60 mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">No campaigns yet</h3>
+            <p className="text-muted-foreground text-sm text-center max-w-md mb-6">
               Create your first campaign to start automating your outreach
             </p>
             <Button
               onClick={handleNewCampaign}
               disabled={creating}
-              className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {creating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
               Create Campaign
@@ -106,12 +106,12 @@ export function CampaignsClient() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {campaigns.map((campaign) => (
-            <Card key={campaign.id} className="bg-[#25252A] border-[#3A3A40] hover:border-[#266DF0] transition-colors">
+            <Card key={campaign.id} className="bg-card border-border hover:border-primary transition-colors">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-white">{campaign.name}</CardTitle>
-                    <CardDescription className="text-gray-400 mt-2">
+                    <CardTitle className="text-foreground">{campaign.name}</CardTitle>
+                    <CardDescription className="text-muted-foreground mt-2">
                       {campaign.description || 'No description'}
                     </CardDescription>
                   </div>
@@ -121,7 +121,7 @@ export function CampaignsClient() {
                       campaign.status === 'active'
                         ? 'bg-green-500/10 text-green-500'
                         : campaign.status === 'draft'
-                        ? 'bg-gray-500/10 text-gray-400'
+                        ? 'bg-muted text-muted-foreground'
                         : 'bg-yellow-500/10 text-yellow-500'
                     }
                   >
@@ -131,24 +131,24 @@ export function CampaignsClient() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Prospects</span>
-                  <span className="text-white font-medium">{campaign.prospectCount}</span>
+                  <span className="text-muted-foreground">Prospects</span>
+                  <span className="text-foreground font-medium">{campaign.prospectCount}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Steps</span>
-                  <span className="text-white font-medium">{campaign.stepCount}</span>
+                  <span className="text-muted-foreground">Steps</span>
+                  <span className="text-foreground font-medium">{campaign.stepCount}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Reply Rate</span>
-                  <span className="text-white font-medium">0%</span>
+                  <span className="text-muted-foreground">Reply Rate</span>
+                  <span className="text-foreground font-medium">0%</span>
                 </div>
-                <div className="flex gap-2 pt-4 border-t border-[#3A3A40]">
+                <div className="flex gap-2 pt-4 border-t border-border">
                   <Button
                     size="sm"
                     variant="ghost"
                     disabled={togglingId === campaign.id}
                     onClick={() => handleToggleStatus(campaign)}
-                    className="flex-1 text-gray-400 hover:text-white hover:bg-[#3A3A40]"
+                    className="flex-1 text-muted-foreground hover:text-foreground hover:bg-accent"
                   >
                     {togglingId === campaign.id ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -167,7 +167,7 @@ export function CampaignsClient() {
                   <Link href={`/campaigns/${campaign.id}`} className="flex-1">
                     <Button
                       size="sm"
-                      className="w-full bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       View
                     </Button>

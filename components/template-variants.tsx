@@ -128,21 +128,21 @@ export function TemplateVariants({ templateId, channel }: TemplateVariantsProps)
   };
 
   if (loading) {
-    return <div className="text-gray-400">Loading variants...</div>;
+    return <div className="text-muted-foreground">Loading variants...</div>;
   }
 
   return (
     <>
-      <Card className="bg-[#25252A] border-[#3A3A40]">
+      <Card className="bg-card border-border">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-white">A/B Testing Variants</CardTitle>
-              <CardDescription className="text-gray-400">
+              <CardTitle className="text-foreground">A/B Testing Variants</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Create multiple versions to test and optimize performance
               </CardDescription>
             </div>
-            <Button onClick={handleCreate} size="sm" className="bg-[#266DF0] hover:bg-[#1a5ac9]">
+            <Button onClick={handleCreate} size="sm" className="bg-primary hover:bg-primary/90">
               <Plus className="mr-2 h-4 w-4" />
               Add Variant
             </Button>
@@ -151,8 +151,8 @@ export function TemplateVariants({ templateId, channel }: TemplateVariantsProps)
         <CardContent>
           {variants.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-400 mb-4">No variants yet</p>
-              <Button onClick={handleCreate} variant="outline" className="border-[#3A3A40]">
+              <p className="text-muted-foreground mb-4">No variants yet</p>
+              <Button onClick={handleCreate} variant="outline" className="border-border">
                 Create your first variant
               </Button>
             </div>
@@ -166,12 +166,12 @@ export function TemplateVariants({ templateId, channel }: TemplateVariantsProps)
                     className={`p-4 rounded-lg border ${
                       variant.isWinner
                         ? 'bg-green-500/5 border-green-500/30'
-                        : 'bg-[#1B1B1F] border-[#3A3A40]'
+                        : 'bg-background border-border'
                     }`}
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-white">{variant.name}</h3>
+                        <h3 className="font-medium text-foreground">{variant.name}</h3>
                         {variant.isWinner && (
                           <Badge className="bg-green-500/10 text-green-500">
                             <Trophy className="mr-1 h-3 w-3" />
@@ -184,7 +184,7 @@ export function TemplateVariants({ templateId, channel }: TemplateVariantsProps)
                           onClick={() => handleEdit(variant)}
                           variant="ghost"
                           size="sm"
-                          className="text-gray-400 hover:text-white"
+                          className="text-muted-foreground hover:text-foreground"
                         >
                           Edit
                         </Button>
@@ -212,36 +212,36 @@ export function TemplateVariants({ templateId, channel }: TemplateVariantsProps)
 
                     <div className="grid grid-cols-5 gap-4 text-sm mb-3">
                       <div>
-                        <p className="text-gray-400">Sent</p>
-                        <p className="text-white font-medium">{variant.sendCount}</p>
+                        <p className="text-muted-foreground">Sent</p>
+                        <p className="text-foreground font-medium">{variant.sendCount}</p>
                       </div>
                       <div>
-                        <p className="text-gray-400">Opened</p>
-                        <p className="text-white font-medium">{variant.openCount}</p>
+                        <p className="text-muted-foreground">Opened</p>
+                        <p className="text-foreground font-medium">{variant.openCount}</p>
                       </div>
                       <div>
-                        <p className="text-gray-400">Clicked</p>
-                        <p className="text-white font-medium">{variant.clickCount}</p>
+                        <p className="text-muted-foreground">Clicked</p>
+                        <p className="text-foreground font-medium">{variant.clickCount}</p>
                       </div>
                       <div>
-                        <p className="text-gray-400">Replied</p>
-                        <p className="text-white font-medium">{variant.replyCount}</p>
+                        <p className="text-muted-foreground">Replied</p>
+                        <p className="text-foreground font-medium">{variant.replyCount}</p>
                       </div>
                       <div>
-                        <p className="text-gray-400">Reply Rate</p>
+                        <p className="text-muted-foreground">Reply Rate</p>
                         <div className="flex items-center gap-1">
-                          <p className="text-[#266DF0] font-bold">{replyRate}%</p>
+                          <p className="text-primary font-bold">{replyRate}%</p>
                           {replyRate > 10 && <TrendingUp className="h-3 w-3 text-green-500" />}
                         </div>
                       </div>
                     </div>
 
                     {variant.subject && (
-                      <p className="text-sm text-gray-400 mb-2">
-                        <span className="text-gray-500">Subject:</span> {variant.subject}
+                      <p className="text-sm text-muted-foreground mb-2">
+                        <span className="text-muted-foreground">Subject:</span> {variant.subject}
                       </p>
                     )}
-                    <p className="text-sm text-gray-400 line-clamp-2">{variant.body}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{variant.body}</p>
                   </div>
                 );
               })}
@@ -251,53 +251,53 @@ export function TemplateVariants({ templateId, channel }: TemplateVariantsProps)
       </Card>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="bg-[#1B1B1F] border-[#3A3A40] text-white max-w-2xl">
+        <DialogContent className="bg-background border-border text-foreground max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editingVariant ? 'Edit Variant' : 'Create Variant'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="variant-name" className="text-gray-400">Variant Name</Label>
+              <Label htmlFor="variant-name" className="text-muted-foreground">Variant Name</Label>
               <Input
                 id="variant-name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g., Variant A, Short Version, etc."
-                className="bg-[#25252A] border-[#3A3A40] text-white mt-2"
+                className="bg-card border-border text-foreground mt-2"
               />
             </div>
             {channel === 'email' && (
               <div>
-                <Label htmlFor="variant-subject" className="text-gray-400">Subject Line</Label>
+                <Label htmlFor="variant-subject" className="text-muted-foreground">Subject Line</Label>
                 <Input
                   id="variant-subject"
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   placeholder="Enter subject line"
-                  className="bg-[#25252A] border-[#3A3A40] text-white mt-2"
+                  className="bg-card border-border text-foreground mt-2"
                 />
               </div>
             )}
             <div>
-              <Label htmlFor="variant-body" className="text-gray-400">Message Body</Label>
+              <Label htmlFor="variant-body" className="text-muted-foreground">Message Body</Label>
               <Textarea
                 id="variant-body"
                 value={formData.body}
                 onChange={(e) => setFormData({ ...formData, body: e.target.value })}
                 placeholder="Enter message body"
                 rows={8}
-                className="bg-[#25252A] border-[#3A3A40] text-white mt-2 resize-none"
+                className="bg-card border-border text-foreground mt-2 resize-none"
               />
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 Use variables like {'{'}firstName{'}'}, {'{'}company{'}'}, etc.
               </p>
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => setShowDialog(false)} variant="outline" className="border-[#3A3A40]">
+            <Button onClick={() => setShowDialog(false)} variant="outline" className="border-border">
               Cancel
             </Button>
-            <Button onClick={handleSave} className="bg-[#266DF0] hover:bg-[#1a5ac9]">
+            <Button onClick={handleSave} className="bg-primary hover:bg-primary/90">
               {editingVariant ? 'Update' : 'Create'} Variant
             </Button>
           </DialogFooter>

@@ -51,6 +51,26 @@ REPLACEMENTS = [
     (r"\bhover:text-gray-400\b", "hover:text-muted-foreground"),
     (r"\bhover:text-gray-300\b", "hover:text-foreground"),
 
+    # ── Hover variants the strict map missed ──
+    (r"hover:bg-\[#1a5ac9\]", "hover:bg-primary/90"),
+    (r"hover:bg-\[#1e5bc4\]", "hover:bg-primary/90"),
+    (r"hover:text-\[#1e5bc4\]", "hover:text-primary/90"),
+    (r"hover:bg-\[#3A3A40\]", "hover:bg-accent"),
+    (r"hover:bg-\[#2A2A30\]", "hover:bg-accent"),
+    # Arbitrary-selector hovers (e.g. campaign-canvas)
+    (r"\[&>button:hover\]:bg-\[#3A3A40\]", "[&>button:hover]:bg-accent"),
+
+    # ── LinkedIn brand blue (keep as literal — third-party brand color, not theme) ──
+    # Intentionally NOT replaced; LinkedIn's #0A66C2 should remain hardcoded.
+
+    # ── Neutral / "no status" gray badges → muted ──
+    (r"bg-gray-500/10 text-muted-foreground", "bg-muted text-muted-foreground"),
+    (r"bg-gray-500/10 border-gray-500/50 text-muted-foreground", "bg-muted border-border text-muted-foreground"),
+
+    # ── Empty-state icons (text-gray-600) → muted-foreground/60 ──
+    (r"\btext-gray-600\b", "text-muted-foreground/60"),
+    (r"\btext-gray-800\b", "text-foreground"),
+
     # ── Status/state colors (badges, etc.) ──
     (r"bg-blue-500/10 text-blue-400", "bg-primary/10 text-primary"),
     (r"text-blue-400", "text-primary"),

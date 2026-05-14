@@ -99,12 +99,12 @@ export function TemplatesClient() {
       <div className="p-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white">Templates</h1>
-            <p className="text-gray-400 mt-1">Manage your message templates</p>
+            <h1 className="text-3xl font-bold text-foreground">Templates</h1>
+            <p className="text-muted-foreground mt-1">Manage your message templates</p>
           </div>
           <Button 
             onClick={handleCreate}
-            className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             <Plus className="mr-2 h-4 w-4" />
             Create Template
@@ -113,21 +113,21 @@ export function TemplatesClient() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {templates.map((template) => (
-            <Card key={template.id} className="bg-[#25252A] border-[#3A3A40] hover:border-[#266DF0] transition-colors">
+            <Card key={template.id} className="bg-card border-border hover:border-primary transition-colors">
               <Link href={`/templates/${template.id}`}>
                 <CardHeader className="cursor-pointer">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         {template.channel === 'email' ? (
-                          <Mail className="h-4 w-4 text-blue-400" />
+                          <Mail className="h-4 w-4 text-primary" />
                         ) : (
                           <Linkedin className="h-4 w-4 text-purple-400" />
                         )}
-                        <CardTitle className="text-white">{template.name}</CardTitle>
+                        <CardTitle className="text-foreground">{template.name}</CardTitle>
                       </div>
                       {template.subject && (
-                        <CardDescription className="text-gray-400 text-sm">
+                        <CardDescription className="text-muted-foreground text-sm">
                           Subject: {template.subject}
                         </CardDescription>
                       )}
@@ -136,7 +136,7 @@ export function TemplatesClient() {
                       variant="secondary"
                       className={
                         template.channel === 'email'
-                          ? 'bg-blue-500/10 text-blue-400'
+                          ? 'bg-primary/10 text-primary'
                           : 'bg-purple-500/10 text-purple-400'
                       }
                     >
@@ -146,7 +146,7 @@ export function TemplatesClient() {
                 </CardHeader>
               </Link>
               <CardContent className="space-y-4">
-                <div className="text-sm text-gray-400 line-clamp-3 bg-[#1B1B1F] p-3 rounded-md border border-[#3A3A40]">
+                <div className="text-sm text-muted-foreground line-clamp-3 bg-background p-3 rounded-md border border-border">
                   {template.body}
                 </div>
                 {template.variablesJson && (
@@ -155,7 +155,7 @@ export function TemplatesClient() {
                       <Badge
                         key={variable}
                         variant="secondary"
-                        className="bg-[#266DF0]/10 text-[#266DF0] text-xs"
+                        className="bg-primary/10 text-primary text-xs"
                       >
                         {variable}
                       </Badge>
@@ -167,7 +167,7 @@ export function TemplatesClient() {
                     size="sm"
                     variant="ghost"
                     onClick={() => handleEdit(template)}
-                    className="flex-1 text-gray-400 hover:text-white hover:bg-[#3A3A40]"
+                    className="flex-1 text-muted-foreground hover:text-foreground hover:bg-accent"
                   >
                     <Edit className="h-4 w-4 mr-1" />
                     Edit
@@ -189,14 +189,14 @@ export function TemplatesClient() {
         </div>
 
         {templates.length === 0 && (
-          <Card className="bg-[#25252A] border-[#3A3A40] p-12">
+          <Card className="bg-card border-border p-12">
             <div className="text-center">
-              <Mail className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">No templates yet</h3>
-              <p className="text-gray-400 mb-6">Create your first template to get started</p>
+              <Mail className="h-12 w-12 text-muted-foreground/60 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-2">No templates yet</h3>
+              <p className="text-muted-foreground mb-6">Create your first template to get started</p>
               <Button 
                 onClick={handleCreate}
-                className="bg-[#266DF0] hover:bg-[#1a5ac9] text-white"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Create Template
@@ -207,7 +207,7 @@ export function TemplatesClient() {
       </div>
 
       <Dialog open={showEditor} onOpenChange={setShowEditor}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#1B1B1F] border-[#3A3A40]">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-background border-border">
           <TemplateEditor
             template={editingTemplate || undefined}
             onSave={handleSave}
