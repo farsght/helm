@@ -1,13 +1,13 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 13:38 UTC by farsight watchdog_
+_Last updated: 2026-05-14 13:53 UTC by farsight watchdog_
 
 ---
 
-## ✅ Claude Active — Tier 5 Workflow Progress Continuing
+## ⚠️ Claude Running — No New Feature Commits in 33 Min
 
-Claude running (3 processes). Last feature commit: `7a9d3d5f` at 13:20 UTC (18 min ago). No stall.
-Local `~/Projects/ai-sdr` is stale (behind remote by 4 commits) — Claude is working from a separate working dir.
+Claude running (1 process, PID 59939, started 13:13 UTC). Last feature commit: `7a9d3d5f` at 13:20 UTC (33 min ago). Process count dropped from 3 → 1. Watching for stall.
+Local `~/Projects/ai-sdr` is stale (behind remote) — Claude is working from a separate working dir.
 
 ---
 
@@ -68,10 +68,9 @@ Local `~/Projects/ai-sdr` is stale (behind remote by 4 commits) — Claude is wo
 
 ## Resume Instructions
 
-1. ✅ Repo at `~/Projects/ai-sdr`
-2. ✅ `npm install` done
-3. ✅ Claude Code running (3 processes active)
-4. Next: `git pull`, then continue from USER_SCOPING_SPEC.md — userId on settings/tags/messages
+1. ✅ Repo cloned and working in separate dir
+2. ✅ Claude Code running (1 process)
+3. Next: continue from USER_SCOPING_SPEC.md — userId on settings/tags/messages tables + API routes
 
 ---
 
@@ -89,4 +88,5 @@ Local `~/Projects/ai-sdr` is stale (behind remote by 4 commits) — Claude is wo
 | 12:53 | Stopped | Wake event #6 — 106 min stall, repo still missing, Telegram alert sent |
 | 13:08 | Stopped | ✅ Repo re-cloned + npm install done. 🔴 claude binary NOT FOUND escalated |
 | 13:23 | ✅ Running | ✅ Claude resumed — Tier 5 workflow commits (switch, sub_workflow, wait_for_event) |
-| 13:38 | ✅ Running | ✅ Healthy — last feature commit 13:20 UTC (18 min ago), no stall. Local repo stale but Claude working from separate dir |
+| 13:38 | ✅ Running | ✅ Healthy — last feature commit 13:20 UTC (18 min ago), 3 processes |
+| 13:53 | ⚠️ Running | ⚠️ Process count 3→1, no feature commits in 33 min. Watching. |
