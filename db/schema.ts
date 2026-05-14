@@ -374,3 +374,82 @@ export const notebookCells = pgTable('notebook_cells', {
   lastRunAt: timestamp('last_run_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+// ── Agents ──────────────────────────────────────────────────────────
+// Agent definitions are reusable AI personas with prompts, models, and
+// (in increment 2) skills + MCP server connections. Consumed by:
+//   - workflow_nodes (type='ai_agent') — campaign + ops automation
+//   - conversations  — triage/reply drafting (future)
+//   - dataset_rows   — per-row enrichment (future)
+//   - cron jobs      — scheduled runs (future)
+//   - direct chat    — talk to your agent (future)
+
+export const agentDefinitions = pgTable('agent_definitions', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+  name: text('name').notNull(),
+  description: text('description'),
+  /**
+   * Model identifier in "provider:model" form, e.g. "openai:gpt-4o-mini"
+   * or "anthropic:claude-3-5-sonnet-20241022". The runtime parses this.
+   */
+  model: text('model').notNull().default('openai:gpt-4o-mini'),
+  systemPrompt: text('system_prompt').notNull().default(''),
+  /**
+   * User prompt template. Supports {{firstName}} {{lastName}} {{company}}
+   * {{title}} {{email}} and contextual {{lastMessage}} / {{custom_*}}.
+   */
+  userPromptTemplate: text('user_prompt_template').notNull().default(''),
+  /**
+   * JSON: { temperature?: number, maxTokens?: number, topP?: number }
+   * Stored as text for portability; runtime parses.
+   */
+  modelParamsJson: text('model_params_json'),
+  /**
+   * JSON: { decisions: string[] } — the allowed output choices. Workflow
+   * branches on the returned decision. Edge labels on an ai_agent node
+   * must match exactly one of these decisions. v1 supports `decisions`
+   * only; future: arbitrary structured output schemas.
+   */
+  outputSchemaJson: text('output_schema_json').notNull().default('{"decisions":["continue","stop"]}'),
+  /**
+   * Max turns in the tool-use loop. v1 has no tools, so this is unused
+   * but persisted for forward-compat. Default 5.
+   */
+  maxTurns: integer('max_turns').notNull().default(5),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// Every agent invocation across the platform — observability + audit trail.
+export const agentRuns = pgTable('agent_runs', {
+  id: serial('id').primaryKey(),
+  agentId: integer('agent_id').notNull().references(() => agentDefinitions.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().default(''),
+  /**
+   * Where this run was invoked from. e.g. 'workflow_node', 'manual',
+   * 'conversation', 'cron', 'dataset_row', 'api'.
+   */
+  invokedByType: text('invoked_by_type').notNull(),
+  /** Foreign id into the invoking table. Convention; not FK-enforced. */
+  invokedById: integer('invoked_by_id'),
+  status: text('status').notNull().default('running'), // running, completed, failed
+  /** JSON: the full input context the agent saw (prompts after rendering). */
+  inputJson: text('input_json'),
+  /** Final decision string (one of agent.outputSchema.decisions). */
+  decision: text('decision'),
+  /** Free-form reasoning text the model produced. */
+  reasoning: text('reasoning'),
+  /** JSON array of tool calls in v1.5+; empty in v1. */
+  toolCallsJson: text('tool_calls_json'),
+  /** Total tokens used across all turns. */
+  tokensUsed: integer('tokens_used'),
+  /** Cost estimate in cents (provider-dependent). */
+  costCents: integer('cost_cents'),
+  errorMessage: text('error_message'),
+  startedAt: timestamp('started_at').notNull().defaultNow(),
+  completedAt: timestamp('completed_at'),
+}, (table) => [
+  index('agent_runs_agent_id_idx').on(table.agentId),
+  index('agent_runs_started_at_idx').on(table.startedAt),
+]);

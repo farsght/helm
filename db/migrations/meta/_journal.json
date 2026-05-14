@@ -57,6 +57,13 @@
       "when": 1778741331460,
       "tag": "0007_closed_wendell_rand",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1778742000000,
+      "tag": "0008_agent_definitions_and_runs",
+      "breakpoints": true
     }
   ]
 }
