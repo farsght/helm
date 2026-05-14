@@ -42,6 +42,9 @@ import type { DbPipelineNode, DbPipelineEdge, Row, PipelineLogEntry, PipelineRun
 import { firefliesPoll } from './pipeline-nodes/fireflies-poll';
 import { persistRawPair } from './pipeline-nodes/persist-raw-pair';
 import { classifyMeeting } from './pipeline-nodes/classify-meeting';
+import { extractEntities } from './pipeline-nodes/extract-entities';
+import { chunkText } from './pipeline-nodes/chunk-text';
+import { embed } from './pipeline-nodes/embed';
 
 // ── Executor registry ────────────────────────────────────────────────
 //
@@ -117,6 +120,11 @@ registerExecutor('fireflies_poll', firefliesPoll);
 registerExecutor('persist_raw_pair', persistRawPair);
 // Phase 2b — classify Fireflies meetings with the netrunner Pass 1 prompt.
 registerExecutor('classify_meeting', classifyMeeting);
+// Phase 3 — entity extraction (netrunner Pass 2), section-aware chunking,
+// and batched OpenAI embedding.
+registerExecutor('extract_entities', extractEntities);
+registerExecutor('chunk_text', chunkText);
+registerExecutor('embed', embed);
 
 // ── Topological sort ─────────────────────────────────────────────────
 
