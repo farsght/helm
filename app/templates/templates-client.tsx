@@ -101,15 +101,20 @@ export function TemplatesClient() {
   return (
     <>
       <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
-          <PageHeader title="Templates" description="Manage your message templates" />
-          <Button 
-            onClick={handleCreate}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create Template
-          </Button>
+        <div className="mb-8">
+          <PageHeader
+            title="Templates"
+            description="Manage your message templates"
+            actions={
+              <Button
+                onClick={handleCreate}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create Template
+              </Button>
+            }
+          />
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">

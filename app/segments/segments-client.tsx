@@ -83,15 +83,20 @@ export function SegmentsClient() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
-        <PageHeader title="Segments" description="Organize prospects into segments" />
-        <Button
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
-          onClick={() => setCreateDialogOpen(true)}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Create Segment
-        </Button>
+      <div className="mb-6">
+        <PageHeader
+          title="Segments"
+          description="Organize prospects into segments"
+          actions={
+            <Button
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              onClick={() => setCreateDialogOpen(true)}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Create Segment
+            </Button>
+          }
+        />
       </div>
 
       <DataTableSegments data={segments} onDataChange={setSegments} />
