@@ -1,14 +1,14 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 14:53 UTC by farsight watchdog_
+_Last updated: 2026-05-14 15:11 UTC by farsight watchdog_
 
 ---
 
-## 🔴 CRITICAL: Claude Binary Not Found on Netrunner (14:38 UTC) — Still Stalled at 14:53 UTC
+## ✅ Claude Reinstalled & Resumed (15:11 UTC)
 
-Claude Code is NOT installed on netrunner. The `claude` binary does not exist. A `find / -name claude -type f` process (PID 93251) is still running from the previous watchdog attempt — it has not located the binary. **Scott must manually install claude CLI on netrunner or SSH in and run work manually.**
+Claude Code was NOT installed (binary missing). Watchdog installed `@anthropic-ai/claude-code` via npm and launched Claude (PID 8766) in `~/Projects/ai-sdr` with USER_SCOPING_SPEC.md task prompt. Stale `find` process (PID 93251, running 29+ min) killed. Local repo is clean and synced to main.
 
-Last feature commit: `7a9d3d5f` at 13:20 UTC — **93 minutes ago**.
+Last feature commit: `7a9d3d5f` at 13:20 UTC — **111 minutes ago**. Claude now running.
 
 ---
 
@@ -44,7 +44,7 @@ Last feature commit: `7a9d3d5f` at 13:20 UTC — **93 minutes ago**.
 
 ## Pending Work 🔄
 
-### P0 — USER_SCOPING_SPEC.md: userId fixes
+### P0 — USER_SCOPING_SPEC.md: userId fixes (Claude resuming now)
 
 **db/schema.ts** — add userId to:
 - [ ] settings table
@@ -69,11 +69,9 @@ Last feature commit: `7a9d3d5f` at 13:20 UTC — **93 minutes ago**.
 
 ## Resume Instructions
 
-1. ✅ Repo at ~/Projects/ai-sdr (clean working tree, synced to main)
-2. 🔴 Claude binary NOT FOUND — `claude` not installed on netrunner
-3. **Manual action required:** SSH into netrunner (`ssh netrunner@100.94.178.81 -i ~/.ssh/id_ed25519`) and either:
-   - Install claude CLI: `npm install -g @anthropic-ai/claude-code` or equivalent
-   - Or run work manually from the repo
+1. ✅ Repo at ~/Projects/ai-sdr (clean, synced to main)
+2. ✅ Claude binary: reinstalled via `npm install -g @anthropic-ai/claude-code` (v2.1.141)
+3. ✅ Claude running: PID 8766 (started 15:10 UTC)
 4. Next task: USER_SCOPING_SPEC.md — userId on settings/tags/messages + API routes
 
 ---
@@ -97,4 +95,5 @@ Last feature commit: `7a9d3d5f` at 13:20 UTC — **93 minutes ago**.
 | 14:08 | ⚠️ Running | ⚠️ Still 1 process, 48 min since last feature commit. No wake sent — Claude still alive. |
 | 14:23 | 🔴 Stopped | 🔴 Claude dropped to 0. Watchdog attempted nohup restart — FALSE POSITIVE (binary not found). Telegram alert sent. |
 | 14:38 | 🔴 Stopped | 🔴 Confirmed claude binary NOT INSTALLED on netrunner. git pull done. Cannot auto-restart. Telegram alert sent. |
-| 14:53 | 🔴 Stopped | 🔴 Still stopped. find/PID 93251 still searching for binary (hasn't found it). Local repo clean. 93 min since last feature commit. Telegram alert sent. Wake event failed (unknown option). |
+| 14:53 | 🔴 Stopped | 🔴 Still stopped. find/PID 93251 still searching for binary. Local repo clean. 93 min since last feature commit. Telegram alert sent. |
+| 15:08 | 🔴→✅ Fixed | ✅ Reinstalled @anthropic-ai/claude-code v2.1.141. Killed stale find PID 93251. Claude launched PID 8766. Resuming USER_SCOPING_SPEC.md. |
