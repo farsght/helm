@@ -42,6 +42,7 @@ import {
   prospects as prospectsTable,
 } from "@/db/schema";
 import { sendEmail } from "@/lib/email-sender";
+import { runAgent, AgentNotFoundError, AgentConfigError } from "@/lib/agent-runtime";
 
 // ──────────────────────────────────────────────────────────────────────
 // Types
@@ -191,6 +192,54 @@ async function loadProspect(prospectId: number): Promise<ProspectShape> {
     company: p.company,
     title: p.title,
   };
+}
+
+/**
+ * Run an AI agent node and return its decision (one of the agent's `decisions[]`).
+ * The decision is used as the edge label for routing.
+ *
+ * `configJson` shape on the node: { agentId: number, decisions: string[] }
+ * The `decisions` snapshot on the node is what the validator checks against;
+ * if the agent's live decisions have drifted, we'll still return whatever the
+ * model produces — drift becomes a routing failure (no matching edge → end).
+ */
+async function runAgentNode(
+  node: NodeRow,
+  prospect: ProspectShape,
+  campaignProspectId: number,
+  userId: string
+): Promise<string> {
+  "use step";
+
+  const cfg = node.configJson ? (JSON.parse(node.configJson) as { agentId?: number }) : {};
+  if (typeof cfg.agentId !== "number") {
+    throw new FatalError(`AI agent node ${node.id} is missing configJson.agentId`);
+  }
+
+  try {
+    const result = await runAgent(cfg.agentId, {
+      invokedByType: "workflow_node",
+      invokedById: node.id,
+      userId,
+      variables: {
+        firstName: prospect.firstName ?? "",
+        lastName: prospect.lastName ?? "",
+        email: prospect.email ?? "",
+        company: prospect.company ?? "",
+        title: prospect.title ?? "",
+        prospectId: prospect.id,
+        campaignProspectId,
+      },
+    });
+    return result.decision;
+  } catch (err) {
+    // Config/not-found errors are fatal — no point retrying.
+    if (err instanceof AgentNotFoundError || err instanceof AgentConfigError) {
+      throw new FatalError(`Agent invocation failed (non-retryable): ${err.message}`);
+    }
+    // Runtime errors (provider down, network) bubble up so the step retries.
+    throw err;
+  }
 }
 
 async function sendCampaignEmail(
@@ -375,16 +424,21 @@ function renderTemplate(s: string, p: ProspectShape): string {
 function findNextNode(
   graph: GraphSnapshot,
   fromNodeId: number,
-  branchLabel?: "yes" | "no"
+  branchLabel?: string
 ): NodeRow | null {
   const outgoing = graph.edges.filter((e) => e.sourceNodeId === fromNodeId);
   if (outgoing.length === 0) return null;
 
-  const edge = branchLabel
-    ? outgoing.find((e) => e.label === branchLabel) ?? outgoing[0]
-    : outgoing[0];
+  // If a label is provided, require an exact match — DO NOT fall back to the
+  // first edge, which would silently misroute. ai_agent decisions can be any
+  // string from the agent's `decisions[]`; condition/ai_decision use yes/no.
+  if (branchLabel !== undefined) {
+    return graph.nodes.find(
+      (n) => n.id === outgoing.find((e) => e.label === branchLabel)?.targetNodeId
+    ) ?? null;
+  }
 
-  return graph.nodes.find((n) => n.id === edge.targetNodeId) ?? null;
+  return graph.nodes.find((n) => n.id === outgoing[0].targetNodeId) ?? null;
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -450,6 +504,33 @@ export async function campaignSequenceWorkflow(
 
       case "end": {
         current = null;
+        break;
+      }
+
+      case "ai_agent": {
+        const decision = await runAgentNode(
+          current,
+          prospect,
+          campaignProspectId,
+          graph.userId
+        );
+        const next = findNextNode(graph, current.id, decision);
+        if (!next) {
+          // The agent returned a decision that doesn't match any outgoing edge.
+          // This shouldn't happen if validator runs at activate, but production
+          // data may drift. Pause the prospect for human review.
+          console.warn(
+            `[campaign-workflow] ai_agent node ${current.id} returned decision '${decision}' with no matching edge — pausing prospect ${prospectId}`
+          );
+          await updateProspectProgress(campaignProspectId, { status: "paused" });
+          return {
+            campaignId,
+            prospectId,
+            status: "paused",
+            reason: `agent_decision_no_edge:${decision}`,
+          };
+        }
+        current = next;
         break;
       }
 

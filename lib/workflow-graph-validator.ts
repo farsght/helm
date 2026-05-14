@@ -27,6 +27,7 @@ export type NodeType =
   | "wait"
   | "condition"
   | "ai_decision"
+  | "ai_agent"
   | "manual_task"
   | "tag"
   | "move_to_campaign"
@@ -40,6 +41,7 @@ export const KNOWN_NODE_TYPES: readonly NodeType[] = [
   "wait",
   "condition",
   "ai_decision",
+  "ai_agent",
   "manual_task",
   "tag",
   "move_to_campaign",
@@ -47,9 +49,14 @@ export const KNOWN_NODE_TYPES: readonly NodeType[] = [
 ] as const;
 
 /** Node types that branch on a boolean — exactly 2 labeled edges required. */
-const BRANCHING_TYPES: ReadonlySet<NodeType> = new Set([
+const BRANCHING_TYPES: ReadonlySet<NodeType> = new Set<NodeType>([
   "condition",
   "ai_decision",
+]);
+
+/** Node types that branch on N decisions defined in their config. */
+const N_WAY_BRANCHING_TYPES: ReadonlySet<NodeType> = new Set<NodeType>([
+  "ai_agent",
 ]);
 
 /** Required labels on the two outgoing edges of a branching node. */
@@ -123,6 +130,18 @@ export type ValidationError =
   | {
       kind: "branching_edges_must_be_yes_no";
       nodeId: number;
+      actualLabels: (string | null | undefined)[];
+      message: string;
+    }
+  | {
+      kind: "ai_agent_missing_agent_id";
+      nodeId: number;
+      message: string;
+    }
+  | {
+      kind: "ai_agent_edges_must_match_decisions";
+      nodeId: number;
+      expected: string[];
       actualLabels: (string | null | undefined)[];
       message: string;
     }
@@ -291,6 +310,38 @@ export function validateWorkflowGraph(
             nodeId: n.id,
             actualLabels: out.map((e) => e.label),
             message: `Branching node "${n.label ?? n.id}" needs edges labeled exactly "yes" and "no".`,
+          });
+        }
+      }
+    } else if (N_WAY_BRANCHING_TYPES.has(n.type as NodeType)) {
+      // ai_agent: edge labels must exactly match the decisions array in configJson.
+      // configJson shape: { agentId: number, decisions: string[] }
+      // We don't fetch the agent here — we trust the node's snapshot of decisions
+      // taken when the node was authored. Drift is detected at execution time.
+      let cfg: { agentId?: unknown; decisions?: unknown } | null = null;
+      try {
+        cfg = n.configJson ? JSON.parse(n.configJson) : null;
+      } catch {
+        // already flagged by invalid_config_json elsewhere
+      }
+      if (!cfg || typeof cfg.agentId !== 'number') {
+        errors.push({
+          kind: "ai_agent_missing_agent_id",
+          nodeId: n.id,
+          message: `AI agent node "${n.label ?? n.id}" must reference an agent (configJson.agentId).`,
+        });
+      }
+      const decisions = Array.isArray(cfg?.decisions) ? (cfg!.decisions as unknown[]).filter((d): d is string => typeof d === 'string') : [];
+      if (decisions.length > 0) {
+        const labels = out.map((e) => e.label ?? '').sort();
+        const expected = [...decisions].sort();
+        if (JSON.stringify(labels) !== JSON.stringify(expected)) {
+          errors.push({
+            kind: "ai_agent_edges_must_match_decisions",
+            nodeId: n.id,
+            expected: decisions,
+            actualLabels: out.map((e) => e.label),
+            message: `AI agent node "${n.label ?? n.id}" needs one edge per decision (${decisions.join(', ')}). Got labels: ${labels.join(', ') || '(none)'}.`,
           });
         }
       }

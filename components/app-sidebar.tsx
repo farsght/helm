@@ -7,6 +7,7 @@ import {
   Activity,
   AlertTriangle,
   BarChart3,
+  Bot,
   Building2,
   CalendarClock,
   ChevronRightIcon,
@@ -85,6 +86,14 @@ const navGroups: NavGroup[] = [
       { title: "Contacts", url: "/contacts", icon: Contact },
       { title: "Deals", url: "/deals", icon: HandCoins },
       { title: "Segments", url: "/segments", icon: Layers },
+    ],
+  },
+  {
+    title: "Agents",
+    defaultOpen: true,
+    items: [
+      { title: "Library", url: "/agents", icon: Bot },
+      { title: "Runs", url: "/agents/runs", icon: Activity },
     ],
   },
   {
