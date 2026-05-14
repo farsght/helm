@@ -609,3 +609,132 @@ export const agentKnowledgeLinks = pgTable('agent_knowledge_links', {
   index('agent_knowledge_links_agent_idx').on(table.agentId),
   uniqueIndex('agent_knowledge_links_unique').on(table.agentId, table.datasetId),
 ]);
+
+// ── Meetings pipeline (0013) ──────────────────────────────────────────
+// See docs/meetings-pipeline.md. The Fireflies absorption pipeline writes
+// here. Mirrors netrunner's schema (CLAUDE.md in
+// ~/Projects/bitwage-netrunner/packages/meetings-pipeline/) so porting is
+// mechanical and parity-checkable.
+//
+// `embedding` on meeting_chunks is pgvector(1536) — same convention as
+// knowledgeChunks: stored as text in Drizzle, all vector ops happen via
+// raw `sql` templates in the executor.
+
+export const meetings = pgTable('meetings', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+  firefliesId: text('fireflies_id').notNull(),
+  slug: text('slug').notNull(),
+  title: text('title').notNull(),
+  meetingDate: timestamp('meeting_date').notNull(),
+  durationMin: integer('duration_min'),
+  hostEmail: text('host_email'),
+  attendeesJson: jsonb('attendees_json'),
+  rawTranscriptPath: text('raw_transcript_path'),
+  rawSummaryPath: text('raw_summary_path'),
+
+  // Taxonomy (dedicated columns)
+  meetingClass: text('meeting_class'),               // 'internal' | 'external'
+  meetingCategory: text('meeting_category'),
+  meetingSubcategory: text('meeting_subcategory'),
+  workflow: text('workflow').notNull().default('unprocessed'),
+  access: text('access'),
+  maturity: text('maturity'),
+
+  // Taxonomy (arrays — GIN-indexed in migration SQL)
+  // Drizzle's text().array() maps to text[]
+  brand: text('brand').array(),
+  secondaryTags: text('secondary_tags').array(),
+
+  // Taxonomy JSONB blob — query with @> only, never ->>
+  taxonomyJson: jsonb('taxonomy_json'),
+
+  // Enrichment progression flags
+  enrichmentClassified: boolean('enrichment_classified').notNull().default(false),
+  enrichmentEntitiesExtracted: boolean('enrichment_entities_extracted').notNull().default(false),
+  enrichmentVaultWritten: boolean('enrichment_vault_written').notNull().default(false),
+  enrichmentHumanReviewed: boolean('enrichment_human_reviewed').notNull().default(false),
+  enrichmentVectorPrepped: boolean('enrichment_vector_prepped').notNull().default(false),
+
+  vaultPath: text('vault_path'),
+  legacyMeeting: boolean('legacy_meeting').notNull().default(false),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  uniqueIndex('meetings_fireflies_id_idx').on(table.firefliesId),
+  index('meetings_user_idx').on(table.userId),
+  index('meetings_meeting_class_idx').on(table.meetingClass),
+  index('meetings_category_idx').on(table.meetingCategory),
+  index('meetings_workflow_idx').on(table.workflow),
+  index('meetings_access_idx').on(table.access),
+  index('meetings_maturity_idx').on(table.maturity),
+  index('meetings_meeting_date_idx').on(table.meetingDate),
+]);
+
+export const meetingChunks = pgTable('meeting_chunks', {
+  id: serial('id').primaryKey(),
+  meetingId: integer('meeting_id').notNull().references(() => meetings.id, { onDelete: 'cascade' }),
+  chunkIndex: integer('chunk_index').notNull(),
+  sourceType: text('source_type').notNull(),         // 'transcript' | 'summary'
+  sectionHeading: text('section_heading'),
+  content: text('content').notNull(),
+  /** pgvector(1536), serialized as text in Drizzle. */
+  embedding: text('embedding'),
+  embeddingModel: text('embedding_model').notNull().default('text-embedding-3-small'),
+  meetingClass: text('meeting_class'),
+  meetingCategory: text('meeting_category'),
+  taxonomyJson: jsonb('taxonomy_json'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  uniqueIndex('meeting_chunks_meeting_chunk_idx').on(table.meetingId, table.chunkIndex),
+  index('meeting_chunks_meeting_class_idx').on(table.meetingClass),
+  index('meeting_chunks_category_idx').on(table.meetingCategory),
+]);
+
+export const entities = pgTable('entities', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+  name: text('name').notNull(),
+  type: text('type').notNull(),                      // 'person' | 'company' | 'product' | 'partner'
+  metadataJson: jsonb('metadata_json'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  uniqueIndex('entities_user_name_type_idx').on(table.userId, table.name, table.type),
+  index('entities_type_idx').on(table.type),
+]);
+
+export const entityMentions = pgTable('entity_mentions', {
+  id: serial('id').primaryKey(),
+  entityId: integer('entity_id').notNull().references(() => entities.id, { onDelete: 'cascade' }),
+  meetingId: integer('meeting_id').notNull().references(() => meetings.id, { onDelete: 'cascade' }),
+  mentionCount: integer('mention_count').notNull().default(1),
+}, (table) => [
+  uniqueIndex('entity_mentions_entity_meeting_idx').on(table.entityId, table.meetingId),
+  index('entity_mentions_meeting_idx').on(table.meetingId),
+]);
+
+/**
+ * Audit row for every LLM call made by a pipeline node executor (and any
+ * future agent call that wants to record itself here). Used for cost
+ * accounting, prompt-version diffing, and debugging classification drift.
+ */
+export const promptRuns = pgTable('prompt_runs', {
+  id: serial('id').primaryKey(),
+  pipelineRunId: integer('pipeline_run_id').references(() => pipelineRuns.id, { onDelete: 'set null' }),
+  nodeId: integer('node_id').references(() => pipelineNodes.id, { onDelete: 'set null' }),
+  meetingId: integer('meeting_id').references(() => meetings.id, { onDelete: 'cascade' }),
+  promptVersionTag: text('prompt_version_tag').notNull(),
+  model: text('model').notNull(),
+  inputJson: jsonb('input_json'),
+  outputJson: jsonb('output_json'),
+  errorMessage: text('error_message'),
+  latencyMs: integer('latency_ms'),
+  costUsd: real('cost_usd'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('prompt_runs_pipeline_run_idx').on(table.pipelineRunId),
+  index('prompt_runs_node_idx').on(table.nodeId),
+  index('prompt_runs_meeting_idx').on(table.meetingId),
+  index('prompt_runs_created_at_idx').on(table.createdAt),
+]);
