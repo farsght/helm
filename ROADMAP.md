@@ -47,7 +47,9 @@ For deep historical context (phase reports, migration notes, original spec), see
 - `lib/knowledge-retrieval.ts` — per-attachment cosine search, citation-formatted context block
 - 4 API routes: dataset ingest, dataset search, agent knowledge list/add/remove, per-attachment patch/delete
 - `scripts/ingest-vault.ts` CLI
+- Bitwage Vault ingested (dataset 11 — 2,299 files, 14,834 chunks)
 - OpenClaw Vault ingested (dataset 12 — 31 files, 181 chunks)
+- End-to-end retrieval verified — real meeting transcript citations with heading paths and cosine scores
 
 ### Infra
 - Clerk auth on every route, `userId`-scoped queries everywhere
@@ -69,8 +71,8 @@ Replace netrunner's Mac mini meetings pipeline with native Helm visual nodes.
 - Source for porting: `~/Projects/bitwage-netrunner/packages/meetings-pipeline/scripts/` (export-fireflies 641 LOC, enrich-fireflies 492 LOC, chunker, embedder, extract-entities, sync-approvals, reconcile)
 
 ### Knowledge architecture polish
-- Ingest Bitwage Vault (dataset 11 — ~2,300 markdown files, est. ~$0.10, ~5 min)
 - MCP-mediated hybrid search (vector + tag categories) — agents query a Neon-MCP-style server instead of attaching datasets directly. Direct attachment UI deferred until categorization emerges from real tag data.
+- Background re-ingest job triggered on vault file changes (currently manual via `scripts/ingest-vault.ts`)
 
 ### Tier 5 follow-ups
 - Error handler invocation (currently only logging — wire into workflow runner)
