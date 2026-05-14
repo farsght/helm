@@ -96,5 +96,5 @@ Sentry.captureException(new Error("..."));
 1. **Don't hardcode DSN back into init files.** All three init files read from env now. Resist any "convenience" PR that inlines the DSN string.
 2. **Don't remove `/monitoring(.*)` from `proxy.ts` public routes.** Tunnel route breaks otherwise — silent failure mode.
 3. **Don't enable OTLP traces from inside this Next.js app.** Conflicts with native tracing.
-4. **`sendDefaultPii: true` is on.** Ships IP + request headers. Fine for an internal sales tool; revisit if this app ever serves external customers.
+4. **`sendDefaultPii: true` is on.** Ships IP + request headers. Fine for internal Helm use; revisit if this app ever serves external customers.
 5. **`SENTRY_AUTH_TOKEN` rotation breaks source map upload.** If stack traces suddenly show minified code in Sentry, check the build log for upload auth failures.

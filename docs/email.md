@@ -74,7 +74,7 @@ Do these in this order. **Don't send a single campaign email until step 6 is don
    - Track Resend dashboard for bounce rate, spam reports, deliverability score
 8. **Configure Resend webhooks** (optional but recommended for v1.1):
    - Resend dashboard → Webhooks → Add endpoint
-   - URL: `https://ai-sdr.vercel.app/api/webhooks/resend` (route doesn't exist yet — see "Future" below)
+   - URL: `https://helm.gs/api/webhooks/resend` (route doesn't exist yet — see "Future" below)
    - Events: `email.delivered`, `email.opened`, `email.clicked`, `email.bounced`, `email.complained`
 
 ---

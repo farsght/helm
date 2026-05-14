@@ -22,7 +22,7 @@ Quick reference for how the Workflow SDK is wired into this Next.js app and what
 
 ## Why this exists
 
-We're adopting Vercel Workflows for **outbound campaign sequences** (multi-day, multi-touch email nurture flows) and eventually long-running ops jobs (async dataset enrichment, scheduled syncs).
+We use the Vercel Workflow SDK as Helm's general-purpose durable runtime. The first concrete use is **outbound campaign sequences** (multi-day, multi-touch email nurture flows running per-prospect). It also underpins long-running Ops jobs (async dataset enrichment, scheduled syncs, eventual Fireflies pipeline replacement). Campaign workflows and Ops workflows share the same runtime — they're not separate systems.
 
 The alternative — hand-rolled state machine + cron poller + retry table — is the kind of thing that eats weeks of engineering and breaks in fun ways at 3am. Workflows make `await sleep("3 days")` a single line with zero compute cost during the wait.
 
@@ -134,7 +134,7 @@ In prod: Vercel dashboard → helm → Functions → Workflow Runs.
 
 ---
 
-## Future plans (not implemented)
+## Shipped workflows
 
 ## Campaign workflow v1 (`workflows/campaign-sequence.ts`)
 
