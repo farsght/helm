@@ -1,4 +1,5 @@
 import { pgTable, text, integer, real, serial, timestamp, boolean, uniqueIndex, jsonb, index } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 // Campaigns
 export const campaigns = pgTable('campaigns', {
@@ -336,6 +337,13 @@ export const pipelineNodes = pgTable('pipeline_nodes', {
   type: text('type').notNull(), // source_dataset, map_fields, filter, clean, deduplicate, enrich, ai_classify, split, run_notebook, promote_prospects, promote_companies, promote_contacts, promote_deals, promote_segment
   label: text('label').notNull(),
   configJson: text('config_json'),
+  /**
+   * Trigger config — only consulted for SOURCE nodes (nodes with zero in-edges).
+   * Shape: { kind: 'manual' | 'cron' | 'webhook' | 'event', ...kindSpecificFields }.
+   * Defaults to {"kind":"manual"} for back-compat. See lib/pipeline-engine.ts for
+   * the trigger model; intermediate nodes always fire when upstream completes.
+   */
+  triggerConfig: jsonb('trigger_config').notNull().default(sql`'{"kind":"manual"}'::jsonb`),
   positionX: real('position_x').notNull().default(0),
   positionY: real('position_y').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),

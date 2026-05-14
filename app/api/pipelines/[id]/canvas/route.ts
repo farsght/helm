@@ -40,14 +40,23 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (Array.isArray(nodes) && nodes.length > 0) {
       for (const node of nodes as Array<{
         id?: string | number;
-        data: { type: string; label: string; config?: Record<string, unknown> };
+        data: {
+          type: string;
+          label: string;
+          config?: Record<string, unknown>;
+          triggerConfig?: Record<string, unknown>;
+        };
         position: { x: number; y: number };
       }>) {
+        const tc = node.data.triggerConfig && typeof node.data.triggerConfig === 'object'
+          ? node.data.triggerConfig
+          : { kind: 'manual' };
         const [inserted] = await db.insert(pipelineNodes).values({
           pipelineId,
           type: node.data.type,
           label: node.data.label,
           configJson: JSON.stringify(node.data.config || {}),
+          triggerConfig: tc,
           positionX: node.position.x,
           positionY: node.position.y,
         }).returning();

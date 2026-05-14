@@ -99,6 +99,13 @@
       "when": 1778760000000,
       "tag": "0013_meetings_pipeline",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1778850000000,
+      "tag": "0014_pipeline_node_triggers",
+      "breakpoints": true
     }
   ]
 }

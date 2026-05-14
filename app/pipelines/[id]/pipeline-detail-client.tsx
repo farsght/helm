@@ -49,6 +49,7 @@ interface DbNode {
   positionX: number;
   positionY: number;
   configJson: string | null;
+  triggerConfig?: Record<string, unknown> | null;
 }
 
 interface DbEdge {
@@ -162,15 +163,20 @@ function PipelinePalette() {
 
 function PipelineNodeConfig({
   node,
+  isSource,
   onUpdate,
   onClose,
 }: {
   node: Node<NodeData>;
+  isSource: boolean;
   onUpdate: (id: string, updates: Record<string, unknown>) => void;
   onClose: () => void;
 }) {
   const [config, setConfig] = useState<Record<string, unknown>>(
     (node.data.config as Record<string, unknown>) || {}
+  );
+  const [triggerConfig, setTriggerConfig] = useState<Record<string, unknown>>(
+    (node.data.triggerConfig as Record<string, unknown>) || { kind: "manual" }
   );
   const [datasets, setDatasets] = useState<Array<{ id: number; name: string; rowCount: number }>>([]);
   const [notebooks, setNotebooks] = useState<Array<{ id: number; name: string }>>([]);
@@ -181,7 +187,7 @@ function PipelineNodeConfig({
   }, []);
 
   const save = () => {
-    onUpdate(node.id, { config });
+    onUpdate(node.id, { config, triggerConfig });
     toast.success("Node config saved");
   };
 
@@ -589,6 +595,46 @@ function PipelineNodeConfig({
             className="bg-background border-border"
           />
         </div>
+        {isSource && (
+          <div className="space-y-3 p-3 rounded-md border border-border bg-muted/20">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Trigger</Label>
+              <span className="text-[10px] text-muted-foreground">source node</span>
+            </div>
+            <div className="space-y-2">
+              <Label>Kind</Label>
+              <Select
+                value={String(triggerConfig.kind ?? "manual")}
+                onValueChange={(v) => setTriggerConfig({ ...triggerConfig, kind: v })}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="manual">Manual (▶ button)</SelectItem>
+                  <SelectItem value="cron">Cron (scheduled)</SelectItem>
+                  <SelectItem value="webhook">Webhook (coming soon)</SelectItem>
+                  <SelectItem value="event">Event (coming soon)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {triggerConfig.kind === "cron" && (
+              <div className="space-y-2">
+                <Label>Schedule (cron expression, UTC)</Label>
+                <Input
+                  value={String(triggerConfig.schedule ?? "")}
+                  onChange={(e) => setTriggerConfig({ ...triggerConfig, schedule: e.target.value })}
+                  placeholder="0 * * * *  (every hour)"
+                  className="font-mono text-xs"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Standard 5-field cron. Cron worker scans every minute; sub-minute precision not supported.
+                </p>
+              </div>
+            )}
+            {(triggerConfig.kind === "webhook" || triggerConfig.kind === "event") && (
+              <p className="text-xs text-muted-foreground">Not yet wired. Falls back to manual.</p>
+            )}
+          </div>
+        )}
         {renderFields()}
         <Button onClick={save} className="w-full" size="sm">Save</Button>
       </CardContent>
@@ -672,7 +718,12 @@ export function PipelineDetailClient({ id }: { id: string }) {
           id: n.id.toString(),
           type: "pipeline",
           position: { x: n.positionX, y: n.positionY },
-          data: { label: n.label, type: n.type, config: n.configJson ? JSON.parse(n.configJson) : {} },
+          data: {
+            label: n.label,
+            type: n.type,
+            config: n.configJson ? JSON.parse(n.configJson) : {},
+            triggerConfig: (n.triggerConfig && typeof n.triggerConfig === 'object') ? n.triggerConfig : { kind: 'manual' },
+          },
         }));
         const flowEdges: Edge[] = (canvas.edges as DbEdge[]).map((e) => ({
           id: e.id.toString(),
@@ -713,7 +764,7 @@ export function PipelineDetailClient({ id }: { id: string }) {
       id: `node-${Date.now()}`,
       type: "pipeline",
       position,
-      data: { label, type, config: {} },
+      data: { label, type, config: {}, triggerConfig: { kind: 'manual' } },
     };
     setNodes((nds) => nds.concat(newNode));
   }, [rfInstance, setNodes]);
@@ -846,6 +897,7 @@ export function PipelineDetailClient({ id }: { id: string }) {
               {selectedNode && (
                 <PipelineNodeConfig
                   node={selectedNode}
+                  isSource={!edges.some((e) => e.target === selectedNode.id)}
                   onUpdate={handleNodeUpdate}
                   onClose={() => setSelectedNode(null)}
                 />
