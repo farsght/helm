@@ -63,13 +63,17 @@ Last remote feature commit `b83618b` (Tier 2 RAG) was 31 min ago — over 30-min
 
 ## Pending Work 🔄
 
-### P2 — AI (IN PROGRESS 🔄)
-- 🔄 /api/ai/suggest-reply — Claude relaunched PID 90473 to implement this
+### P1 — Verify & Merge
+- ✅ Local `476946e` (Tier 5 recursion) rebased onto origin/main and pushed (2026-05-14)
+- [ ] Verify migrations ran cleanly on netrunner DB
+- [ ] Check db/schema.ts for settings + messages userId columns
 
-### Git divergence — needs resolution
-- ⚠️ Local netrunner has `476946e` (Tier 5 recursion) NOT on remote
-- ⚠️ Remote has RAG commits not on local (`b83618b` and prior)
-- ⚠️ `git pull --rebase` hit conflict — Claude handling manual merge
+### P2 — AI
+- ✅ /api/ai/suggest-reply — already implemented in commit `1ba8777` (PR #20, ancestor of merge base; user-scoped via Clerk; OpenAI gpt-4o-mini; supports both conversationHistory and simplified receivedMessage/prospectName/prospectCompany inputs)
+- ⚠️ `app/api/messages/ai-reply/route.ts` still lacks `auth()` — unscoped duplicate of suggest-reply. Decide: delete, scope, or leave as internal helper.
+
+### Tier 5 — Sub-workflow recursion ✅
+- ✅ Inline recursion implemented (2026-05-14). Extracted per-node loop into `walkGraph(graph, prospect, campaignProspectId, depth)`; sub_workflow case loads sub-graph via new `loadSubGraph` step (skips active-status check), recurses with depth+1. Hard cap MAX_SUB_WORKFLOW_DEPTH=5. Self-invocation blocked. currentNodeId writes only at depth=0. Typecheck clean, lint clean, tests 152/157 (same 5 pre-existing failures).
 
 ---
 

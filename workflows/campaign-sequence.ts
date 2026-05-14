@@ -115,9 +115,57 @@ type ProspectShape = {
 // in the workflow body.
 // ──────────────────────────────────────────────────────────────────────
 
+/**
+ * Max recursion depth for sub_workflow nodes. A sub-campaign that calls a
+ * sub-campaign that calls a sub-campaign... bottoms out here. Five is well
+ * above any realistic nesting and well below the workflow runtime's own
+ * call-stack limits.
+ */
+const MAX_SUB_WORKFLOW_DEPTH = 5;
+
 async function loadGraph(campaignId: number): Promise<GraphSnapshot> {
   "use step";
+  return await loadGraphInternal(campaignId, { requireActive: true });
+}
 
+/**
+ * Load a sub-campaign's graph for inline execution. Verifies ownership but
+ * skips the `status === 'active'` check — sub-campaigns used as building
+ * blocks are not necessarily activated independently (they may sit in
+ * 'draft' as reusable components).
+ */
+async function loadSubGraph(
+  subCampaignId: number,
+  parentUserId: string
+): Promise<GraphSnapshot> {
+  "use step";
+
+  const [campaign] = await db
+    .select()
+    .from(campaigns)
+    .where(eq(campaigns.id, subCampaignId));
+
+  if (!campaign) {
+    throw new FatalError(`Sub-campaign ${subCampaignId} not found`);
+  }
+  if (campaign.userId !== parentUserId) {
+    throw new FatalError(
+      `Sub-campaign ${subCampaignId} not owned by ${parentUserId}`
+    );
+  }
+  if (campaign.status === "archived") {
+    throw new FatalError(
+      `Sub-campaign ${subCampaignId} is archived — cannot invoke`
+    );
+  }
+
+  return await loadGraphInternal(subCampaignId, { requireActive: false });
+}
+
+async function loadGraphInternal(
+  campaignId: number,
+  opts: { requireActive: boolean }
+): Promise<GraphSnapshot> {
   const [campaign] = await db
     .select()
     .from(campaigns)
@@ -126,7 +174,7 @@ async function loadGraph(campaignId: number): Promise<GraphSnapshot> {
   if (!campaign) {
     throw new FatalError(`Campaign ${campaignId} not found`);
   }
-  if (campaign.status !== "active") {
+  if (opts.requireActive && campaign.status !== "active") {
     throw new FatalError(
       `Campaign ${campaignId} not active (status=${campaign.status})`
     );
@@ -173,50 +221,6 @@ async function loadGraph(campaignId: number): Promise<GraphSnapshot> {
     })),
     startNodeId: startNode.id,
   };
-}
-
-/**
- * Run a sub-workflow inline — i.e., load the sub-campaign's graph and walk
- * it for the SAME prospect, then return the final status. We don't spawn a
- * child workflow run; we just traverse the sub-graph as part of this run.
- *
- * Limitation: nested sub_workflow + wait_for_event nodes inside the sub-graph
- * work but their hook tokens use the OUTER campaignProspectId, which is
- * correct (one prospect = one durable timeline regardless of depth).
- */
-async function runSubWorkflow(
-  subCampaignId: number,
-  prospectId: number,
-  campaignProspectId: number,
-  userId: string
-): Promise<{ status: "completed" | "paused" | "failed"; reason?: string }> {
-  "use step";
-
-  try {
-    const sub = await db
-      .select({ userId: campaigns.userId })
-      .from(campaigns)
-      .where(eq(campaigns.id, subCampaignId))
-      .limit(1);
-    if (sub.length === 0 || sub[0].userId !== userId) {
-      throw new FatalError(`Sub-campaign ${subCampaignId} not found or not owned by ${userId}`);
-    }
-    // For v1 we just verify it exists. Actual graph execution still happens
-    // in the main interpreter loop — sub-workflows are CALL semantics, not
-    // pre-fetched. To execute, the main loop would have to recurse here; we
-    // do that by triggering a side effect (todo: real execution). For now,
-    // record the invocation in a log and return "completed".
-    console.log(
-      `[sub_workflow] would invoke campaign=${subCampaignId} for prospect=${prospectId} (cp=${campaignProspectId}) — stub returns completed`
-    );
-    return { status: "completed" };
-  } catch (err) {
-    if (err instanceof FatalError) throw err;
-    return {
-      status: "failed",
-      reason: err instanceof Error ? err.message : String(err),
-    };
-  }
 }
 
 /**
@@ -522,32 +526,57 @@ function findNextNode(
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// The workflow — pure orchestration, no side effects of its own
+// Graph walker — pure orchestration, no side effects of its own.
+//
+// Recursive for `sub_workflow` nodes: when we hit one, we load the
+// sub-campaign's graph and call walkGraph again with depth+1, sharing the
+// same prospect and campaignProspectId. The recursive call walks the
+// sub-graph to completion (or until it pauses/fails) and returns; the
+// outer walk then continues from the node after the sub_workflow.
+//
+// `depth` controls two things:
+//   - Hard cap via MAX_SUB_WORKFLOW_DEPTH to prevent runaway nesting.
+//   - We only write currentNodeId to campaignProspects when depth === 0.
+//     The DB row tracks the prospect's position in the *top-level* campaign;
+//     writing a sub-graph's node IDs there would point at a different
+//     campaign's nodes and confuse the workflow canvas UI.
+//
+// NOTE: walkGraph is NOT a `"use step"` function. It must run in the workflow
+// body so that workflow primitives (sleep, createHook) flow from the same
+// execution context. Individual side-effecting operations within it are the
+// steps (sendCampaignEmail, checkMessageStatus, etc.).
 // ──────────────────────────────────────────────────────────────────────
 
-export async function campaignSequenceWorkflow(
-  campaignId: number,
-  prospectId: number,
-  campaignProspectId: number
-) {
-  "use workflow";
+type WalkResult = {
+  status: "completed" | "paused" | "failed";
+  reason?: string;
+};
 
-  const graph = await loadGraph(campaignId);
-  const prospect = await loadProspect(prospectId);
+async function walkGraph(
+  graph: GraphSnapshot,
+  prospect: ProspectShape,
+  campaignProspectId: number,
+  depth: number
+): Promise<WalkResult> {
+  if (depth > MAX_SUB_WORKFLOW_DEPTH) {
+    throw new FatalError(
+      `Sub-workflow nesting exceeded MAX_SUB_WORKFLOW_DEPTH (${MAX_SUB_WORKFLOW_DEPTH}) at campaign=${graph.campaignId}`
+    );
+  }
 
   let current: NodeRow | null =
     graph.nodes.find((n) => n.id === graph.startNodeId) ?? null;
 
-  try {
-
   // Hard cap to prevent runaway loops if a campaign somehow has a cycle.
-  // 100 nodes per prospect is way more than any sane sequence.
+  // 100 nodes per prospect per graph is way more than any sane sequence.
   for (let i = 0; i < 100; i++) {
     if (!current) break;
 
-    await updateProspectProgress(campaignProspectId, {
-      currentNodeId: current.id,
-    });
+    if (depth === 0) {
+      await updateProspectProgress(campaignProspectId, {
+        currentNodeId: current.id,
+      });
+    }
 
     switch (current.type) {
       case "email": {
@@ -576,8 +605,8 @@ export async function campaignSequenceWorkflow(
           ? JSON.parse(current.configJson)
           : { check: "replied" };
         const result = await checkMessageStatus(
-          campaignId,
-          prospectId,
+          graph.campaignId,
+          prospect.id,
           cfg.check ?? "replied"
         );
         current = findNextNode(graph, current.id, result ? "yes" : "no");
@@ -602,12 +631,9 @@ export async function campaignSequenceWorkflow(
           // This shouldn't happen if validator runs at activate, but production
           // data may drift. Pause the prospect for human review.
           console.warn(
-            `[campaign-workflow] ai_agent node ${current.id} returned decision '${decision}' with no matching edge — pausing prospect ${prospectId}`
+            `[campaign-workflow] ai_agent node ${current.id} returned decision '${decision}' with no matching edge — pausing prospect ${prospect.id}`
           );
-          await updateProspectProgress(campaignProspectId, { status: "paused" });
           return {
-            campaignId,
-            prospectId,
             status: "paused",
             reason: `agent_decision_no_edge:${decision}`,
           };
@@ -632,7 +658,6 @@ export async function campaignSequenceWorkflow(
         for (const c of cfg.cases ?? []) {
           // Loose equality so "10" matches 10. Switch is for human-friendly
           // routing; strict equality would surprise users.
-          // eslint-disable-next-line eqeqeq
           if (value == c.when) { matchedLabel = c.label; break; }
         }
         if (!matchedLabel && cfg.defaultCase) matchedLabel = "default";
@@ -640,10 +665,7 @@ export async function campaignSequenceWorkflow(
           console.warn(
             `[campaign-workflow] switch node ${current.id} value=${JSON.stringify(value)} had no matching case — pausing`
           );
-          await updateProspectProgress(campaignProspectId, { status: "paused" });
           return {
-            campaignId,
-            prospectId,
             status: "paused",
             reason: `switch_no_match:${JSON.stringify(value)}`,
           };
@@ -653,10 +675,7 @@ export async function campaignSequenceWorkflow(
           console.warn(
             `[campaign-workflow] switch node ${current.id} matched '${matchedLabel}' but no edge with that label`
           );
-          await updateProspectProgress(campaignProspectId, { status: "paused" });
           return {
-            campaignId,
-            prospectId,
             status: "paused",
             reason: `switch_no_edge:${matchedLabel}`,
           };
@@ -670,20 +689,16 @@ export async function campaignSequenceWorkflow(
         // deterministic hook token. Token is shaped:
         //   wait:<campaignProspectId>:<nodeId>
         // so server-side resumers (webhook handlers, manual approve UI)
-        // can reconstruct it without needing to look up state.
+        // can reconstruct it without needing to look up state. Note: nodeId
+        // here may belong to a sub-graph, but it's unique across all
+        // workflow_nodes rows so the token is still globally unambiguous.
         //
         // configJson: { eventType: 'reply' | 'click' | 'approval' | 'custom',
         //               timeout?: string (e.g. "7 days") }
-        const cfg = current.configJson
-          ? (JSON.parse(current.configJson) as {
-              eventType?: string;
-              timeout?: string;
-            })
-          : {};
         const token = `wait:${campaignProspectId}:${current.id}`;
-        // Note: createHook is a workflow-scoped primitive — it must be called
-        // INSIDE the workflow function (not in a step). The await suspends
-        // durably, surviving server restarts.
+        // createHook is a workflow-scoped primitive — it must be called
+        // INSIDE the workflow function (or a non-step helper called from
+        // within it). The await suspends durably, surviving server restarts.
         const hook = createHook<Record<string, unknown>>({ token });
         const payload = await hook;
         // payload is whatever the resumer POSTed — we log it but don't
@@ -697,10 +712,12 @@ export async function campaignSequenceWorkflow(
       }
 
       case "sub_workflow": {
-        // Invoke another campaign's workflow for the SAME prospect, wait for
-        // it to complete, then continue. Implemented as an inline traversal
-        // (not a separate workflow run) so we keep one row in the workflow
-        // dashboard per top-level invocation.
+        // Invoke another campaign's workflow for the SAME prospect, walk it
+        // to completion inline, then continue from the node after this one.
+        // Implemented as a recursive walkGraph call — not a separate workflow
+        // run — so we keep one row in the workflow dashboard per top-level
+        // invocation and durable primitives (sleep, createHook) inside the
+        // sub-graph share the parent's execution context.
         //
         // configJson: { subCampaignId: number }
         const cfg = current.configJson
@@ -711,25 +728,27 @@ export async function campaignSequenceWorkflow(
             `sub_workflow node ${current.id} missing configJson.subCampaignId`
           );
         }
-        const result = await runSubWorkflow(
-          cfg.subCampaignId,
-          prospectId,
+        if (cfg.subCampaignId === graph.campaignId) {
+          throw new FatalError(
+            `sub_workflow node ${current.id} cannot invoke its own campaign (${graph.campaignId})`
+          );
+        }
+        const subGraph = await loadSubGraph(cfg.subCampaignId, graph.userId);
+        const result = await walkGraph(
+          subGraph,
+          prospect,
           campaignProspectId,
-          graph.userId
+          depth + 1
         );
         console.log(
-          `[campaign-workflow] sub_workflow node ${current.id} -> campaign ${cfg.subCampaignId} completed: ${result.status}`
+          `[campaign-workflow] sub_workflow node ${current.id} -> campaign ${cfg.subCampaignId} returned: ${result.status}${result.reason ? ` (${result.reason})` : ""}`
         );
-        // If the sub-workflow paused or failed, we propagate that state.
+        // Pause/fail propagates up to the top-level walk, which decides
+        // how to update the prospect row.
         if (result.status !== "completed") {
-          await updateProspectProgress(campaignProspectId, {
-            status: result.status === "failed" ? "failed" : "paused",
-          });
           return {
-            campaignId,
-            prospectId,
             status: result.status,
-            reason: `sub_workflow:${cfg.subCampaignId}:${result.status}`,
+            reason: `sub_workflow:${cfg.subCampaignId}:${result.reason ?? result.status}`,
           };
         }
         current = findNextNode(graph, current.id);
@@ -737,7 +756,7 @@ export async function campaignSequenceWorkflow(
       }
 
       // Deferred node types — log + stop. Don't throw (would mark workflow
-      // failed in the dashboard); set status=paused for human follow-up.
+      // failed in the dashboard); pause for human follow-up.
       case "linkedin_message":
       case "linkedin_connection":
       case "linkedin_profile_view":
@@ -746,12 +765,9 @@ export async function campaignSequenceWorkflow(
       case "tag":
       case "move_to_campaign": {
         console.warn(
-          `[campaign-workflow] Node type '${current.type}' not yet implemented — pausing prospect ${prospectId}`
+          `[campaign-workflow] Node type '${current.type}' not yet implemented — pausing prospect ${prospect.id}`
         );
-        await updateProspectProgress(campaignProspectId, { status: "paused" });
         return {
-          campaignId,
-          prospectId,
           status: "paused",
           reason: `unimplemented_node_type:${current.type}`,
         };
@@ -765,13 +781,43 @@ export async function campaignSequenceWorkflow(
     }
   }
 
-  await updateProspectProgress(campaignProspectId, {
-    status: "completed",
-    completedAt: new Date(),
-  });
+  return { status: "completed" };
+}
 
-  return { campaignId, prospectId, status: "completed" };
+// ──────────────────────────────────────────────────────────────────────
+// The workflow — pure orchestration, no side effects of its own
+// ──────────────────────────────────────────────────────────────────────
 
+export async function campaignSequenceWorkflow(
+  campaignId: number,
+  prospectId: number,
+  campaignProspectId: number
+) {
+  "use workflow";
+
+  const graph = await loadGraph(campaignId);
+  const prospect = await loadProspect(prospectId);
+
+  try {
+    const result = await walkGraph(graph, prospect, campaignProspectId, 0);
+
+    if (result.status === "completed") {
+      await updateProspectProgress(campaignProspectId, {
+        status: "completed",
+        completedAt: new Date(),
+      });
+      return { campaignId, prospectId, status: "completed" };
+    }
+
+    await updateProspectProgress(campaignProspectId, {
+      status: result.status === "failed" ? "failed" : "paused",
+    });
+    return {
+      campaignId,
+      prospectId,
+      status: result.status,
+      reason: result.reason,
+    };
   } catch (err) {
     // FatalError already disables retries. For other errors the workflow
     // runtime will retry per step; this catch only triggers if the retries
