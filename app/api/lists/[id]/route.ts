@@ -14,13 +14,23 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (!existing) return NextResponse.json({ error: 'List not found' }, { status: 404 });
 
     const body = await request.json();
+    const updatePayload: {
+      name?: string;
+      description?: string | null;
+      filterJson?: string | null;
+      updatedAt: Date;
+    } = {
+      name: body.name,
+      description: body.description,
+      updatedAt: new Date(),
+    };
+    if (body.filterJson !== undefined) {
+      updatePayload.filterJson =
+        body.filterJson === null ? null : JSON.stringify(body.filterJson);
+    }
     const [updated] = await db
       .update(lists)
-      .set({
-        name: body.name,
-        description: body.description,
-        updatedAt: new Date(),
-      })
+      .set(updatePayload)
       .where(and(eq(lists.id, parseInt(id)), eq(lists.userId, userId)))
       .returning();
     return NextResponse.json(updated);

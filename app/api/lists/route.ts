@@ -1,20 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
-import { lists, listMembers } from '@/db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { lists, listMembers, prospects } from '@/db/schema';
+import { eq, sql, and } from 'drizzle-orm';
+import { buildFilterCondition, parseFilter } from '@/lib/list-filters';
 
 export async function GET() {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const allLists = await db.select().from(lists).where(eq(lists.userId, userId)).orderBy(sql`${lists.createdAt} DESC`);
+    const allLists = await db
+      .select()
+      .from(lists)
+      .where(eq(lists.userId, userId))
+      .orderBy(sql`${lists.createdAt} DESC`);
 
     const listsWithCounts = await Promise.all(
       allLists.map(async (list) => {
-        const [count] = await db.select({ count: sql<number>`count(*)::int` }).from(listMembers).where(eq(listMembers.listId, list.id));
-        return { ...list, memberCount: count?.count || 0 };
+        let memberCount = 0;
+        if (list.type === 'dynamic') {
+          const filter = parseFilter(list.filterJson);
+          const cond = buildFilterCondition(filter);
+          if (cond) {
+            const [row] = await db
+              .select({ count: sql<number>`count(*)::int` })
+              .from(prospects)
+              .where(and(eq(prospects.userId, userId), cond));
+            memberCount = row?.count ?? 0;
+          }
+        } else {
+          const [row] = await db
+            .select({ count: sql<number>`count(*)::int` })
+            .from(listMembers)
+            .where(eq(listMembers.listId, list.id));
+          memberCount = row?.count ?? 0;
+        }
+        return { ...list, memberCount };
       })
     );
 
@@ -31,13 +53,22 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const [list] = await db.insert(lists).values({
-      userId,
-      name: body.name,
-      description: body.description,
-      type: body.type || 'static',
-      filterJson: body.filterJson ? JSON.stringify(body.filterJson) : null,
-    }).returning();
+    const type: 'static' | 'dynamic' = body.type === 'dynamic' ? 'dynamic' : 'static';
+    const filterJson =
+      type === 'dynamic' && body.filterJson
+        ? JSON.stringify(body.filterJson)
+        : null;
+
+    const [list] = await db
+      .insert(lists)
+      .values({
+        userId,
+        name: body.name,
+        description: body.description,
+        type,
+        filterJson,
+      })
+      .returning();
     return NextResponse.json(list, { status: 201 });
   } catch (err) {
     console.error('Create list error:', err);

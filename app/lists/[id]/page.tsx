@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { use } from "react";
-import { ArrowLeft, Plus, UserPlus } from "lucide-react";
+import { ArrowLeft, Plus, UserPlus, Filter } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,6 +35,7 @@ type ListMeta = {
   name: string;
   description: string | null;
   type: string;
+  filterJson?: string | null;
 };
 
 export default function ListDetailPage({
@@ -120,9 +122,19 @@ export default function ListDetailPage({
   const memberIds = new Set(members.map((m) => m.id));
   const availableProspects = allProspects.filter((p) => !memberIds.has(p.id));
 
+  const isDynamic = list?.type === "dynamic";
+  let parsedFilter: { rules: Array<{ field: string; operator: string; value?: string }> } | null = null;
+  if (isDynamic && list?.filterJson) {
+    try {
+      parsedFilter = JSON.parse(list.filterJson);
+    } catch {
+      parsedFilter = null;
+    }
+  }
+
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-start justify-between mb-6">
         <div>
           <Link
             href="/lists"
@@ -130,23 +142,53 @@ export default function ListDetailPage({
           >
             <ArrowLeft className="h-4 w-4 mr-1" /> Back to Lists
           </Link>
-          <h1 className="text-3xl font-bold text-foreground">
-            {list?.name ?? (loading ? "Loading…" : `List #${listId}`)}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-foreground">
+              {list?.name ?? (loading ? "Loading…" : `List #${listId}`)}
+            </h1>
+            {list && (
+              <Badge variant="secondary" className="capitalize">
+                {list.type}
+              </Badge>
+            )}
+          </div>
           {list?.description && (
             <p className="text-muted-foreground mt-1">{list.description}</p>
           )}
           <p className="text-sm text-muted-foreground mt-1">
             {members.length} member{members.length === 1 ? "" : "s"}
+            {isDynamic && " (auto-computed from filter rules)"}
           </p>
+          {isDynamic && parsedFilter && parsedFilter.rules.length > 0 && (
+            <div className="mt-3 flex items-start gap-2 rounded-md border border-border bg-card/40 p-3 max-w-2xl">
+              <Filter className="h-4 w-4 mt-0.5 text-muted-foreground" />
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p className="font-medium text-foreground">Filter rules</p>
+                {parsedFilter.rules.map((r, i) => (
+                  <p key={i}>
+                    <span className="text-foreground/80">{r.field}</span>{" "}
+                    <span className="italic">{r.operator.replace(/_/g, " ")}</span>
+                    {r.value ? (
+                      <>
+                        {" "}
+                        <span className="text-foreground/80">"{r.value}"</span>
+                      </>
+                    ) : null}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-        <Button
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
-          onClick={openAddProspects}
-        >
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add Prospects
-        </Button>
+        {!isDynamic && (
+          <Button
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            onClick={openAddProspects}
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add Prospects
+          </Button>
+        )}
       </div>
 
       <DataGridListMembers
