@@ -1,12 +1,12 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 15:38 UTC by farsight watchdog_
+_Last updated: 2026-05-14 15:53 UTC by farsight watchdog_
 
 ---
 
 ## 🎉 USER_SCOPING_SPEC.md — P0 Complete (15:23 UTC)
 
-Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. 4 feature commits on local netrunner (not yet pushed to remote). Claude exited cleanly. **Still stopped at 15:38 UTC — 22 min since last commit. Under 30-min stall threshold. No action taken.**
+Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. 4 feature commits on local netrunner (not yet pushed to remote). Claude stopped at 15:53 UTC — **37 min since last commit, OVER 30-min threshold. Wake event sent. Claude relaunched (PID 45004).**
 
 ---
 
@@ -67,7 +67,7 @@ Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. 4 fea
 
 1. ✅ Repo at ~/Projects/ai-sdr (clean working tree)
 2. ✅ Claude binary: v2.1.141 (reinstalled 15:08 UTC)
-3. 🔴 Claude: stopped (last commit 15:16 UTC, ~22 min ago — clean exit, under stall threshold)
+3. 🔴→🔄 Claude: relaunched PID 45004 (15:53 UTC wake)
 4. Next: push local commits, then P2 (/api/ai/suggest-reply) or sub-workflow recursion
 
 ---
@@ -95,3 +95,4 @@ Claude Code completed all P0 user-scoping tasks between 15:10–15:16 UTC. 4 fea
 | 15:08 | 🔴→✅ Fixed | ✅ Reinstalled @anthropic-ai/claude-code v2.1.141. Claude PID 8766 launched. |
 | 15:23 | 🔴 Stopped | ✅ Clean exit — 4 P0 feature commits done. Last commit 15:16 UTC (7 min ago). No wake. |
 | 15:38 | 🔴 Stopped | ⏳ Still stopped. 22 min since last commit. Under 30-min threshold. No action. |
+| 15:53 | 🔴→🔄 Wake | 🔴 37 min since last commit. OVER threshold. Claude relaunched PID 45004. Telegram alert sent. |
