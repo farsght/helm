@@ -88,15 +88,26 @@ export interface RunPipelineOptions {
   /**
    * 'manual' (default): only fire sources whose trigger.kind === 'manual'
    * 'cron':              only fire sources whose trigger.kind === 'cron'
+   * 'webhook':           webhook-invoked; requires sourceNodeId. The webhook
+   *                      payload (sourcePayload) is INJECTED as the source
+   *                      node's output rows, BYPASSING its normal executor.
    * 'any':               fire every source (used when a specific sourceNodeId
    *                      is passed and we want to bypass kind filtering)
    */
-  invokedBy?: 'manual' | 'cron' | 'any';
+  invokedBy?: 'manual' | 'cron' | 'webhook' | 'any';
   /**
    * If set, only this source node (and its downstream subgraph) is executed.
-   * Other source nodes' subgraphs are skipped. Used by the cron worker.
+   * Other source nodes' subgraphs are skipped. Used by the cron worker and
+   * webhook routes.
    */
   sourceNodeId?: number;
+  /**
+   * Webhook-only: rows to inject as the source node's output. When this is
+   * set, the source node's normal executor (e.g. fireflies_poll) is
+   * SKIPPED — the webhook payload IS the source data. Downstream nodes
+   * run normally against these injected rows.
+   */
+  sourcePayload?: Row[];
 }
 
 // ── Executor registry ────────────────────────────────────────────────
@@ -288,6 +299,8 @@ export async function runPipeline(
       eligibleSourceIds.add(node.id);
     } else if (invokedBy === 'cron' && trig.kind === 'cron') {
       eligibleSourceIds.add(node.id);
+    } else if (invokedBy === 'webhook' && trig.kind === 'webhook') {
+      eligibleSourceIds.add(node.id);
     }
   }
 
@@ -322,6 +335,25 @@ export async function runPipeline(
   for (const node of sorted) {
     if (!eligibleNodes.has(node.id)) continue; // skipped by trigger filter
     const parentIds = parents.get(node.id) ?? [];
+
+    // Webhook payload injection: if this is THE webhook-targeted source node
+    // and the caller passed sourcePayload, bypass the node's normal executor
+    // and feed the payload through as its output. The payload IS the data.
+    if (
+      opts.invokedBy === 'webhook' &&
+      opts.sourceNodeId === node.id &&
+      opts.sourcePayload !== undefined
+    ) {
+      outputByNode.set(node.id, opts.sourcePayload);
+      rowsOutput = opts.sourcePayload.length;
+      ctx.log.push({
+        nodeId: node.id,
+        message: `${node.type} (${node.label}): webhook payload injected (${opts.sourcePayload.length} rows), executor bypassed`,
+        level: 'info',
+      });
+      continue;
+    }
+
     const inputRows: Row[] = parentIds.length === 0
       ? []
       : parentIds.flatMap((pid) => outputByNode.get(pid) ?? []);

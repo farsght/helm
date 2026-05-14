@@ -166,11 +166,13 @@ function PipelinePalette() {
 
 function PipelineNodeConfig({
   node,
+  pipelineId,
   isSource,
   onUpdate,
   onClose,
 }: {
   node: Node<NodeData>;
+  pipelineId: number;
   isSource: boolean;
   onUpdate: (id: string, updates: Record<string, unknown>) => void;
   onClose: () => void;
@@ -689,7 +691,40 @@ function PipelineNodeConfig({
                 </p>
               </div>
             )}
-            {(triggerConfig.kind === "webhook" || triggerConfig.kind === "event") && (
+            {triggerConfig.kind === "webhook" && (
+              <div className="space-y-2">
+                <Label>Secret</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={String(triggerConfig.secret ?? "")}
+                    onChange={(e) => setTriggerConfig({ ...triggerConfig, secret: e.target.value })}
+                    placeholder="Generate or paste a secret token"
+                    className="font-mono text-xs"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const s = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+                      setTriggerConfig({ ...triggerConfig, secret: s });
+                    }}
+                  >
+                    Gen
+                  </Button>
+                </div>
+                <Label className="pt-2">Webhook URL</Label>
+                <div className="p-2 rounded bg-background border border-border font-mono text-[10px] break-all">
+                  {typeof window !== "undefined" ? window.location.origin : ""}/api/pipelines/{pipelineId}/webhook/{node.id}
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  POST a JSON object or array of objects to this URL with header{" "}
+                  <code className="text-[10px]">X-Webhook-Secret: &lt;secret&gt;</code>{" "}
+                  (or query param <code className="text-[10px]">?secret=…</code>). Body becomes the source row(s). Save the node first so the URL stays stable.
+                </p>
+              </div>
+            )}
+            {triggerConfig.kind === "event" && (
               <p className="text-xs text-muted-foreground">Not yet wired. Falls back to manual.</p>
             )}
           </div>
@@ -956,6 +991,7 @@ export function PipelineDetailClient({ id }: { id: string }) {
               {selectedNode && (
                 <PipelineNodeConfig
                   node={selectedNode}
+                  pipelineId={pipelineId}
                   isSource={!edges.some((e) => e.target === selectedNode.id)}
                   onUpdate={handleNodeUpdate}
                   onClose={() => setSelectedNode(null)}
