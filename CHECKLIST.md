@@ -1,16 +1,16 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 12:38 UTC by farsight watchdog_
+_Last updated: 2026-05-14 12:53 UTC by farsight watchdog_
 
 ---
 
-## 🔴 STALL DETECTED — Claude has been stopped for ~91 minutes
+## 🔴 STALL DETECTED — Claude has been stopped for ~106 minutes
 
 Last real commit: `662cc96f` at 11:07 UTC — Tier 4 canvas (visual workflow + agent library)
-Wake events sent at: 11:41 UTC, 11:55 UTC, 12:08 UTC, 12:23 UTC, 12:38 UTC
+Wake events sent at: 11:41 UTC, 11:55 UTC, 12:08 UTC, 12:23 UTC, 12:38 UTC, 12:53 UTC
 
 ⚠️ **Working directory gone** — the ai-sdr repo was in a macOS temp dir (`/private/var/folders/_8/.../T/tmp-YZJOqouVeY`) that has been cleaned up. **Re-clone from GitHub before resuming.**
-⚠️ **Repo NOT yet re-cloned** — `~/Projects/ai-sdr` does not exist on Netrunner as of 12:38 UTC.
+⚠️ **Repo NOT yet re-cloned** — `~/Projects/ai-sdr` does not exist on Netrunner as of 12:53 UTC.
 
 ---
 
@@ -77,3 +77,4 @@ Wake events sent at: 11:41 UTC, 11:55 UTC, 12:08 UTC, 12:23 UTC, 12:38 UTC
 | 12:08 | Stopped | Wake event #3 — Telegram alert sent |
 | 12:23 | Stopped | Wake event #4 — repo temp dir GONE, Telegram alert sent |
 | 12:38 | Stopped | Wake event #5 — repo still NOT re-cloned at ~/Projects/ai-sdr |
+| 12:53 | Stopped | Wake event #6 — 106 min stall, repo still missing, Telegram alert sent |
