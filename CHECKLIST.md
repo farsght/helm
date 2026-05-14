@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 07:53 UTC
+> Last updated: 2026-05-14 08:08 UTC
 
 ---
 
@@ -234,8 +234,22 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 | `52460868` | **UI cleanup PR#21** — legacy sidebar removed; Shiki syntax highlighter; PageHeader across all clients; ConfirmDialog for delete flows; EmptyState primitives; FileUpload preview perf (useMemo) | 30+ files | ✅ |
 | `bd1aa0d9` | **Resolve merge conflicts with main** — post-PR#21 conflict resolution | 2 files | ✅ |
 | `05ac5785` | **feat: add Notebooks section to sidebar navigation** — Notebooks now surfaced in sidebar nav | sidebar component | ✅ |
+| `067feae8` | **feat: column type variant menu with coercion matrix** — datasets data grid column type selector with full type coercion matrix | datasets data-grid | ✅ |
+| `acfa0b95` | **fix: auto-size dataset grid columns from label length + sample + type** — dynamic column width calculation | datasets data-grid | ✅ |
+| `d031bef1` | **fix: VariantMenu — self-contained header, no nested DataGridColumnHeader** — fixes nested header nesting bug | `components/data-grid/` | ✅ |
 
 ---
+
+### Review Notes (08:08 UTC)
+- **3 new code commits** since last run (07:53 UTC) — all datasets DataGrid polish:
+  - `067feae8` feat: column type variant menu with coercion matrix
+  - `acfa0b95` fix: auto-size dataset grid columns from label length + sample + type
+  - `d031bef1` fix: VariantMenu — self-contained header, no nested DataGridColumnHeader
+- **Claude Code: NOT running** (0 processes). Last commit at 08:08 UTC — just landed, clean stop. No stall.
+- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth.
+- **Datasets DataGrid** receiving focused polish: column type coercion matrix, auto-sizing, header nesting fix.
+- **Phase C theme verification** still pending (human visual pass required).
+- App is stable. No regressions detected.
 
 ### Review Notes (07:53 UTC)
 - **No new code commits** since 07:26 UTC (`05ac5785` — Notebooks sidebar nav). My own watchdog checklist commit at 07:41 UTC is the only recent push.
@@ -266,4 +280,4 @@ All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, and Notebooks sh
 
 ---
 
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 07:53 UTC (Claude Code stopped — last code commit 27 min ago `05ac5785` Notebooks sidebar nav — approaching stall threshold, monitoring)**
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 08:08 UTC (Claude Code stopped — last code commit ~0 min ago `d031bef1` VariantMenu fix — clean stop, no stall)*
