@@ -29,6 +29,13 @@
       "when": 1778726630905,
       "tag": "0003_faulty_leopardon",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778737706435,
+      "tag": "0004_volatile_pixie",
+      "breakpoints": true
     }
   ]
 }

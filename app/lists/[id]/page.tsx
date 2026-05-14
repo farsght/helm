@@ -171,7 +171,7 @@ export default function ListDetailPage({
                     {r.value ? (
                       <>
                         {" "}
-                        <span className="text-foreground/80">"{r.value}"</span>
+                        <span className="text-foreground/80">&quot;{r.value}&quot;</span>
                       </>
                     ) : null}
                   </p>

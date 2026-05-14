@@ -1,4 +1,4 @@
-import { pgTable, text, integer, real, serial, timestamp, boolean, uniqueIndex } from 'drizzle-orm/pg-core';
+import { pgTable, text, integer, real, serial, timestamp, boolean, uniqueIndex, jsonb, index } from 'drizzle-orm/pg-core';
 
 // Campaigns
 export const campaigns = pgTable('campaigns', {
@@ -192,4 +192,35 @@ export const settings = pgTable('settings', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => [
   uniqueIndex('settings_user_id_key_unique').on(table.userId, table.key),
+]);
+
+// ── Datasets ─────────────────────────────────────────────────────────
+// Staging workspace for raw data (CSV uploads, Sheets, HubSpot, etc.).
+// Rows live as JSONB so we don't need DDL per import. Schema metadata
+// for each dataset is captured in `columnSchemaJson`.
+export const datasets = pgTable('datasets', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+  name: text('name').notNull(),
+  description: text('description'),
+  source: text('source').notNull().default('csv'), // csv, google_sheets, hubspot_contacts, hubspot_companies, webhook, manual
+  sourceMetaJson: jsonb('source_meta_json'), // { filename, sheetId, hubspotPortalId, ... }
+  columnSchemaJson: jsonb('column_schema_json'), // [{ key, label, type: 'string'|'number'|'date'|'boolean', sample }]
+  rowCount: integer('row_count').notNull().default(0),
+  status: text('status').notNull().default('ready'), // importing, ready, error
+  errorMessage: text('error_message'),
+  refreshedAt: timestamp('refreshed_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const datasetRows = pgTable('dataset_rows', {
+  id: serial('id').primaryKey(),
+  datasetId: integer('dataset_id').notNull().references(() => datasets.id, { onDelete: 'cascade' }),
+  externalId: text('external_id'), // source-specific id (HubSpot contact id, sheet row index, etc.)
+  rowJson: jsonb('row_json').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('dataset_rows_dataset_id_idx').on(t.datasetId),
 ]);
