@@ -53,7 +53,7 @@ export default function Page() {
           <a
             target="_blank"
             rel="noopener"
-            href="https://farsight-studio.sentry.io/issues/?project=4511387422097408"
+            href="https://helm-gs.sentry.io/issues/?project=4511387422097408"
           >
             Issues Page
           </a>

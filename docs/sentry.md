@@ -25,14 +25,14 @@ Quick reference for how Sentry is wired into this Next.js app and why certain th
 | Session Replay | ✅ On | 10% all sessions / 100% error sessions |
 | Logging | ✅ On | `enableLogs: true` + `consoleLoggingIntegration` everywhere |
 
-**Sentry project:** `bitwage / helm` (org `bitwage`, project `4511387394572288`).
+**Sentry project:** `helm-gs / helm` (org `helm-gs`, project `4511387394572288`).
 
 ---
 
 ## Decisions
 
-### Why one project (bitwage), not two
-Init files used to hardcode a different DSN (`o1355568` / farsight-studio) while env vars pointed at `bitwage`. Resolved 2026-05-14 by switching all init files to read from `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN` and updating `next.config.ts` `org` to `bitwage`. **Don't reintroduce hardcoded DSNs** — env-only.
+### Why one project (helm-gs), not two
+Init files used to hardcode a different DSN (`o1355568` / farsight-studio) while env vars pointed at a different project slug. Resolved by switching all init files to read from `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN`. Org slug renamed from `bitwage` → `farsight-studio` → `helm-gs` (final, 2026-05-14). **Don't reintroduce hardcoded DSNs** — env-only.
 
 ### Why `/monitoring` is a public route in `proxy.ts`
 `tunnelRoute: "/monitoring"` in `next.config.ts` makes the browser SDK POST events to `/monitoring/...` instead of `*.sentry.io`. Clerk's `auth.protect()` would block those POSTs and silently drop every client event. The matcher in `proxy.ts` includes `/monitoring(.*)` so it's authless. Don't remove it.

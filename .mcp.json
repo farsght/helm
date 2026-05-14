@@ -8,7 +8,7 @@
       ]
     },
     "Sentry": {
-      "url": "https://mcp.sentry.dev/mcp/farsight-studio/helm"
+      "url": "https://mcp.sentry.dev/mcp/helm-gs/helm"
     }
   }
 }
