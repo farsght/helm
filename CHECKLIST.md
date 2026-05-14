@@ -1,12 +1,14 @@
 # ai-sdr CHECKLIST.md
 
-_Last updated: 2026-05-14 16:23 UTC by farsight watchdog_
+_Last updated: 2026-05-14 16:38 UTC by farsight watchdog_
 
 ---
 
-## 🎉 Tier 5 Sub-workflow Recursion DONE (16:16 UTC)
+## 🎉 Tier 2 RAG DONE (16:37 UTC)
 
-Claude committed `476946e` at 16:16 UTC — sub_workflow inline recursion implemented. **Local only, not yet pushed to remote.** Claude exited cleanly after commit (7 min ago — under 30-min threshold, no wake sent).
+Claude committed `b83618b` at 16:37 UTC — Tier 2 RAG with pgvector, Obsidian vault ingest, and agent retrieval fully implemented. Clean exit 1 min ago. **No wake needed.**
+
+⚠️ **LOCAL DIVERGE**: Netrunner local branch has `476946e` (Tier 5 recursion) that was never pushed. Remote moved on from `b17b780` independently. Local needs `git pull --rebase` or merge before next push.
 
 ---
 
@@ -14,15 +16,15 @@ Claude committed `476946e` at 16:16 UTC — sub_workflow inline recursion implem
 
 | Commit | Time | Status | Description |
 |---|---|---|---|
-| `476946e` | 16:16 UTC | ⚠️ LOCAL ONLY | feat(workflow): implement sub_workflow inline recursion (Tier 5) |
+| `b83618b` | 16:37 UTC | ✅ Remote | feat(rag): Tier 2 — knowledge_chunks pgvector + obsidian_vault dataset ingest + agent retrieval |
+| `5c4b63b` | 16:25 UTC | ✅ Remote | chore: farsight watchdog — 16:23 UTC |
+| `56f42b1` | 16:11 UTC | ✅ Remote | chore: farsight watchdog — 16:08 UTC |
+| `a5aa468` | 15:56 UTC | ✅ Remote | chore: farsight watchdog — 15:53 UTC |
 | `b17b780` | ~15:16 UTC | ✅ Remote | feat(api): add POST /api/campaigns/:id/steps and per-step CRUD route |
 | `41306b2` | ~15:15 UTC | ✅ Remote | fix(api): inject userId on prospect import; verify scoping on prospects/templates/campaigns |
 | `84dbba7` | ~15:15 UTC | ✅ Remote | feat(api): add user-scoped GET/PUT /api/settings |
 | `b118512` | ~15:14 UTC | ✅ Remote | feat(db): add tags (user_id, name) compound unique constraint |
-| `7a9d3d5f` | 13:20 UTC | ✅ Remote | feat(workflow): Tier 5 — wait_for_event + error handler + UI inspectors |
-| `5a8e264f` | 13:17 UTC | ✅ Remote | feat(workflow): add support for switch and sub_workflow node types |
-| `662cc96f` | 11:07 UTC | ✅ Remote | feat(canvas): Tier 4 — visual workflow + agent library canvases |
-| `def93478` | 11:12 UTC | ✅ Remote | watchdog: Tier 1+4 agents/MCP runtime + visual canvas noted |
+| `476946e` | ~16:16 UTC | ⚠️ LOCAL ONLY | feat(workflow): implement sub_workflow inline recursion (Tier 5) — diverged from remote |
 
 ### P0 — USER_SCOPING_SPEC.md (ALL DONE ✅)
 
@@ -38,7 +40,7 @@ Claude committed `476946e` at 16:16 UTC — sub_workflow inline recursion implem
 - ✅ `sub_workflow` node: inspector, DB schema (errorHandlerCampaignId), execution stub
 - ✅ `wait_for_event` node: durable createHook suspension, deterministic token, POST webhook
 - ✅ Top-level try/catch + `notifyErrorHandler` step
-- ✅ `476946e` — Sub-workflow inline recursion: graph-level recursion for sub_workflow execution (**LOCAL ONLY, not pushed**)
+- ✅ `476946e` — Sub-workflow inline recursion (LOCAL ONLY — not on remote, branch diverged)
 - ✅ Tests: 152/157 passing (5 pre-existing failures)
 
 ### Tier 4 Canvas (DONE ✅)
@@ -46,24 +48,38 @@ Claude committed `476946e` at 16:16 UTC — sub_workflow inline recursion implem
 - ✅ Campaign workflow canvas (/campaigns/[id]/workflow)
 - ✅ Agent library canvas (/agents/[id])
 
+### Tier 2 RAG — Knowledge Base (DONE ✅ as of 16:37 UTC)
+- ✅ `knowledge_chunks` table (1536-dim pgvector, ivfflat cosine index)
+- ✅ `agent_knowledge_links` table (per-agent scoping with pathPrefix + topK)
+- ✅ Migration 0011 applied to Neon
+- ✅ Obsidian vault walker + gray-matter + recursive char splitter (~800 tokens/100 overlap)
+- ✅ OpenAI text-embedding-3-small batched ingest (idempotent upsert)
+- ✅ Cosine vector search retrieval + `<knowledge_context>` injection into system prompt
+- ✅ APIs: POST /api/datasets/[id]/ingest, /search, GET/POST/DELETE /api/agents/[id]/knowledge
+- ✅ CLI: scripts/ingest-vault.ts with progress
+- ✅ OpenClaw Vault (dataset 12): 31 files, 181 chunks, 41s ingestion verified
+
 ---
 
 ## Pending Work 🔄
 
 ### P2 — AI (NOT STARTED)
-- [ ] /api/ai/suggest-reply — Not yet implemented (Claude exited after Tier 5 recursion commit)
+- [ ] /api/ai/suggest-reply — Not yet implemented
 
-### Git push needed
-- ⚠️ `476946e` is local-only — needs `git push` to reach remote
+### Git divergence — needs resolution
+- ⚠️ Local netrunner has `476946e` (Tier 5 recursion) NOT on remote
+- ⚠️ Remote has moved ahead with RAG commits not on local
+- Next Claude session should run `git pull --rebase origin main` before committing
 
 ---
 
 ## Resume Instructions
 
-1. ✅ Repo at ~/Projects/ai-sdr (clean working tree, 1 commit ahead of origin)
+1. ✅ Repo at ~/Projects/ai-sdr (clean working tree, but DIVERGED from remote)
 2. ✅ Claude binary: v2.1.141
-3. 🔴 Claude: stopped (clean exit after 16:16 UTC commit — 7 min idle)
-4. Next: push `476946e`, then /api/ai/suggest-reply (P2)
+3. 🔴 Claude: stopped (clean exit after 16:37 UTC RAG commit — 1 min ago)
+4. ⚠️ Run `git pull --rebase origin main` first to reconcile local `476946e`
+5. Next: /api/ai/suggest-reply (P2)
 
 ---
 
@@ -93,3 +109,4 @@ Claude committed `476946e` at 16:16 UTC — sub_workflow inline recursion implem
 | 15:53 | 🔴→🔄 Wake | 🔴 37 min since last commit. OVER threshold. Claude relaunched PID 45004. Telegram alert sent. |
 | 16:08 | 🔴→🔄 Wake | 🔴 52 min since last feature commit. Clean tree. Claude relaunched PID 55157. Telegram alert sent. |
 | 16:23 | 🔴 Stopped | ✅ Clean exit — `476946e` Tier 5 sub_workflow recursion committed 16:16 UTC (7 min ago). LOCAL ONLY. Under threshold, no wake. |
+| 16:38 | 🔴 Stopped | ✅ Clean exit — `b83618b` Tier 2 RAG committed 16:37 UTC (1 min ago). ⚠️ Local branch diverged from remote. No wake needed. |
