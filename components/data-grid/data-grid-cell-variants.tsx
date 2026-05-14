@@ -1984,10 +1984,9 @@ export function FileCell<TData>({
                 File upload
               </span>
               <div
-                role="region"
+                role="button"
                 aria-labelledby={labelId}
                 aria-describedby={descriptionId}
-                aria-invalid={!!error}
                 aria-disabled={isPending}
                 data-dragging={isDragging ? "" : undefined}
                 data-invalid={error ? "" : undefined}
@@ -2023,6 +2022,7 @@ export function FileCell<TData>({
                 type="file"
                 aria-labelledby={labelId}
                 aria-describedby={descriptionId}
+                aria-invalid={!!error}
                 multiple={multiple}
                 accept={accept}
                 className="sr-only"
