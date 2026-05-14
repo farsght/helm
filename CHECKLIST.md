@@ -1,7 +1,7 @@
 # AI-SDR Implementation Checklist
 
 > Maintained by **farsight** (automated watchdog). Updated as Netrunner commits code.
-> Last updated: 2026-05-14 09:08 UTC
+> Last updated: 2026-05-14 09:23 UTC
 
 ---
 
@@ -102,6 +102,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 - Notebooks v1 — monospace cell editor, per-cell JS execution (vm sandbox), Python stub ✅
 - CSV import wizard — 4-step import flow for datasets ✅
 - Import refactor — absolute paths + React hooks ✅
+- Sentry integration — error monitoring + tracing ✅
 
 ---
 
@@ -168,6 +169,7 @@ All 22 gaps implemented in `905eaae7`. See earlier checklist entries.
 | Vercel deployment | ✅ | https://ai-sdr-mocha.vercel.app (READY) |
 | CSV import wizard + DataGrid column alignment | ✅ | `d0f1e427` |
 | Import refactor (absolute paths + React hooks) | ✅ | `12fd5eb9` |
+| Sentry integration + docs | ✅ | `14de728f` + `09171e6c` + `d108b3cb` |
 
 ---
 
@@ -245,8 +247,22 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 | `f7ca9dc4` | **fix: restore DataGridColumnHeader in VariantMenu** — resize drag working again, flex layout preserved | `components/data-grid/` | ✅ |
 | `d0f1e427` | **feat: CSV import wizard + fix data-grid column alignment** — 4-step CSV import flow for datasets; DataGrid column alignment fixes | datasets, data-grid | ✅ |
 | `12fd5eb9` | **refactor: update imports to use absolute paths and switch to React hooks** — codebase-wide import hygiene + hooks migration | Multiple files | ✅ |
+| `14de728f` | **feat: integrate Sentry for error monitoring and tracing** — Sentry config, instrumentation, error tracking wired into Next.js app | Sentry config files | ✅ |
+| `09171e6c` | **refactor: update import paths to use absolute references** — follow-up import cleanup after Sentry integration | Multiple files | ✅ |
+| `d108b3cb` | **docs: add docs/sentry.md** — Sentry wiring reference + pitfalls documentation | `docs/sentry.md` | ✅ |
 
 ---
+
+### Review Notes (09:23 UTC)
+- **3 new code commits** since last run (09:08 UTC) — Sentry integration shipped:
+  - `14de728f` feat: integrate Sentry for error monitoring and tracing (09:11 UTC)
+  - `09171e6c` refactor: update import paths to use absolute references (09:12 UTC)
+  - `d108b3cb` docs: add docs/sentry.md — wiring reference + pitfalls (09:23 UTC)
+- **Claude Code: NOT running** (0 processes). Last commit `d108b3cb` at 09:23 UTC — just landed (0 min ago). Clean stop. No stall action needed.
+- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth (consistent pattern).
+- **Sentry integration** is a meaningful observability addition: error monitoring + distributed tracing now wired into the Next.js app. Includes pitfalls doc — Claude was being thorough.
+- **Phase C theme verification** still pending (human visual pass required).
+- App is stable. No regressions detected.
 
 ### Review Notes (09:08 UTC)
 - **0 new code commits** since last run (08:53 UTC) — no new activity from Netrunner
@@ -264,42 +280,12 @@ Ran `scripts/theme-codemod.py --apply`. **647 → 3 hardcoded literals** (all Li
 - **Phase C theme verification** still pending (human visual pass required).
 - App is stable. No regressions detected.
 
-### Review Notes (08:38 UTC)
-- **1 new code commit** since last run (08:26 UTC):
-  - `d0f1e427` feat: CSV import wizard + fix data-grid column alignment — 4-step dataset import flow + column alignment polish
-- **Claude Code: NOT running** (0 processes). Last commit at 08:37 UTC — just 1 min ago. Clean stop, well under the 30-min stall threshold. No wake event sent.
-- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth.
-- **Datasets** receiving significant investment: CSV import wizard now a proper multi-step flow. DataGrid column alignment finalized.
-- **Phase C theme verification** still pending (human visual pass required).
-- App is stable. No regressions detected.
+---
 
-### Review Notes (08:23 UTC)
-- **2 new code commits** since last run (08:08 UTC) — continued DataGrid column header refinement:
-  - `23d69253` fix: pass stretchColumns to dataset DataGrid — headers and cells now fill and stretch full width
-  - `f7ca9dc4` fix: restore DataGridColumnHeader in VariantMenu — resize drag working again, flex layout preserved
-- **Claude Code: NOT running** (0 processes). Last commit at 08:13 UTC — 10 min ago. Under the 30-min stall threshold, no wake event sent.
-- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth.
-- **DataGrid column header** receiving iterative fixes: VariantMenu nesting → column stretch → resize drag restoration. Converging on stable UX.
-- **Phase C theme verification** still pending (human visual pass required).
-- App is stable. No regressions detected.
+## 🎉 Implementation Complete + DataOps v1 + Observability
 
-### Review Notes (08:08 UTC)
-- **3 new code commits** since last run (07:53 UTC) — all datasets DataGrid polish:
-  - `067feae8` feat: column type variant menu with coercion matrix
-  - `acfa0b95` fix: auto-size dataset grid columns from label length + sample + type
-  - `d031bef1` fix: VariantMenu — self-contained header, no nested DataGridColumnHeader
-- **Claude Code: NOT running** (0 processes). Last commit at 08:08 UTC — just landed, clean stop. No stall.
-- **SSH to Netrunner** continues to time out on repo find command — GitHub API used as source of truth.
-- **Datasets DataGrid** receiving focused polish: column type coercion matrix, auto-sizing, header nesting fix.
-- **Phase C theme verification** still pending (human visual pass required).
-- App is stable. No regressions detected.
+All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, Notebooks, and Sentry error monitoring shipped. App is a full SDR + data ops platform with production observability.
 
 ---
 
-## 🎉 Implementation Complete + DataOps v1
-
-All P1/P2 gaps resolved. CRM, Segments, Datasets v2, Pipelines, and Notebooks shipped. App is a full SDR + data ops platform.
-
----
-
-*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 09:08 UTC (Claude Code stopped — last code commit 28 min ago `12fd5eb9` import refactor — under stall threshold, no action)*
+*Auto-updated by farsight watchdog (every 15 min). Last run: 2026-05-14 09:23 UTC (Claude Code stopped — last code commit 0 min ago `d108b3cb` sentry docs — clean stop, no action)*
