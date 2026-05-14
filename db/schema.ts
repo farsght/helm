@@ -308,3 +308,69 @@ export const dealContacts = pgTable('deal_contacts', {
   index('deal_contacts_deal_id_idx').on(t.dealId),
   index('deal_contacts_contact_id_idx').on(t.contactId),
 ]);
+
+// ── Pipelines ────────────────────────────────────────────────────────
+export const pipelines = pgTable('pipelines', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+  name: text('name').notNull(),
+  description: text('description'),
+  status: text('status').notNull().default('draft'), // draft, active, archived
+  lastRunAt: timestamp('last_run_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const pipelineNodes = pgTable('pipeline_nodes', {
+  id: serial('id').primaryKey(),
+  pipelineId: integer('pipeline_id').notNull().references(() => pipelines.id, { onDelete: 'cascade' }),
+  type: text('type').notNull(), // source_dataset, map_fields, filter, clean, deduplicate, enrich, ai_classify, split, run_notebook, promote_prospects, promote_companies, promote_contacts, promote_deals, promote_segment
+  label: text('label').notNull(),
+  configJson: text('config_json'),
+  positionX: real('position_x').notNull().default(0),
+  positionY: real('position_y').notNull().default(0),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const pipelineEdges = pgTable('pipeline_edges', {
+  id: serial('id').primaryKey(),
+  pipelineId: integer('pipeline_id').notNull().references(() => pipelines.id, { onDelete: 'cascade' }),
+  sourceNodeId: integer('source_node_id').notNull().references(() => pipelineNodes.id, { onDelete: 'cascade' }),
+  targetNodeId: integer('target_node_id').notNull().references(() => pipelineNodes.id, { onDelete: 'cascade' }),
+  label: text('label'),
+});
+
+export const pipelineRuns = pgTable('pipeline_runs', {
+  id: serial('id').primaryKey(),
+  pipelineId: integer('pipeline_id').notNull().references(() => pipelines.id, { onDelete: 'cascade' }),
+  status: text('status').notNull().default('running'), // running, completed, failed
+  rowsInput: integer('rows_input').default(0),
+  rowsOutput: integer('rows_output').default(0),
+  rowsErrored: integer('rows_errored').default(0),
+  logJson: text('log_json'), // array of { nodeId, message, level }
+  startedAt: timestamp('started_at').notNull().defaultNow(),
+  completedAt: timestamp('completed_at'),
+  errorMessage: text('error_message'),
+});
+
+// ── Notebooks ────────────────────────────────────────────────────────
+export const notebooks = pgTable('notebooks', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+  name: text('name').notNull(),
+  description: text('description'),
+  language: text('language').notNull().default('javascript'), // javascript, python
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const notebookCells = pgTable('notebook_cells', {
+  id: serial('id').primaryKey(),
+  notebookId: integer('notebook_id').notNull().references(() => notebooks.id, { onDelete: 'cascade' }),
+  cellIndex: integer('cell_index').notNull().default(0),
+  language: text('language').notNull().default('javascript'), // javascript, python
+  code: text('code').notNull().default(''),
+  outputJson: text('output_json'), // last run output
+  lastRunAt: timestamp('last_run_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});

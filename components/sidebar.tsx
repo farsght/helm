@@ -17,21 +17,52 @@ import {
   Settings,
   ChevronLeft,
   Search,
+  Database,
+  GitFork,
+  BookOpen,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Campaigns", href: "/campaigns", icon: Target },
-  { name: "Prospects", href: "/prospects", icon: Users },
-  { name: "Segments", href: "/segments", icon: List },
-  { name: "Templates", href: "/templates", icon: FileText },
-  { name: "Conversations", href: "/conversations", icon: MessageSquare },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "Settings", href: "/settings", icon: Settings },
+type NavItem = { name: string; href: string; icon: React.ComponentType<{ className?: string }> };
+type NavSection = { label: string | null; items: NavItem[] };
+
+const navSections: NavSection[] = [
+  {
+    label: null,
+    items: [
+      { name: "Dashboard", href: "/", icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "Outreach",
+    items: [
+      { name: "Campaigns", href: "/campaigns", icon: Target },
+      { name: "Prospects", href: "/prospects", icon: Users },
+      { name: "Segments", href: "/segments", icon: List },
+      { name: "Templates", href: "/templates", icon: FileText },
+      { name: "Conversations", href: "/conversations", icon: MessageSquare },
+    ],
+  },
+  {
+    label: "Insights",
+    items: [
+      { name: "Analytics", href: "/analytics", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Ops",
+    items: [
+      { name: "Datasets", href: "/datasets", icon: Database },
+      { name: "Pipelines", href: "/pipelines", icon: GitFork },
+      { name: "Notebooks", href: "/notebooks", icon: BookOpen },
+      { name: "Settings", href: "/settings", icon: Settings },
+    ],
+  },
 ];
+
+const allNavItems = navSections.flatMap((s) => s.items);
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -40,26 +71,22 @@ export function Sidebar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd+K or Ctrl+K for search
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setSearchOpen(true);
       }
-      // Escape to close search
       if (e.key === 'Escape') {
         setSearchOpen(false);
         setSearchQuery("");
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const filteredNav = navigation.filter(item =>
+  const filteredNav = allNavItems.filter(item =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -73,7 +100,7 @@ export function Sidebar() {
     <>
       <div
         className={cn(
-          "flex h-full flex-col  border-r border-border transition-all duration-300",
+          "flex h-full flex-col border-r border-border transition-all duration-300",
           collapsed ? "w-16" : "w-64"
         )}
       >
@@ -88,7 +115,7 @@ export function Sidebar() {
             <ChevronLeft className={cn("h-5 w-5 transition-transform", collapsed && "rotate-180")} />
           </Button>
         </div>
-        
+
         {!collapsed && (
           <div className="px-3 py-3">
             <Button
@@ -105,27 +132,38 @@ export function Sidebar() {
           </div>
         )}
 
-        <nav className="flex-1 space-y-1 px-3 py-2">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary text-foreground"
-                    : "text-muted-foreground hover:bg-card hover:text-foreground",
-                  collapsed && "justify-center"
-                )}
-                title={collapsed ? item.name : undefined}
-              >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                {!collapsed && item.name}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
+          {navSections.map((section, si) => (
+            <div key={si}>
+              {section.label && !collapsed && (
+                <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                  {section.label}
+                </p>
+              )}
+              <div className="space-y-1">
+                {section.items.map((item) => {
+                  const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-primary text-foreground"
+                          : "text-muted-foreground hover:bg-card hover:text-foreground",
+                        collapsed && "justify-center"
+                      )}
+                      title={collapsed ? item.name : undefined}
+                    >
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      {!collapsed && item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         <div className={cn("p-4 border-t border-border flex items-center", collapsed ? "flex-col gap-3" : "gap-3")}>
@@ -141,7 +179,6 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Search Dialog */}
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
         <DialogContent className="bg-background border-border text-foreground max-w-2xl">
           <DialogHeader>

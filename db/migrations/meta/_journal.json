@@ -50,6 +50,13 @@
       "when": 1778740022842,
       "tag": "0006_rename_lists_to_segments",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1778741331460,
+      "tag": "0007_closed_wendell_rand",
+      "breakpoints": true
     }
   ]
 }

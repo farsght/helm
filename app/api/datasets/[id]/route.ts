@@ -46,6 +46,35 @@ export async function GET(
   }
 }
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const { id } = await params;
+    const datasetId = parseInt(id);
+    if (isNaN(datasetId)) return NextResponse.json({ error: 'Invalid dataset ID' }, { status: 400 });
+
+    const [existing] = await db.select().from(datasets).where(and(eq(datasets.id, datasetId), eq(datasets.userId, userId)));
+    if (!existing) return NextResponse.json({ error: 'Dataset not found' }, { status: 404 });
+
+    const body = await request.json();
+    const updates: Partial<typeof datasets.$inferInsert> = {};
+    if (body.name !== undefined) updates.name = body.name;
+    if (body.description !== undefined) updates.description = body.description;
+    if (body.columnSchemaJson !== undefined) updates.columnSchemaJson = body.columnSchemaJson;
+
+    const [updated] = await db.update(datasets).set({ ...updates, updatedAt: new Date() }).where(eq(datasets.id, datasetId)).returning();
+    return NextResponse.json(updated);
+  } catch (err) {
+    console.error('Patch dataset error:', err);
+    return NextResponse.json({ error: 'Failed to update dataset' }, { status: 500 });
+  }
+}
+
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
