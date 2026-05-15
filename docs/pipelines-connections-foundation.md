@@ -105,6 +105,17 @@ export const connections = pgTable('connections', {
 ]);
 ```
 
+### Migration generation rule (Drizzle is source of truth)
+
+For the `connections` table migration:
+
+- Generate DDL from `db/schema.ts` via `npx drizzle-kit export --sql`
+- Derive the migration file from that export (do not hand-author table shape first)
+- Insert `--> statement-breakpoint` markers between every SQL statement
+- Register the migration in `db/migrations/meta/_journal.json`
+
+This keeps schema + migration aligned and avoids Neon HTTP multi-statement failures.
+
 ### Kind/provider rules (Sprint 1)
 
 - `kind='fireflies'`, `provider='fireflies'`
@@ -195,6 +206,9 @@ Add route handlers under `app/api/connections/`.
    - test and persist status
 5. `POST /api/connections/:id/revoke`
    - soft-revoke (`status='revoked'`)
+   - default guard: if referenced by active pipeline nodes, return `409` with usage summary
+6. `POST /api/connections/:id/revoke?force=true`
+   - override guard, still soft-revokes, and returns impacted node count for operator awareness
 
 ### Security
 
@@ -368,6 +382,9 @@ No runtime fallback to env vars after Sprint 1 completion.
 
 ### Risk: provider-specific test calls are flaky
 - Mitigation: treat tests as diagnostics only; runtime still authoritative
+
+### Risk: encryption-key rotation breaks old ciphertext
+- Mitigation: add `re-encrypt` maintenance script (`oldKey -> newKey`) for controlled rotation windows; keep `v` field in ciphertext envelope for forward compatibility
 
 ---
 

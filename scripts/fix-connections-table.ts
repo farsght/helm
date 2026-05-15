@@ -1,20 +1,25 @@
 /**
  * Emergency fix: create the connections table if it doesn't exist.
  * Run: npx dotenv-cli -e .env.local -- npx tsx scripts/fix-connections-table.ts
+ *
+ * Idempotent: safe to re-run. All DDL uses IF NOT EXISTS, and the pre-flight
+ * SELECT is just a fast-path so we don't log "creating" when the table is fine.
  */
-import { db } from '../db';
+import { db } from '@/db';
 import { sql } from 'drizzle-orm';
 
 async function main() {
   console.log('Checking connections table...');
+  // Fast path: if the table is already there, skip the CREATE noise.
+  // Any error here (missing table, auth failure, network) falls through to
+  // the CREATE block — which is safe because every statement is IF NOT EXISTS.
   try {
     await db.execute(sql`SELECT 1 FROM connections LIMIT 1`);
     console.log('✅ connections table already exists — no action needed.');
     return;
-  } catch (err: unknown) {
-    const code = (err as { code?: string })?.code;
-    if (code !== '42P01') throw err; // not "relation does not exist" — bail
-    console.log('❌ connections table missing — creating now...');
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.log(`❌ connections table check failed (${msg}) — attempting CREATE now...`);
   }
 
   await db.execute(sql`

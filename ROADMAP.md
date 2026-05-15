@@ -29,9 +29,17 @@ For deep historical context (phase reports, migration notes, original spec), see
 
 ### Data plane
 - Datasets as a staging workspace (CSV upload, row browse, multi-source: `csv`, `obsidian_vault`, etc.)
-- Visual ETL pipelines (xyflow canvas, 15 node types: source_dataset, map_fields, filter, clean, deduplicate, enrich, ai_classify, split, run_notebook, plus 5 `promote_*` targets)
+- Visual ETL pipelines (xyflow canvas, 15+ node types including 9 Fireflies-specific meeting pipeline nodes)
 - Pipeline runs with execution history
 - Notebooks (cells, execution)
+
+### Connections (Tier 3 — Sprint 1)
+- `connections` table with AES-256-GCM encrypted credentials
+- Service layer: create, update, revoke, list, getForRuntime (kind-asserted), test
+- API routes: CRUD + test + revoke
+- `/connections` management page (list, create/edit, test, revoke)
+- Pipeline inspector: connection dropdowns for Fireflies + OpenAI nodes
+- Spec: `docs/pipelines-connections-foundation.md`
 
 ### Agents (Tier 1)
 - Agent definitions with system prompt + model selection
@@ -44,74 +52,100 @@ For deep historical context (phase reports, migration notes, original spec), see
 - `knowledge_chunks` table with 1536-dim pgvector + ivfflat cosine index
 - `agent_knowledge_links` for per-agent attachment with optional `pathPrefix` filter and `topK` override
 - `lib/knowledge-ingest.ts` — vault walker, gray-matter parser, ~800-token chunker, OpenAI `text-embedding-3-small` batched embedder, idempotent upsert keyed on `(datasetId, sourcePath, chunkIndex)`, incremental via content_hash diff
-- `lib/knowledge-retrieval.ts` — per-attachment cosine search, citation-formatted context block
 - 4 API routes: dataset ingest, dataset search, agent knowledge list/add/remove, per-attachment patch/delete
 - `scripts/ingest-vault.ts` CLI
 - Bitwage Vault ingested (dataset 11 — 2,299 files, 14,834 chunks)
 - OpenClaw Vault ingested (dataset 12 — 31 files, 181 chunks)
-- End-to-end retrieval verified — real meeting transcript citations with heading paths and cosine scores
+
+### Inngest Durable Pipeline Execution (Tier 6)
+- Inngest v4.4.0 integrated
+- `lib/inngest/functions/pipeline-run.ts` — each pipeline node is a durable `step.run()`
+- `pipeline_step_data` table for staging large intermediate data between steps (avoids 4MB Inngest step limit)
+- `/api/inngest` serve endpoint with `maxDuration=300s`
+- `/api/pipelines/[id]/run` sends Inngest event (non-blocking)
+- Per-node retries, concurrency control (limit: 3)
+
+### Fireflies Meetings Pipeline — Verified ✅
+- 9 typed node executors: `fireflies_poll`, `persist_raw_pair`, `classify_meeting`, `extract_entities`, `chunk_text`, `embed`, `promote_meetings`, `promote_entities`, `promote_chunks`
+- Pipeline engine with topological sort + executor dispatch
+- Trigger model: manual, cron, webhook
+- 55 meetings classified, 280 entities extracted, 39 chunks embedded
+- Running end-to-end through Inngest
 
 ### Infra
 - Clerk auth on every route, `userId`-scoped queries everywhere
 - Neon Postgres + Drizzle, pgvector enabled
-- Vitest suite (152/157 passing — 5 pre-existing flakes)
+- Vitest suite (13 lib test files, 118 tests passing)
 - Sentry wired
-- Vercel Workflow SDK 4.x for durable execution
-- Custom domain: helm.gs
+- Vercel Workflow SDK 4.x for campaign durable execution
+- Custom domain: helm.gs (apex primary, www redirects)
+- Inngest dev server for local pipeline execution
 
 ---
 
 ## Next up
 
-### Visual ETL builder for Fireflies pipeline (Helm Ops)
-Replace netrunner's Mac mini meetings pipeline with native Helm visual nodes.
-- Mirror netrunner's schema in Helm's Neon: `meetings`, `chunks`, `entities` tables with 14-axis taxonomy columns
-- New pipeline node types: `fireflies_poll`, `persist_raw_pair`, `classify_meeting` (port battle-tested 3-pass enrichment prompt), `extract_entities`, `chunk_text` (section-aware), `embed`, `promote_knowledge`
-- Run parallel to netrunner, compare outputs, eventually decommission Mac mini code
-- Source for porting: `~/Projects/bitwage-netrunner/packages/meetings-pipeline/scripts/` (export-fireflies 641 LOC, enrich-fireflies 492 LOC, chunker, embedder, extract-entities, sync-approvals, reconcile)
+### Meetings review UI
+Build `/meetings` page — queue of classified meetings with `workflow='needs-review'`, approve/edit taxonomy inline, replace Obsidian review step.
 
-### Knowledge architecture polish
-- MCP-mediated hybrid search (vector + tag categories) — agents query a Neon-MCP-style server instead of attaching datasets directly. Direct attachment UI deferred until categorization emerges from real tag data.
-- Background re-ingest job triggered on vault file changes (currently manual via `scripts/ingest-vault.ts`)
+### Inngest AI observability
+Wrap OpenAI calls in `classify_meeting`, `extract_entities`, `embed` with `step.ai.wrap()` for token tracking, prompt replay, and AI metrics in Inngest dashboard.
+
+### Inngest realtime pipeline progress
+Use `useRealtime` hooks to stream live step-by-step progress into the pipeline canvas UI — nodes light up as they complete.
+
+### Connections Sprint 2
+OAuth flows for HubSpot, Gmail, Google Sheets. Token refresh, re-authorization UI.
+
+### AI Enrich node (generic)
+"For each row, fill field X with this prompt" — the highest-value missing pipeline node.
+
+### → HubSpot upsert node
+Push enriched meeting/entity data back to CRM.
+
+### Embed fix: long transcript splitting
+16 chunks were skipped because transcripts exceeded 8192 tokens per item even after truncation. Fix by splitting long transcripts into multiple smaller chunks in `chunk_text` before embedding.
 
 ### Tier 5 follow-ups
 - Error handler invocation (currently only logging — wire into workflow runner)
 - Error-handler picker UI in campaign Settings
 - `wait_for_event` timeout enforcement
-- (`sub_workflow` recursion: ✅ shipped)
 
 ### Test debt
-- 3 `__tests__/api/campaigns.test.ts` failures — `/activate` validator gate returns 422 for empty/invalid workflows; tests expect 200/404
+- 3 `__tests__/api/campaigns.test.ts` failures — `/activate` validator
 - 2 `__tests__/components/prospects-client.test.tsx` waitFor flakes
+- 6 `__tests__/components/campaigns-list.test.tsx` component flakes
 
 ### Security
-- 44 dependabot alerts (1 critical, 7 high, 30 moderate, 6 low) — triage pass
+- 45 dependabot alerts (1 critical, 8 high, 30 moderate, 6 low) — triage pass
+- Rotate Inngest signing key (was shared in chat)
 
 ---
 
 ## Deferred / future
 
-### Phase B docs (write alongside implementation)
-- `docs/architecture.md` — system overview
-- `docs/agents.md` — agent runtime (skills, MCP, knowledge attachments)
-- `docs/rag.md` — knowledge_chunks ingest + retrieval semantics
-- `docs/datasets-and-pipelines.md` — Ops deep-dive
-- `docs/meetings-pipeline.md` — Fireflies absorption (write when building)
+### Inngest + Neon CDC
+Connect Neon logical replication to Inngest — DB changes trigger pipeline functions automatically. Enables real-time meeting ingestion from Fireflies webhooks.
 
-### Bigger bets
-- Cortex MCP fleet absorption — eventually run the 11 MCP servers (meetings, tasks, blackboard, events, site-intel, seo-intel, code-intel, nats-docs, dataforseo, gateway) inside Helm rather than on the Mac mini
-- Visual ETL builder generalizes — same primitives apply to enrichment, dedup, and sync pipelines beyond Fireflies
-- May eventually replace Obsidian as the primary knowledge workspace (Helm becomes the operator surface for Bitwage knowledge, not just marketing)
-- 44-tile design system / brand polish pass once IA is fully settled
+### Inngest flow control
+Throttling for OpenAI rate limits, debounce for rapid-fire events, priority queues for critical pipelines.
+
+### AgentKit integration
+Inngest's multi-agent framework for building AI agent networks. Potential for Helm agents to collaborate on complex tasks.
+
+### Cortex MCP fleet absorption
+Move the 11 MCP servers from Mac mini into Helm-managed infrastructure.
+
+### Visual ETL generalizes
+Same pipeline primitives apply to HubSpot sync, enrichment, dedup pipelines beyond Fireflies.
+
+### Phase B docs
+- `docs/architecture.md` — system overview
+- `docs/agents.md` — agent runtime
+- `docs/rag.md` — knowledge_chunks semantics
+- `docs/inngest.md` — pipeline execution model
 
 ### Cleanup
 - Decommission netrunner Mac mini pipeline after parallel run validates
-- Trim `components/blocks/file-upload/*` dead-code `~/` alias files (15 files, kept per request)
-- `hooks/use-data-grid.ts` vendor path tsc errors
-
----
-
-## Recently completed renames
-
-- `ai-sdr` → `helm` (project name, GitHub repo, package name, Sentry project, Vercel project, custom domain helm.gs)
-- "Sales Automation" → "Marketing OS" framing throughout UI
+- Clean up stale pipeline_runs (runs 5-8, 17-21 stuck in "running")
+- Trim dead-code file-upload components

@@ -29,8 +29,10 @@ Helm is internal infrastructure. Treat docs and APIs as living specs — the sch
 - **DB:** Neon Postgres + Drizzle ORM, pgvector for embeddings
 - **Canvas:** @xyflow/react (campaign + pipeline editors share primitives)
 - **AI:** OpenAI (`gpt-4o-mini` for messaging, `text-embedding-3-small` for RAG)
+- **Pipeline execution:** Inngest v4 — durable per-node steps, retries, concurrency control
+- **Connections:** AES-256-GCM encrypted credential storage for external integrations
 - **Email:** Resend (campaign sends) + nodemailer/SMTP (one-off /api/messages/send)
-- **Workflow engine:** Vercel Workflow SDK 4.x — durable, general-purpose runtime across the platform
+- **Workflow engine:** Vercel Workflow SDK 4.x — durable campaign sequence execution
 - **Testing:** Vitest + React Testing Library
 
 ---
@@ -147,10 +149,12 @@ helm/
 | Content | `templates`, `template_variants` |
 | CRM | `companies`, `contacts`, `deals`, `deal_contacts` |
 | Data | `datasets`, `dataset_rows` |
-| Pipelines | `pipelines`, `pipeline_nodes`, `pipeline_edges`, `pipeline_runs` |
+| Pipelines | `pipelines`, `pipeline_nodes`, `pipeline_edges`, `pipeline_runs`, `pipeline_step_data` |
 | Notebooks | `notebooks`, `notebook_cells` |
 | Agents | `agent_definitions`, `agent_runs`, `agent_skills`, `agent_skill_links`, `mcp_servers`, `agent_mcp_links` |
 | Knowledge | `knowledge_chunks` (1536-dim pgvector), `agent_knowledge_links` |
+| Meetings | `meetings`, `meeting_chunks`, `entities` |
+| Connections | `connections` (AES-256-GCM encrypted credentials) |
 | Settings | `connected_accounts`, `settings` |
 
 The canonical source is [`db/schema.ts`](db/schema.ts). Run `npm run db:studio` to browse.
@@ -184,14 +188,15 @@ See [`docs/api.md`](docs/api.md) if it exists; otherwise the routes mirror the d
 ## Development
 
 ```bash
-npm run dev          # Turbopack dev server
+npm run dev          # Turbopack dev server (port 3010)
+npm run inngest:dev  # Inngest dev server + dashboard (localhost:8288)
 npm run build        # Production build
-npm test             # Vitest (152/157 currently passing)
+npm test             # Vitest (118 lib tests passing)
 npm run test:watch
 npm run db:generate  # After schema.ts edits
 npm run db:migrate   # Apply migrations to your Neon branch
 npm run db:studio    # Drizzle Studio
-npx tsc --noEmit -p .  # Authoritative TS check (lint runner uses a different tsconfig)
+npx tsc --noEmit -p .  # Authoritative TS check
 ```
 
 Commit hygiene: prefer `git push --force-with-lease`. Farsight's watchdog cron auto-commits every 15 minutes — always inspect divergent histories before force-pushing.
@@ -206,6 +211,11 @@ Push to `main` → auto-deploy. Required env vars in Vercel project settings:
 DATABASE_URL            (Neon pooled — required)
 OPENAI_API_KEY
 RESEND_API_KEY
+FIREFLIES_API_KEY
+CONNECTIONS_ENCRYPTION_KEY  (32-byte base64 for AES-256-GCM)
+INNGEST_EVENT_KEY
+INNGEST_SIGNING_KEY
+INNGEST_DEV=1               (local dev only)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 CLERK_SECRET_KEY
 NEXT_PUBLIC_CLERK_SIGN_IN_URL

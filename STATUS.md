@@ -1,18 +1,18 @@
 # Helm — Phase Status
 
-Last updated: 2026-05-14
+Last updated: 2026-05-15
 Session handoff doc — read this first when picking the project back up.
 
 ---
 
 ## Where we are right now (TL;DR)
 
-Helm is a working Marketing OS with **5 tiers of platform infrastructure shipped** and a **15K-chunk RAG corpus live** over 2+ years of Bitwage institutional knowledge. The next major build is the **visual ETL pipeline editor for Fireflies meetings ingestion** in Helm's Ops section, replacing the netrunner Mac mini pipeline.
+Helm is a working Marketing OS with **6 tiers of platform infrastructure shipped**, a **15K-chunk RAG corpus**, and a **fully operational Fireflies meetings pipeline running through Inngest** with 55 meetings classified, 280 entities extracted, and 39 embedded chunks in Neon.
 
 **Live:** https://helm.gs
 **Repo:** github.com:farsght/helm (private, main branch)
-**Local:** ~/Projects/helm (canonical, only working copy)
-**Last commit:** `dd1c0cf`
+**Local:** ~/Projects/helm (canonical)
+**Last commit:** see `git log --oneline -1`
 
 ---
 
@@ -22,156 +22,154 @@ Helm is a working Marketing OS with **5 tiers of platform infrastructure shipped
 |---|---|---|
 | **T1** | Agents (definitions, skills, MCP servers, runs, runtime) | ✅ Shipped |
 | **T2** | RAG / Knowledge (pgvector, ingest, retrieval, agent attachment) | ✅ Shipped |
-| **T3** | Connectors / Data integrations | ⏸ Partially unblocked — netrunner code inspected |
+| **T3** | Connectors / Connections layer | ✅ Shipped (Sprint 1) |
 | **T4** | Visual canvases (campaign workflows + ETL pipelines) | ✅ Shipped |
 | **T5** | Flow primitives (sub_workflow recursion, error handlers, wait_for_event) | ✅ Mostly shipped — 3 follow-ups deferred |
+| **T6** | Inngest durable pipeline execution | ✅ Shipped |
 
 ---
 
-## What was completed this session (2026-05-14)
+## What was completed this session (2026-05-14/15)
 
-### Platform rename
-- `ai-sdr` → `helm` across repo, package.json, Sentry project, Vercel project
-- Custom domain **helm.gs** attached
-- GitHub repo migrated via mirror-push; old `farsght/ai-sdr` archived
-- Sentry org slug `bitwage` → `farsight-studio` → **helm-gs** (final)
-- New Sentry auth token written to `.env.sentry-build-plugin` (gitignored locally; needs same value pasted into Vercel dashboard)
-- "Sales Automation" → "Marketing OS" framing throughout UI
+### Connections Layer (Sprint 1)
+- `connections` table in Neon — `kind`, `provider`, `name`, `secretCiphertext` (AES-256-GCM encrypted), `configJson` (jsonb), `lastTestStatus`, `lastTestError`
+- `lib/crypto/connections-crypto.ts` — AES-256-GCM with base64 key, JSON envelope format
+- `lib/connections.ts` — full service layer: createConnection, updateConnection, revokeConnection, listConnections, getConnectionForRuntime (kind-asserted), testConnection
+- API routes: GET/POST `/api/connections`, GET/PATCH `/api/connections/[id]`, POST `/api/connections/[id]/test`, POST `/api/connections/[id]/revoke`
+- `/connections` page — full UI with list, create/edit modal, test button, revoke, status badges
+- Pipeline inspector: connection dropdowns replace `apiKeyEnv` text fields for fireflies_poll and OpenAI nodes
+- Sidebar updated, old `/integrations/connections` stub redirects to new route
+- Spec: `docs/pipelines-connections-foundation.md`
 
-### T2 RAG fully wired and verified
-- `knowledge_chunks` table — 1536-dim pgvector + ivfflat cosine index
-- `agent_knowledge_links` table — per-agent attachment with pathPrefix + topK overrides
-- `lib/knowledge-ingest.ts` (350 lines) — vault walker, gray-matter parser, ~800-token chunker with overlap, section-aware heading tracking, OpenAI `text-embedding-3-small` batched embedder, idempotent upsert keyed on `(datasetId, sourcePath, chunkIndex)`, incremental via content_hash diff
-- `lib/knowledge-retrieval.ts` (127 lines) — cosine vector search per attachment, citation-formatted context block
-- 4 API routes wired (`/api/datasets/[id]/ingest`, `/search`, `/api/agents/[id]/knowledge`, per-attachment patch)
-- `lib/agent-runtime.ts` injects retrieved chunks under `<knowledge_context>` system prompt block, parallel with skills + MCP loaders, non-fatal on retrieval failure
-- `scripts/ingest-vault.ts` CLI for one-shot ingestion
+### Inngest Integration
+- `inngest` v4.4.0 installed
+- `lib/inngest/client.ts` — `new Inngest({ id: 'helm' })`
+- `lib/inngest/functions/pipeline-run.ts` — durable function, per-node `step.run()` with deterministic step IDs (`node-{id}-{type}`)
+- `app/api/inngest/route.ts` — GET/POST/PUT serve endpoint, `maxDuration=300s`
+- `/api/pipelines/[id]/run` sends Inngest event instead of blocking on `runPipeline()`
+- `pipeline_step_data` table for staging large intermediate data between steps (avoids Inngest's 4MB step output limit)
+- `proxy.ts` updated — `/api/inngest` added to public routes (bypasses Clerk auth)
+- `package.json` — `inngest:dev` script added
 
-### Knowledge corpus live in Neon
-- **Dataset 11 Bitwage Vault: 14,834 chunks across 2,299 files** (GTM, Knowledge Base, Sources, Competitive)
-- **Dataset 12 OpenClaw Vault: 181 chunks across 31 files** (AI agent protocol layer research)
-- End-to-end retrieval verified: query "enterprise pricing strategy" returned real meeting transcripts with section-aware heading paths and cosine scores
+### Pipeline Data Flow Fixes
+- Edge topology corrected — `extract_entities` fans out to `promote_meetings`, `promote_entities`, AND `chunk_text` in parallel
+- Embed token-aware batching — splits before 300k OpenAI token limit
+- Per-item truncation — 8192 token hard cap per embedding item
+- `meeting_date` field alias — `fireflies_poll` emits `date`, `promote_meetings` accepts both
+- Duration rounding — Fireflies returns floats, schema wants integers
 
-### Other shipments
-- Tier 5 sub_workflow inline recursion (`8c075c8`, by another agent)
-- 8 historical milestone docs archived to `docs/archive/`
-- README rewritten from scratch (honest Marketing OS scope, 35+ table schema reality)
-- `PLAN.md` → `ROADMAP.md` (shipped / next / deferred structure)
-- Operational docs audited (`docs/email.md`, `docs/workflows.md`, `docs/sentry.md`)
-- Orphan `~/Projects/ai-sdr` stub directory deleted
+### Pipeline Run Verified ✅
+- **55 meetings** classified (52 new + 3 from debug run)
+- **280 entities** extracted (518 mentions)
+- **39 chunks** embedded in pgvector
+- 2 meetings skipped (no transcript from Fireflies)
+- 16 chunks skipped (embed batch 2 failed — some transcripts exceed 8192 tokens after truncation)
+- Run completed via Inngest with per-node step durability
+
+### Test Suite / DX Fixes
+- `@vitest-environment node` on all 8 lib test files
+- `DATABASE_URL` stub in vitest.setup.ts
+- `triggerConfig: null` in test mocks
+- 13 lib test files, 118 tests green
+- Node inspector: `key` remount fix, Save with spinner + dismiss, `stopPropagation` on inspector panel, `onPaneClick` neutralized
+- `SelectTrigger` w-full on all 10 dropdowns
+- `NODE_ENV=production` leak from LaunchAgent fixed (`.zshenv` unset, `.npmrc` node-env=development)
+- lightningcss binary fix: postinstall script copies native binary for nested `@tailwindcss/node` dep
+- `middleware.ts` removed (Next.js 16 uses `proxy.ts`)
+
+### Infrastructure
+- Fireflies API key verified and working
+- OpenAI + Fireflies connections created and healthy in UI
+- `CONNECTIONS_ENCRYPTION_KEY` generated and in `.env.local`
+- `helm.gs` domain fixed (apex primary, www redirects)
+- Clerk middleware in `proxy.ts` — `/api/inngest`, `/api/health`, `/api/cron`, `/api/webhooks` public
+
+---
+
+## Current DB state (as of 2026-05-15 00:36 CDT)
+
+| Table | Count |
+|---|---|
+| meetings | 55 |
+| entities | 280 |
+| meeting_chunks | 39 |
+| knowledge_chunks | 15,015 |
+| connections | 2 (Fireflies + OpenAI) |
 
 ---
 
 ## Next session: pick up here
 
-### Recommended next major build: Visual ETL pipeline editor for Fireflies meetings
+### Minor fixes needed
+- **16 chunks skipped** — embed batch 2 failure (some transcripts > 8192 tokens even after truncation). Fix: split long transcripts into multiple chunks before embedding, or increase chunk_text's split aggressiveness.
+- **2 meetings with no transcript** — Fireflies didn't capture them. No code fix needed.
+- **Stale pipeline_runs** — runs 5-8, 17-21 stuck in "running" status from earlier attempts. Write a cleanup script.
 
-The netrunner Mac mini pipeline (`~/Projects/bitwage-netrunner/packages/meetings-pipeline`) needs to be replaced with native Helm visual pipeline nodes. We've already mapped the source thoroughly:
+### Recommended next builds (in order)
+1. **Meetings review UI** — `/meetings` page showing classified meetings, approve/edit taxonomy inline, replace Obsidian review step
+2. **Inngest `step.ai.wrap()`** — wrap OpenAI calls in classify_meeting/extract_entities/embed for AI observability, token tracking, prompt replay
+3. **Inngest realtime** — `useRealtime` hooks for live pipeline progress in the canvas UI
+4. **Connections Sprint 2** — OAuth flows for HubSpot, Gmail, Google Sheets
+5. **AI Enrich node** — generic "for each row, fill field X with this prompt" pipeline node
+6. **→ HubSpot upsert node** — push enriched data back to CRM
 
-**Netrunner pipeline shape (5 passes):**
-1. **Export** — Fireflies GraphQL → Vault `Raw/{slug}-transcript.md` + `{slug}-summary.md` (`export-fireflies.ts`, 641 LOC)
-2. **Enrich Pass 1** — classify into 14-axis taxonomy (`enrich-fireflies.ts`, 492 LOC, 3 LLM passes)
-3. **Enrich Pass 2** — extract entities (people, companies)
-4. **Enrich Pass 3** — write enriched `Meetings/{slug}.md` with `workflow=needs-review`
-5. **Sync approvals** (post-human-review in Obsidian) → Neon `meetings` table, then chunk + embed → `chunks`, then publish to `events.intelligence` Redis stream
-
-**Open decision before starting** (recommended option in **bold**):
-1. **Option A: Write spec doc first (~30 min)** — design new node types + schema additions before coding. Less rebuild risk given complexity.
-2. Option B: Stub schema additions for new tables (`meetings`, `entities`, `meeting_chunks`) first, then design nodes against the data.
-3. Option C: Just start building node types incrementally in `components/pipelines/` and `app/api/pipelines/`.
-
-**Proposed new pipeline node types** (~6-7 total):
-- `fireflies_poll` — GraphQL polling, write Raw pairs
-- `persist_raw_pair` — vault file write helper
-- `classify_meeting` — port battle-tested 3-pass enrichment prompt, fill 14-axis taxonomy
-- `extract_entities` — people + companies
-- `chunk_text` — section-aware splitter (transcript section boundaries)
-- `embed` — OpenAI embedding (reuse `lib/knowledge-ingest.ts` embedder)
-- `promote_knowledge` — Neon write to `meetings` + `chunks` tables
-
-Helm's existing `/pipelines` canvas already has 15 node types and runs xyflow — extending it is the lowest-friction path.
-
-### Other open work (lower priority)
-
-**Tier 5 follow-ups:**
-- Error handler invocation (currently only logs — wire into workflow runner)
-- Error-handler picker UI in campaign Settings
-- `wait_for_event` timeout enforcement
-- (sub_workflow recursion: ✅ already shipped)
-
-**Knowledge architecture polish:**
-- MCP-mediated hybrid search (vector + tag categories) — agents query a Neon-MCP-style server instead of attaching datasets directly. Direct attachment UI deferred until categorization emerges from real tag data.
-- Background re-ingest job triggered on vault file changes (currently manual via `scripts/ingest-vault.ts`)
-
-**Test debt:**
-- 3 `__tests__/api/campaigns.test.ts` failures — `/activate` validator returns 422 for empty/invalid workflows; tests expect 200/404
-- 2 `__tests__/components/prospects-client.test.tsx` waitFor flakes
-
-**Security:**
-- 44 dependabot alerts (1 critical, 7 high, 30 moderate, 6 low) — needs triage pass
-- Rotate the Sentry auth token (it was pasted in chat — anyone with chat history can hit Sentry as helm-gs)
+### Bigger bets (deferred)
+- Inngest + Neon CDC integration (trigger pipelines from DB changes)
+- Cortex MCP fleet absorption into Helm
+- AgentKit integration for multi-agent pipelines
+- Visual ETL builder generalizes beyond Fireflies
+- Inngest flow control: throttling for OpenAI rate limits
 
 ---
 
 ## Action items needed from Scott (dashboard work)
 
-These can't be done from CLI — Scott needs to do them in Vercel:
+### Vercel env vars (Production + Preview + Development)
+- `CONNECTIONS_ENCRYPTION_KEY` — from `.env.local`
+- `FIREFLIES_API_KEY` — `ea6bd5f3-c4e1-4733-b9f3-25b312a54b1c`
+- `INNGEST_EVENT_KEY` — from `.env.local`
+- `INNGEST_SIGNING_KEY` — from `.env.local`
+- `SENTRY_AUTH_TOKEN` — from `.env.sentry-build-plugin`
+- `SENTRY_ORG` — `helm-gs`
+- `SENTRY_PROJECT` — `helm`
 
-1. **Set Vercel env vars** (Production + Preview + Development):
-   - `SENTRY_AUTH_TOKEN` → the new helm-gs token
-   - `SENTRY_ORG` → `helm-gs`
-   - `SENTRY_PROJECT` → `helm`
-
-Without these, source map uploads on Vercel deploys will fail authentication.
-
-2. **Verify Vercel domain mapping** for helm.gs is active (was being attached at end of session).
+### Inngest sync
+After Vercel deploy completes: go to app.inngest.com → Apps → Sync → `https://helm.gs/api/inngest`
+OR install the Vercel integration for auto-sync.
 
 ---
 
 ## Key reference state
 
-### Tailscale machines
-- **farsight-1** (Scott's MacBook) — where Helm dev happens. SSH into this is implicit.
-- **cortex** (Mac mini) — runs the 11-server MCP fleet (`github.com:farsght/bitwage-cortex`). SSH often unreachable when idle.
-- **netrunner** (Mac mini) — runs the ETL pipelines (`github.com:farsght/bitwage-netrunner`). SSH works: `ssh netrunner` (config user=netrunner).
-- **rick** — Mac mini, unrelated to Helm (had a stale ai-sdr build cache, since deleted).
-- **ai** — additional peer.
+### Migrations applied
+Drizzle journal through `0017_pipeline_step_data.sql`. All applied to Neon.
+Note: `pipeline_step_data` and `connections` tables were created manually via scripts after Drizzle migration runner silently skipped them. If re-migrating from scratch, the SQL files are correct.
 
-### Important files
+### Environment
+| Var | Status |
+|---|---|
+| `DATABASE_URL` | ✅ `.env.local` |
+| `OPENAI_API_KEY` | ✅ `.env.local` |
+| `FIREFLIES_API_KEY` | ✅ `.env.local` |
+| `CONNECTIONS_ENCRYPTION_KEY` | ✅ `.env.local` |
+| `INNGEST_EVENT_KEY` | ✅ `.env.local` |
+| `INNGEST_SIGNING_KEY` | ✅ `.env.local` |
+| `INNGEST_DEV` | ✅ `.env.local` (=1) |
+| `CLERK_SECRET_KEY` | ✅ `.env.local` |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | ✅ `.env.local` |
+
+### Important new files
 | Path | What |
 |---|---|
-| `db/schema.ts` | 35+ Drizzle tables, source of truth |
-| `lib/knowledge-ingest.ts` | Vault walker + chunker + embedder |
-| `lib/knowledge-retrieval.ts` | Vector search + context formatting |
-| `lib/agent-runtime.ts` | `runAgent()` — loads skills + MCP + knowledge in parallel |
-| `lib/workflow-engine.ts` | Strict-DAG interpreter for campaign workflows |
-| `scripts/ingest-vault.ts` | CLI: ingest an Obsidian vault as a dataset |
-| `components/workflow/` | Campaign canvas node types (11 types) |
-| `components/pipelines/` | ETL pipeline canvas node types (15 types) — *the place to add Fireflies nodes* |
-| `docs/email.md` | Resend setup, plain-text strategy, deliverability |
-| `docs/workflows.md` | Vercel Workflow SDK wiring, strict-DAG validator |
-| `docs/sentry.md` | Sentry config + decisions |
-| `docs/archive/` | 8 historical milestone snapshots — reference only |
-
-### Migration state
-- Drizzle journal ends at idx 12 (`0012_knowledge_rag.sql`)
-- All migrations applied to Neon
-
-### Vault paths
-- `~/Documents/bwVault/Bitwage Vault/` — 2,300 md files, git-backed, Smart Connections runs bge-micro-v2 locally
-- `~/Documents/bwVault/OpenClaw Vault/` — 30 md files, AI agent protocol research
-
-### Vault ingest command (for future ad-hoc runs)
-```bash
-cd ~/Projects/helm && unset OPENAI_API_KEY DATABASE_URL && \
-  npx dotenv-cli -e .env.local -- npx tsx scripts/ingest-vault.ts <datasetId>
-```
-ESM import hoisting requires the `dotenv-cli` prefix — `db/index.ts` imports run before any in-script `dotenv.config()`.
-
----
-
-## Open questions parking lot
-
-- Should `meetings` data live in Helm's Neon directly (Option A, current plan) or stay on netrunner's Neon with Helm reading via foreign data wrapper? **Decision: Option A (full isolation, Helm becomes source of truth eventually).**
-- Are we porting netrunner's classification prompts verbatim or rewriting? **Default: port verbatim, they're battle-tested.**
-- Do we want the new Fireflies pipeline running PARALLEL to netrunner (compare outputs), or CUT OVER directly? **Default: parallel run until output parity is verified, then decommission Mac mini.**
+| `lib/inngest/client.ts` | Inngest client (`id: 'helm'`) |
+| `lib/inngest/functions/pipeline-run.ts` | Durable pipeline function — per-node steps |
+| `app/api/inngest/route.ts` | Inngest serve endpoint |
+| `lib/connections.ts` | Connections service layer |
+| `lib/crypto/connections-crypto.ts` | AES-256-GCM encryption |
+| `app/connections/` | Connections management UI |
+| `proxy.ts` | Clerk auth middleware (Next.js 16 format) |
+| `scripts/fix-connections-table.ts` | Emergency DDL fix for connections table |
+| `scripts/fix-pipeline-7-edges.ts` | Edge topology fix for pipeline 7 |
+| `scripts/run-pipeline-debug.ts` | Direct pipeline execution for debugging |
+| `scripts/test-fireflies-poll.ts` | Fireflies API smoke test |
+| `docs/pipelines-connections-foundation.md` | Connections layer spec |
