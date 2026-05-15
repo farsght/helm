@@ -238,7 +238,7 @@ function PipelineNodeConfig({
               value={String(config.datasetId ?? "")}
               onValueChange={(v) => setConfig({ ...config, datasetId: parseInt(v) })}
             >
-              <SelectTrigger><SelectValue placeholder="Select dataset" /></SelectTrigger>
+              <SelectTrigger className="w-full"><SelectValue placeholder="Select dataset" /></SelectTrigger>
               <SelectContent>
                 {datasets.map((d) => (
                   <SelectItem key={d.id} value={String(d.id)}>
@@ -260,7 +260,7 @@ function PipelineNodeConfig({
             <div className="space-y-2">
               <Label>Operator</Label>
               <Select value={String(config.operator ?? "not_empty")} onValueChange={(v) => setConfig({ ...config, operator: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {["equals", "not_equals", "contains", "not_empty", "is_empty", "gt", "lt"].map((op) => (
                     <SelectItem key={op} value={op}>{op}</SelectItem>
@@ -356,7 +356,7 @@ function PipelineNodeConfig({
             <div className="space-y-2">
               <Label>Operator</Label>
               <Select value={String(config.operator ?? "not_empty")} onValueChange={(v) => setConfig({ ...config, operator: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {["equals", "not_equals", "contains", "not_empty", "is_empty", "gt", "lt"].map((op) => (
                     <SelectItem key={op} value={op}>{op}</SelectItem>
@@ -385,7 +385,7 @@ function PipelineNodeConfig({
             <div className="space-y-2">
               <Label>Notebook</Label>
               <Select value={String(config.notebookId ?? "")} onValueChange={(v) => setConfig({ ...config, notebookId: parseInt(v) })}>
-                <SelectTrigger><SelectValue placeholder="Select notebook" /></SelectTrigger>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Select notebook" /></SelectTrigger>
                 <SelectContent>
                   {notebooks.map((n) => (
                     <SelectItem key={n.id} value={String(n.id)}>{n.name}</SelectItem>
@@ -451,7 +451,7 @@ function PipelineNodeConfig({
                   value={String(config.connectionId ?? "")}
                   onValueChange={(v) => setConfig({ ...config, connectionId: parseInt(v), apiKeyEnv: undefined })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a Fireflies connection…" />
                   </SelectTrigger>
                   <SelectContent>
@@ -526,7 +526,7 @@ function PipelineNodeConfig({
                   value={String(config.connectionId ?? "")}
                   onValueChange={(v) => setConfig({ ...config, connectionId: parseInt(v), openaiApiKeyEnv: undefined })}
                 >
-                  <SelectTrigger><SelectValue placeholder="Select an OpenAI connection…" /></SelectTrigger>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Select an OpenAI connection…" /></SelectTrigger>
                   <SelectContent>
                     {openaiConns.map((c) => (
                       <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
@@ -577,7 +577,7 @@ function PipelineNodeConfig({
                   value={String(config.connectionId ?? "")}
                   onValueChange={(v) => setConfig({ ...config, connectionId: parseInt(v), openaiApiKeyEnv: undefined })}
                 >
-                  <SelectTrigger><SelectValue placeholder="Select an OpenAI connection…" /></SelectTrigger>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Select an OpenAI connection…" /></SelectTrigger>
                   <SelectContent>
                     {openaiConns.map((c) => (
                       <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
@@ -621,7 +621,7 @@ function PipelineNodeConfig({
             <div className="space-y-2">
               <Label>Source type</Label>
               <Select value={String(config.sourceType ?? "transcript")} onValueChange={(v) => setConfig({ ...config, sourceType: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="transcript">transcript</SelectItem>
                   <SelectItem value="summary">summary</SelectItem>
@@ -670,7 +670,7 @@ function PipelineNodeConfig({
                   value={String(config.connectionId ?? "")}
                   onValueChange={(v) => setConfig({ ...config, connectionId: parseInt(v), openaiApiKeyEnv: undefined })}
                 >
-                  <SelectTrigger><SelectValue placeholder="Select an OpenAI connection…" /></SelectTrigger>
+                  <SelectTrigger className="w-full"><SelectValue placeholder="Select an OpenAI connection…" /></SelectTrigger>
                   <SelectContent>
                     {openaiConns.map((c) => (
                       <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
@@ -792,7 +792,7 @@ function PipelineNodeConfig({
                 value={String(triggerConfig.kind ?? "manual")}
                 onValueChange={(v) => setTriggerConfig({ ...triggerConfig, kind: v })}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="manual">Manual (▶ button)</SelectItem>
                   <SelectItem value="cron">Cron (scheduled)</SelectItem>
