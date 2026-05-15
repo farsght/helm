@@ -53,10 +53,48 @@ export const embed: NodeExecutor = async (rawConfig, inputRows, node, ctx) => {
   const { apiKey, baseUrl } = conn.secret as { apiKey: string; baseUrl?: string };
   const openai = new OpenAI({ apiKey, baseURL: baseUrl });
 
+  // Token-based batch splitting heuristic: ~4 chars per token, cap at 250k tokens per call.
+  // This prevents hitting OpenAI's 300k token limit when processing long meeting transcripts.
+  const MAX_ESTIMATED_TOKENS = 250_000;
+  const TOKEN_CHARS_RATIO = 4; // chars per token estimate
+
+  /**
+   * Build token-aware batches: each batch is limited by batchSize (row count)
+   * AND by estimated token count (text.length / 4). When adding the next row
+   * would push estimated tokens over MAX_ESTIMATED_TOKENS, start a new batch.
+   */
+  function buildTokenAwareBatches(rows: Row[]): Row[][] {
+    const batches: Row[][] = [];
+    let current: Row[] = [];
+    let currentTokens = 0;
+
+    for (const row of rows) {
+      const text = row[cfg.contentField];
+      const textStr = typeof text === 'string' ? text : '';
+      const estimatedTokens = Math.ceil(textStr.length / TOKEN_CHARS_RATIO);
+
+      const wouldExceedTokens = currentTokens + estimatedTokens > MAX_ESTIMATED_TOKENS;
+      const wouldExceedCount = current.length >= cfg.batchSize;
+
+      if (current.length > 0 && (wouldExceedTokens || wouldExceedCount)) {
+        batches.push(current);
+        current = [];
+        currentTokens = 0;
+      }
+
+      current.push(row);
+      currentTokens += estimatedTokens;
+    }
+
+    if (current.length > 0) batches.push(current);
+    return batches;
+  }
+
+  const batches = buildTokenAwareBatches(inputRows);
+
   const out: Row[] = [];
   let batchCount = 0;
-  for (let i = 0; i < inputRows.length; i += cfg.batchSize) {
-    const batch = inputRows.slice(i, i + cfg.batchSize);
+  for (const batch of batches) {
     const inputs: string[] = [];
     for (const row of batch) {
       const text = row[cfg.contentField];
@@ -72,7 +110,7 @@ export const embed: NodeExecutor = async (rawConfig, inputRows, node, ctx) => {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'unknown error';
       ctx.rowsErrored += batch.length;
-      ctx.log.push({ nodeId: node.id, message: `embed: batch ${batchCount + 1} of ${Math.ceil(inputRows.length / cfg.batchSize)} failed: ${msg}`, level: 'error' });
+      ctx.log.push({ nodeId: node.id, message: `embed: batch ${batchCount + 1} of ${batches.length} failed: ${msg}`, level: 'error' });
       // Emit batch rows with embedding_error so downstream can decide whether to skip
       for (const row of batch) {
         out.push({ ...row, embedding: null, embedding_error: msg, embedding_model: cfg.model });
