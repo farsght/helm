@@ -16,6 +16,7 @@
 import OpenAI from 'openai';
 import { z } from 'zod';
 import type { NodeExecutor, Row } from '../pipeline-engine-types';
+import { getConnectionForRuntime } from '../connections';
 
 export const embedConfigSchema = z.object({
   model: z.string().default('text-embedding-3-small'),
@@ -23,7 +24,8 @@ export const embedConfigSchema = z.object({
   batchSize: z.number().int().min(1).max(2048).default(100),
   /** Field on each input row containing the text to embed. */
   contentField: z.string().default('content'),
-  openaiApiKeyEnv: z.string().default('OPENAI_API_KEY'),
+  /** Connection ID from the `connections` table (kind=openai). Required. */
+  connectionId: z.number().int().positive(),
   /** Emit zero-vectors instead of calling OpenAI. Useful for testing downstream. */
   dryRun: z.boolean().default(false),
 });
@@ -46,9 +48,10 @@ export const embed: NodeExecutor = async (rawConfig, inputRows, node, ctx) => {
     return inputRows.map((row) => ({ ...row, embedding: zeros, embedding_model: cfg.model }));
   }
 
-  const apiKey = process.env[cfg.openaiApiKeyEnv];
-  if (!apiKey) throw new Error(`embed: env var ${cfg.openaiApiKeyEnv} not set`);
-  const openai = new OpenAI({ apiKey });
+  // Resolve OpenAI credentials from the connections table
+  const conn = await getConnectionForRuntime(cfg.connectionId, ctx.userId, 'openai');
+  const { apiKey, baseUrl } = conn.secret as { apiKey: string; baseUrl?: string };
+  const openai = new OpenAI({ apiKey, baseURL: baseUrl });
 
   const out: Row[] = [];
   let batchCount = 0;

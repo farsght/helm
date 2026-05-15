@@ -185,10 +185,14 @@ function PipelineNodeConfig({
   );
   const [datasets, setDatasets] = useState<Array<{ id: number; name: string; rowCount: number }>>([]);
   const [notebooks, setNotebooks] = useState<Array<{ id: number; name: string }>>([]);
+  const [firefliesConns, setFirefliesConns] = useState<Array<{ id: number; name: string }>>([]);
+  const [openaiConns, setOpenaiConns] = useState<Array<{ id: number; name: string }>>([]);
 
   useEffect(() => {
     fetch("/api/datasets").then((r) => r.json()).then((d) => { if (Array.isArray(d)) setDatasets(d); }).catch(() => {});
     fetch("/api/notebooks").then((r) => r.json()).then((d) => { if (Array.isArray(d)) setNotebooks(d); }).catch(() => {});
+    fetch("/api/connections?kind=fireflies&status=active").then((r) => r.json()).then((d) => { if (Array.isArray(d)) setFirefliesConns(d); }).catch(() => {});
+    fetch("/api/connections?kind=openai&status=active").then((r) => r.json()).then((d) => { if (Array.isArray(d)) setOpenaiConns(d); }).catch(() => {});
   }, []);
 
   const save = () => {
@@ -400,24 +404,56 @@ function PipelineNodeConfig({
       // ─── Meetings pipeline nodes ──────────────────────────────────
       // Form fields mirror the Zod schemas in lib/pipeline-nodes/*.ts.
 
-      case "fireflies_poll":
+      case "fireflies_poll": {
+        const hasLegacyEnvVar = Boolean(config.apiKeyEnv);
         return (
           <>
+            {hasLegacyEnvVar && (
+              <p className="text-xs text-yellow-600 bg-yellow-500/10 border border-yellow-500/30 rounded p-2">
+                ⚠️ Legacy env-var config detected. Select a connection below to migrate.
+              </p>
+            )}
             <div className="space-y-2">
-              <Label>API Key env var</Label>
-              <Input value={String(config.apiKeyEnv ?? "FIREFLIES_API_KEY")} onChange={(e) => setConfig({ ...config, apiKeyEnv: e.target.value })} placeholder="FIREFLIES_API_KEY" />
+              <Label>Fireflies Connection</Label>
+              {firefliesConns.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No Fireflies connections found.{" "}
+                  <a href="/connections" className="underline text-primary">Create one in /connections.</a>
+                </p>
+              ) : (
+                <Select
+                  value={String(config.connectionId ?? "")}
+                  onValueChange={(v) => setConfig({ ...config, connectionId: parseInt(v), apiKeyEnv: undefined })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a Fireflies connection…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {firefliesConns.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="space-y-2">
-              <Label>Lookback (hours)</Label>
-              <Input type="number" value={String(config.lookbackHours ?? 24)} onChange={(e) => setConfig({ ...config, lookbackHours: parseInt(e.target.value) || 24 })} />
+              <Label>Since cursor (ISO date, optional)</Label>
+              <Input value={String(config.sinceCursor ?? "")} onChange={(e) => setConfig({ ...config, sinceCursor: e.target.value || undefined })} placeholder="e.g. 2026-01-01T00:00:00Z" />
             </div>
             <div className="space-y-2">
-              <Label>Max meetings per run</Label>
-              <Input type="number" value={String(config.maxMeetings ?? 50)} onChange={(e) => setConfig({ ...config, maxMeetings: parseInt(e.target.value) || 50 })} />
+              <Label>Page size</Label>
+              <Input type="number" value={String(config.pageSize ?? 25)} onChange={(e) => setConfig({ ...config, pageSize: parseInt(e.target.value) || 25 })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Max pages</Label>
+              <Input type="number" value={String(config.maxPages ?? 40)} onChange={(e) => setConfig({ ...config, maxPages: parseInt(e.target.value) || 40 })} />
             </div>
             <p className="text-xs text-muted-foreground">Dedupes against meetings.fireflies_id — already-imported meetings are skipped.</p>
           </>
         );
+      }
 
       case "persist_raw_pair":
         return (
@@ -443,9 +479,36 @@ function PipelineNodeConfig({
           </>
         );
 
-      case "classify_meeting":
+      case "classify_meeting": {
+        const hasLegacy = Boolean(config.openaiApiKeyEnv);
         return (
           <>
+            {hasLegacy && (
+              <p className="text-xs text-yellow-600 bg-yellow-500/10 border border-yellow-500/30 rounded p-2">
+                ⚠️ Legacy env-var config detected. Select an OpenAI connection to migrate.
+              </p>
+            )}
+            <div className="space-y-2">
+              <Label>OpenAI Connection</Label>
+              {openaiConns.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No OpenAI connections found.{" "}
+                  <a href="/connections" className="underline text-primary">Create one in /connections.</a>
+                </p>
+              ) : (
+                <Select
+                  value={String(config.connectionId ?? "")}
+                  onValueChange={(v) => setConfig({ ...config, connectionId: parseInt(v), openaiApiKeyEnv: undefined })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Select an OpenAI connection…" /></SelectTrigger>
+                  <SelectContent>
+                    {openaiConns.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
             <div className="space-y-2">
               <Label>Model</Label>
               <Input value={String(config.model ?? "gpt-4o-mini")} onChange={(e) => setConfig({ ...config, model: e.target.value })} />
@@ -462,17 +525,41 @@ function PipelineNodeConfig({
               <Label>Retry count</Label>
               <Input type="number" value={String(config.retryCount ?? 3)} onChange={(e) => setConfig({ ...config, retryCount: parseInt(e.target.value) || 0 })} />
             </div>
-            <div className="space-y-2">
-              <Label>OpenAI API key env var</Label>
-              <Input value={String(config.openaiApiKeyEnv ?? "OPENAI_API_KEY")} onChange={(e) => setConfig({ ...config, openaiApiKeyEnv: e.target.value })} />
-            </div>
             <p className="text-xs text-muted-foreground">VERBATIM netrunner Pass 1 prompt. Forces gtm_stage=[] for internal meetings.</p>
           </>
         );
+      }
 
-      case "extract_entities":
+      case "extract_entities": {
+        const hasLegacy = Boolean(config.openaiApiKeyEnv);
         return (
           <>
+            {hasLegacy && (
+              <p className="text-xs text-yellow-600 bg-yellow-500/10 border border-yellow-500/30 rounded p-2">
+                ⚠️ Legacy env-var config detected. Select an OpenAI connection to migrate.
+              </p>
+            )}
+            <div className="space-y-2">
+              <Label>OpenAI Connection</Label>
+              {openaiConns.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No OpenAI connections found.{" "}
+                  <a href="/connections" className="underline text-primary">Create one in /connections.</a>
+                </p>
+              ) : (
+                <Select
+                  value={String(config.connectionId ?? "")}
+                  onValueChange={(v) => setConfig({ ...config, connectionId: parseInt(v), openaiApiKeyEnv: undefined })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Select an OpenAI connection…" /></SelectTrigger>
+                  <SelectContent>
+                    {openaiConns.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
             <div className="space-y-2">
               <Label>Model</Label>
               <Input value={String(config.model ?? "gpt-4o-mini")} onChange={(e) => setConfig({ ...config, model: e.target.value })} />
@@ -489,22 +576,14 @@ function PipelineNodeConfig({
               <Label>Retry count</Label>
               <Input type="number" value={String(config.retryCount ?? 3)} onChange={(e) => setConfig({ ...config, retryCount: parseInt(e.target.value) || 0 })} />
             </div>
-            <div className="space-y-2">
-              <Label>OpenAI API key env var</Label>
-              <Input value={String(config.openaiApiKeyEnv ?? "OPENAI_API_KEY")} onChange={(e) => setConfig({ ...config, openaiApiKeyEnv: e.target.value })} />
-            </div>
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="ee-dryrun"
-                checked={Boolean(config.dryRun ?? false)}
-                onChange={(e) => setConfig({ ...config, dryRun: e.target.checked })}
-              />
+              <input type="checkbox" id="ee-dryrun" checked={Boolean(config.dryRun ?? false)} onChange={(e) => setConfig({ ...config, dryRun: e.target.checked })} />
               <Label htmlFor="ee-dryrun">Dry run (emit empty entity stubs, no LLM call)</Label>
             </div>
             <p className="text-xs text-muted-foreground">Extracts people / companies / products / features / partner_type. Internal meetings → partner_type=&apos;none&apos;.</p>
           </>
         );
+      }
 
       case "chunk_text":
         return (
@@ -544,9 +623,36 @@ function PipelineNodeConfig({
           </>
         );
 
-      case "embed":
+      case "embed": {
+        const hasLegacy = Boolean(config.openaiApiKeyEnv);
         return (
           <>
+            {hasLegacy && (
+              <p className="text-xs text-yellow-600 bg-yellow-500/10 border border-yellow-500/30 rounded p-2">
+                ⚠️ Legacy env-var config detected. Select an OpenAI connection to migrate.
+              </p>
+            )}
+            <div className="space-y-2">
+              <Label>OpenAI Connection</Label>
+              {openaiConns.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No OpenAI connections found.{" "}
+                  <a href="/connections" className="underline text-primary">Create one in /connections.</a>
+                </p>
+              ) : (
+                <Select
+                  value={String(config.connectionId ?? "")}
+                  onValueChange={(v) => setConfig({ ...config, connectionId: parseInt(v), openaiApiKeyEnv: undefined })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Select an OpenAI connection…" /></SelectTrigger>
+                  <SelectContent>
+                    {openaiConns.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
             <div className="space-y-2">
               <Label>Model</Label>
               <Input value={String(config.model ?? "text-embedding-3-small")} onChange={(e) => setConfig({ ...config, model: e.target.value })} />
@@ -559,22 +665,14 @@ function PipelineNodeConfig({
               <Label>Batch size</Label>
               <Input type="number" value={String(config.batchSize ?? 100)} onChange={(e) => setConfig({ ...config, batchSize: parseInt(e.target.value) || 100 })} />
             </div>
-            <div className="space-y-2">
-              <Label>OpenAI API key env var</Label>
-              <Input value={String(config.openaiApiKeyEnv ?? "OPENAI_API_KEY")} onChange={(e) => setConfig({ ...config, openaiApiKeyEnv: e.target.value })} />
-            </div>
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="emb-dryrun"
-                checked={Boolean(config.dryRun ?? false)}
-                onChange={(e) => setConfig({ ...config, dryRun: e.target.checked })}
-              />
+              <input type="checkbox" id="emb-dryrun" checked={Boolean(config.dryRun ?? false)} onChange={(e) => setConfig({ ...config, dryRun: e.target.checked })} />
               <Label htmlFor="emb-dryrun">Dry run (zero-vectors, no OpenAI call)</Label>
             </div>
             <p className="text-xs text-muted-foreground">1536-dim vectors. Per-batch error isolation — survivors continue, failures get embedding_error.</p>
           </>
         );
+      }
 
       case "promote_meetings":
         return (

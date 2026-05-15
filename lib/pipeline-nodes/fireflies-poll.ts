@@ -25,11 +25,13 @@ import { db } from '@/db';
 import { meetings } from '@/db/schema';
 import { inArray } from 'drizzle-orm';
 import type { NodeExecutor, Row } from '../pipeline-engine-types';
+import { getConnectionForRuntime } from '../connections';
 
 // ── Config schema ─────────────────────────────────────────────────────
 
 export const firefliesPollConfigSchema = z.object({
-  apiKeyEnv: z.string().min(1).default('FIREFLIES_API_KEY'),
+  /** Connection ID from the `connections` table (kind=fireflies). Required. */
+  connectionId: z.number().int().positive(),
   /** ISO timestamp (e.g. "2026-04-01T00:00:00Z"). Omit to pull all available. */
   sinceCursor: z.string().optional(),
   pageSize: z.number().int().min(1).max(100).default(25),
@@ -195,10 +197,9 @@ export const firefliesPoll: NodeExecutor = async (rawConfig, _inputRows, node, c
     return [];
   }
 
-  const apiKey = process.env[cfg.apiKeyEnv];
-  if (!apiKey) {
-    throw new Error(`fireflies_poll: env var ${cfg.apiKeyEnv} not set`);
-  }
+  // Resolve Fireflies API key from the connections table
+  const conn = await getConnectionForRuntime(cfg.connectionId, ctx.userId, 'fireflies');
+  const { apiKey } = conn.secret as { apiKey: string };
 
   // Pull the listing page-by-page until we run out or hit maxPages.
   const fromDate = cfg.sinceCursor ?? undefined;

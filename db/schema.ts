@@ -727,6 +727,47 @@ export const entityMentions = pgTable('entity_mentions', {
  * future agent call that wants to record itself here). Used for cost
  * accounting, prompt-version diffing, and debugging classification drift.
  */
+// ── Connections — Sprint 1 ───────────────────────────────────────────────────
+// User-managed API credentials for external integrations. Secrets are
+// AES-256-GCM encrypted (see lib/crypto/connections-crypto.ts). Intentionally
+// separate from `connected_accounts` which handles OAuth flows.
+export const connections = pgTable('connections', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().default(''),
+
+  // Provider family used for filtering in node inspectors
+  kind: text('kind').notNull(),
+  // Stable machine code, e.g. 'fireflies', 'openai'
+  provider: text('provider').notNull(),
+
+  // User-visible label: "My Fireflies Prod", "OpenAI Team Key"
+  name: text('name').notNull(),
+  description: text('description'),
+
+  // AES-256-GCM encrypted JSON envelope (see lib/crypto/connections-crypto.ts)
+  secretCiphertext: text('secret_ciphertext').notNull(),
+
+  // Non-secret config useful for UI/runtime routing
+  configJson: jsonb('config_json').notNull().default(sql`'{}'::jsonb`),
+
+  // active | revoked
+  status: text('status').notNull().default('active'),
+
+  // Diagnostics
+  lastTestedAt: timestamp('last_tested_at'),
+  lastTestStatus: text('last_test_status'), // 'success' | 'failed'
+  lastTestError: text('last_test_error'),
+
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => [
+  index('connections_user_id_idx').on(t.userId),
+  index('connections_kind_idx').on(t.kind),
+  index('connections_provider_idx').on(t.provider),
+  index('connections_status_idx').on(t.status),
+  uniqueIndex('connections_user_name_unique').on(t.userId, t.name),
+]);
+
 export const promptRuns = pgTable('prompt_runs', {
   id: serial('id').primaryKey(),
   pipelineRunId: integer('pipeline_run_id').references(() => pipelineRuns.id, { onDelete: 'set null' }),

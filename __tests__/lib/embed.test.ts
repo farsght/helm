@@ -14,7 +14,7 @@ describe('embed: dryRun', () => {
   it('emits zero-vectors when dryRun=true (no OpenAI call)', async () => {
     const ctx = makeCtx();
     const out = await embed(
-      { dryRun: true },
+      { connectionId: 1, dryRun: true },
       [{ chunk_id: 'a', content: 'hello' }, { chunk_id: 'b', content: 'world' }],
       makeNode(),
       ctx,
@@ -28,14 +28,14 @@ describe('embed: dryRun', () => {
 
   it('handles empty input gracefully', async () => {
     const ctx = makeCtx();
-    const out = await embed({ dryRun: true }, [], makeNode(), ctx);
+    const out = await embed({ connectionId: 1, dryRun: true }, [], makeNode(), ctx);
     expect(out).toEqual([]);
   });
 
   it('preserves input row fields alongside embedding', async () => {
     const ctx = makeCtx();
     const out = await embed(
-      { dryRun: true },
+      { connectionId: 1, dryRun: true },
       [{ chunk_id: 'a', content: 'x', parent_fireflies_id: 'parent-1', section_heading: 'Overview' }],
       makeNode(),
       ctx,
@@ -47,15 +47,20 @@ describe('embed: dryRun', () => {
 
 describe('embed: config schema', () => {
   it('applies defaults', () => {
-    const cfg = embedConfigSchema.parse({});
+    // connectionId is required; supply one for defaults test
+    const cfg = embedConfigSchema.parse({ connectionId: 1 });
+    expect(cfg.connectionId).toBe(1);
     expect(cfg.model).toBe('text-embedding-3-small');
     expect(cfg.batchSize).toBe(100);
     expect(cfg.contentField).toBe('content');
-    expect(cfg.openaiApiKeyEnv).toBe('OPENAI_API_KEY');
     expect(cfg.dryRun).toBe(false);
   });
 
+  it('rejects missing connectionId', () => {
+    expect(() => embedConfigSchema.parse({})).toThrow();
+  });
+
   it('rejects batchSize > 2048', () => {
-    expect(() => embedConfigSchema.parse({ batchSize: 5000 })).toThrow();
+    expect(() => embedConfigSchema.parse({ connectionId: 1, batchSize: 5000 })).toThrow();
   });
 });

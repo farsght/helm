@@ -24,6 +24,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { promptRuns } from '@/db/schema';
 import type { NodeExecutor, Row } from '../pipeline-engine-types';
+import { getConnectionForRuntime } from '../connections';
 
 // ── Config schema ─────────────────────────────────────────────────────
 
@@ -36,8 +37,8 @@ export const classifyMeetingConfigSchema = z.object({
   retryCount: z.number().int().min(0).max(5).default(3),
   /** Truncate input transcript at N characters (~ N/4 tokens). */
   maxInputChars: z.number().int().min(1000).max(48000).default(12000),
-  /** OPENAI_API_KEY env var name (configurable for multi-tenant). */
-  openaiApiKeyEnv: z.string().default('OPENAI_API_KEY'),
+  /** Connection ID from the `connections` table (kind=openai). Required. */
+  connectionId: z.number().int().positive(),
   /**
    * Comma-separated email domains considered "internal" (i.e. Bitwage staff).
    * If a meeting's `attendees` list contains any non-internal domain, the
@@ -189,9 +190,10 @@ export const classifyMeeting: NodeExecutor = async (rawConfig, inputRows, node, 
     }));
   }
 
-  const apiKey = process.env[cfg.openaiApiKeyEnv];
-  if (!apiKey) throw new Error(`classify_meeting: env var ${cfg.openaiApiKeyEnv} not set`);
-  const openai = new OpenAI({ apiKey });
+  // Resolve OpenAI credentials from the connections table
+  const conn = await getConnectionForRuntime(cfg.connectionId, ctx.userId, 'openai');
+  const { apiKey, baseUrl } = conn.secret as { apiKey: string; baseUrl?: string };
+  const openai = new OpenAI({ apiKey, baseURL: baseUrl });
 
   const out: Row[] = [];
   for (const row of inputRows) {
