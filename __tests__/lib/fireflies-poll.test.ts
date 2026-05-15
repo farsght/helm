@@ -105,24 +105,31 @@ describe('fireflies_poll: renderSummaryMarkdown', () => {
 
 describe('fireflies_poll: config schema', () => {
   it('applies defaults', () => {
-    const cfg = firefliesPollConfigSchema.parse({});
-    expect(cfg.apiKeyEnv).toBe('FIREFLIES_API_KEY');
+    // connectionId is required; supply one for defaults test
+    const cfg = firefliesPollConfigSchema.parse({ connectionId: 1 });
+    expect(cfg.connectionId).toBe(1);
     expect(cfg.pageSize).toBe(25);
     expect(cfg.maxPages).toBe(40);
     expect(cfg.hostFilter).toEqual([]);
     expect(cfg.dryRun).toBe(false);
   });
 
+  it('rejects missing connectionId', () => {
+    expect(() => firefliesPollConfigSchema.parse({})).toThrow();
+  });
+
   it('rejects pageSize > 100', () => {
-    expect(() => firefliesPollConfigSchema.parse({ pageSize: 500 })).toThrow();
+    expect(() => firefliesPollConfigSchema.parse({ connectionId: 1, pageSize: 500 })).toThrow();
   });
 
   it('accepts overrides', () => {
     const cfg = firefliesPollConfigSchema.parse({
+      connectionId: 42,
       pageSize: 50,
       sinceCursor: '2026-01-01T00:00:00Z',
       hostFilter: ['bitwage.co'],
     });
+    expect(cfg.connectionId).toBe(42);
     expect(cfg.pageSize).toBe(50);
     expect(cfg.sinceCursor).toBe('2026-01-01T00:00:00Z');
     expect(cfg.hostFilter).toEqual(['bitwage.co']);

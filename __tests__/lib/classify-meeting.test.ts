@@ -60,7 +60,9 @@ describe('classify_meeting: deriveMeetingClass', () => {
 
 describe('classify_meeting: config schema', () => {
   it('applies defaults matching netrunner', () => {
-    const cfg = classifyMeetingConfigSchema.parse({});
+    // connectionId is required; supply one
+    const cfg = classifyMeetingConfigSchema.parse({ connectionId: 1 });
+    expect(cfg.connectionId).toBe(1);
     expect(cfg.model).toBe('gpt-4o-mini');
     expect(cfg.promptVersionTag).toBe('netrunner-v1');
     expect(cfg.retryCount).toBe(3);
@@ -69,12 +71,17 @@ describe('classify_meeting: config schema', () => {
     expect(cfg.dryRun).toBe(false);
   });
 
+  it('rejects missing connectionId', () => {
+    expect(() => classifyMeetingConfigSchema.parse({})).toThrow();
+  });
+
   it('rejects retryCount above 5', () => {
-    expect(() => classifyMeetingConfigSchema.parse({ retryCount: 10 })).toThrow();
+    expect(() => classifyMeetingConfigSchema.parse({ connectionId: 1, retryCount: 10 })).toThrow();
   });
 
   it('accepts overrides', () => {
     const cfg = classifyMeetingConfigSchema.parse({
+      connectionId: 7,
       model: 'gpt-4o',
       promptVersionTag: 'experiment-v2',
       retryCount: 1,

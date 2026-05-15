@@ -105,7 +105,7 @@ const navGroups: NavGroup[] = [
     defaultOpen: false,
     items: [
       { title: "MCP Servers", url: "/integrations/mcp-servers", icon: Plug },
-      { title: "Connections", url: "/integrations/connections", icon: Network },
+      { title: "Connections", url: "/connections", icon: Network },
     ],
   },
   {

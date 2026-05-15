@@ -24,7 +24,7 @@ const ctx = {
   pipelineId: 0,
   runId: 0,
   userId: 'test',
-  log: [] as { nodeId: number; message: string; level: string }[],
+  log: [] as { nodeId: number; message: string; level: 'info' | 'warn' | 'error' }[],
   rowsErrored: 0,
 };
 
