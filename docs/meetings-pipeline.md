@@ -426,3 +426,54 @@ Phase 1 ships first as its own PR — it unblocks every future pipeline. Phases 
 | `scripts/sync-approvals.ts` | Deferred — in-Helm review UI follow-up | — |
 
 Read `~/Projects/bitwage-netrunner/packages/meetings-pipeline/CLAUDE.md` before porting any single script — it documents the workflow state machine, JSONB query rules, frontmatter mapping, and atomic-claim pattern.
+
+
+---
+
+## 12. Running the seed script
+
+The seed script creates the canonical 9-node Fireflies Meetings Ingestion pipeline for a given Clerk user. It is idempotent — running it twice for the same user is a no-op.
+
+**Prerequisites:**
+
+- `DATABASE_URL` set in `.env.local` (Neon connection string)
+- Node packages installed (`pnpm install`)
+
+**Usage:**
+
+```bash
+# From the repo root:
+dotenv -e .env.local -- pnpm tsx scripts/seed-fireflies-pipeline.ts --user-id <clerkId>
+```
+
+**What it creates:**
+
+| # | Node type | Label |
+|---|---|---|
+| 1 | `fireflies_poll` | Fireflies Poll |
+| 2 | `persist_raw_pair` | Persist Raw (vault) |
+| 3 | `classify_meeting` | Classify Meeting |
+| 4 | `extract_entities` | Extract Entities |
+| 5 | `promote_meetings` | → Meetings (Neon) |
+| 6 | `promote_entities` | → Entities (Neon) |
+| 7 | `chunk_text` | Chunk Text |
+| 8 | `embed` | Embed Chunks |
+| 9 | `promote_chunks` | → Chunks (Neon, pgvector) |
+
+Edges (8 total):
+
+```
+fireflies_poll → persist_raw_pair → classify_meeting → extract_entities
+                                                              ├──► promote_meetings
+                                                              ├──► promote_entities
+                                                              └──► chunk_text → embed → promote_chunks
+```
+
+**After seeding**, update `connectionId` on these four nodes via the pipeline canvas UI or directly in the DB:
+
+- `fireflies_poll` → a `connections` row with `kind=fireflies`
+- `classify_meeting` → a `connections` row with `kind=openai`
+- `extract_entities` → a `connections` row with `kind=openai`
+- `embed` → a `connections` row with `kind=openai`
+
+All other config fields are pre-seeded with the defaults documented in §4.
