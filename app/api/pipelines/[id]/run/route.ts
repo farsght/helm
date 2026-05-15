@@ -3,7 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { db } from '@/db';
 import { pipelines, pipelineRuns } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
-import { runPipeline, markRunCompleted, markRunFailed } from '@/lib/pipeline-engine';
+import { inngest } from '@/lib/inngest/client';
 
 async function verifyOwnership(pipelineId: number, userId: string) {
   const [p] = await db.select().from(pipelines).where(and(eq(pipelines.id, pipelineId), eq(pipelines.userId, userId)));
@@ -11,14 +11,18 @@ async function verifyOwnership(pipelineId: number, userId: string) {
 }
 
 /**
- * Run a pipeline. Thin wrapper:
- *   1. Auth + ownership check
- *   2. Create the pipeline_runs row
- *   3. Delegate to lib/pipeline-engine.runPipeline()
- *   4. Mark the run completed/failed and respond
+ * Run a pipeline via Inngest for durable, per-node execution.
  *
- * The actual per-node dispatch lives in lib/pipeline-engine.ts. See
- * docs/meetings-pipeline.md §3 for the rationale on splitting this out.
+ * Flow:
+ *   1. Auth + ownership check
+ *   2. Create the pipeline_runs row (status='running')
+ *   3. Send `helm/pipeline.run.requested` to Inngest
+ *   4. Return immediately — Inngest executes asynchronously and updates
+ *      the run row to 'completed' or 'failed' when done.
+ *
+ * The actual per-node dispatch lives in lib/inngest/functions/pipeline-run.ts.
+ * The original lib/pipeline-engine.ts runPipeline() remains intact and is
+ * used by cron, webhook, and debug scripts.
  */
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { userId } = await auth();
@@ -36,19 +40,10 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     rowsErrored: 0,
   }).returning();
 
-  try {
-    const result = await runPipeline(pipelineId, run.id, userId);
-    const updated = await markRunCompleted(pipelineId, run.id, result);
-    return NextResponse.json({
-      runId: updated.id,
-      status: updated.status,
-      rowsInput: result.rowsInput,
-      rowsOutput: result.rowsOutput,
-      rowsErrored: result.rowsErrored,
-    });
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Unknown error';
-    await markRunFailed(run.id, msg);
-    return NextResponse.json({ runId: run.id, status: 'failed', error: msg }, { status: 500 });
-  }
+  await inngest.send({
+    name: 'helm/pipeline.run.requested',
+    data: { pipelineId, runId: run.id, userId },
+  });
+
+  return NextResponse.json({ runId: run.id, status: 'running', message: 'Pipeline queued' });
 }
