@@ -6,6 +6,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/webhooks(.*)',  // email tracking webhooks don't need auth
   '/api/cron(.*)',      // cron jobs use internal calls
   '/api/health',        // health check endpoint
+  '/api/inngest(.*)',    // Inngest webhook — must bypass auth
   '/monitoring(.*)',    // Sentry tunnelRoute — must bypass auth or events drop
   '/.well-known/workflow(.*)', // Vercel Workflow SDK runtime routes — must be public
 ])
