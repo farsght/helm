@@ -67,7 +67,8 @@ export const promoteMeetings: NodeExecutor = async (rawConfig, inputRows, node, 
     const fireflies_id = asString(row.fireflies_id);
     const slug = asString(row.slug);
     const title = asString(row.title);
-    const meeting_date = asDate(row.meeting_date);
+    // Accept both `meeting_date` and `date` (fireflies_poll emits `date`)
+    const meeting_date = asDate(row.meeting_date) ?? asDate(row.date);
 
     if (!fireflies_id || !slug || !title || !meeting_date) {
       ctx.rowsErrored += 1;
@@ -95,7 +96,8 @@ export const promoteMeetings: NodeExecutor = async (rawConfig, inputRows, node, 
       slug,
       title,
       meetingDate: meeting_date,
-      durationMin: asNumber(row.duration_min),
+      // duration_min is integer in the DB; Fireflies returns floats → round.
+      durationMin: asNumber(row.duration_min) !== null ? Math.round(asNumber(row.duration_min)!) : null,
       hostEmail: asString(row.host_email),
       attendeesJson: row.attendees ?? null,
       rawTranscriptPath: asString(row.raw_transcript_path),
