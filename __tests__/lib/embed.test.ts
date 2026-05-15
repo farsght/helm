@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect } from 'vitest';
 import { embed, embedConfigSchema } from '@/lib/pipeline-nodes/embed';
 import type { PipelineRunContext } from '@/lib/pipeline-engine-types';
@@ -6,7 +7,7 @@ function makeCtx(): PipelineRunContext {
   return { pipelineId: 1, runId: 1, userId: 'u', log: [], rowsErrored: 0 };
 }
 function makeNode() {
-  return { id: 1, pipelineId: 1, type: 'embed', label: 'e', configJson: null, positionX: 0, positionY: 0, createdAt: new Date() };
+  return { id: 1, pipelineId: 1, type: 'embed', label: 'e', configJson: null, positionX: 0, positionY: 0, createdAt: new Date(), triggerConfig: null };
 }
 
 describe('embed: dryRun', () => {

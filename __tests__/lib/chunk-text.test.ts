@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect } from 'vitest';
 import { chunkText, splitIntoSections, splitByCharWindow, chunkTextConfigSchema } from '@/lib/pipeline-nodes/chunk-text';
 import type { PipelineRunContext } from '@/lib/pipeline-engine-types';
@@ -6,7 +7,7 @@ function makeCtx(): PipelineRunContext {
   return { pipelineId: 1, runId: 1, userId: 'u', log: [], rowsErrored: 0 };
 }
 function makeNode() {
-  return { id: 1, pipelineId: 1, type: 'chunk_text', label: 'chunk', configJson: null, positionX: 0, positionY: 0, createdAt: new Date() };
+  return { id: 1, pipelineId: 1, type: 'chunk_text', label: 'chunk', configJson: null, positionX: 0, positionY: 0, createdAt: new Date(), triggerConfig: null };
 }
 
 describe('chunk_text: splitIntoSections', () => {

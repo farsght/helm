@@ -1,3 +1,9 @@
+// Set a stub DATABASE_URL so db/index.ts does not throw on import in test environments.
+// Tests that hit the DB must mock @/db themselves.
+process.env.DATABASE_URL =
+  process.env.DATABASE_URL ||
+  'postgresql://mock:mock@localhost/mock';
+
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 

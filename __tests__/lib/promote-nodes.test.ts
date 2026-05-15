@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect } from 'vitest';
 import { promoteMeetingsConfigSchema } from '@/lib/pipeline-nodes/promote-meetings';
 import { promoteEntitiesConfigSchema } from '@/lib/pipeline-nodes/promote-entities';

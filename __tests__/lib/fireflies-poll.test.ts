@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect } from 'vitest';
 import { buildSlug, renderTranscriptMarkdown, renderSummaryMarkdown, firefliesPollConfigSchema } from '@/lib/pipeline-nodes/fireflies-poll';
 
