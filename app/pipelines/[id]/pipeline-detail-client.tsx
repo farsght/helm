@@ -972,7 +972,12 @@ export function PipelineDetailClient({ id }: { id: string }) {
     setSelectedNode(node);
   }, []);
 
-  const onPaneClick = useCallback(() => setSelectedNode(null), []);
+  // Only close the inspector via the explicit close/save actions.
+  // Pane clicks should not reset the inspector — the Select portal (rendered
+  // outside the React Flow DOM) can accidentally trigger onPaneClick via
+  // React's synthetic event bubbling, which would cause the inspector to
+  // unmount/remount and lose in-progress edits.
+  const onPaneClick = useCallback(() => {/* intentionally no-op */}, []);
 
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -1115,7 +1120,11 @@ export function PipelineDetailClient({ id }: { id: string }) {
                 </Panel>
               </ReactFlow>
               {selectedNode && (
-                <div onClick={(e) => e.stopPropagation()}>
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
                   <PipelineNodeConfig
                     key={selectedNode.id}
                     node={selectedNode}
