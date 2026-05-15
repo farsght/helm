@@ -787,3 +787,13 @@ export const promptRuns = pgTable('prompt_runs', {
   index('prompt_runs_meeting_idx').on(table.meetingId),
   index('prompt_runs_created_at_idx').on(table.createdAt),
 ]);
+
+// Pipeline step intermediate data — stores large row payloads between Inngest steps
+// (Inngest has a ~4MB per-step output limit; full meeting transcripts exceed that).
+export const pipelineStepData = pgTable('pipeline_step_data', {
+  id: serial('id').primaryKey(),
+  runId: integer('run_id').notNull(),
+  nodeId: integer('node_id').notNull(),
+  dataJson: text('data_json').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});

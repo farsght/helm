@@ -1,10 +1,10 @@
 /**
  * Inngest durable function for pipeline execution.
  *
- * Replaces the synchronous `runPipeline()` call in the API route with a
- * durable, step-based execution model. Each node in the pipeline becomes an
- * individual `step.run()` — giving us per-node retries, checkpointing, and
- * observability for free.
+ * Each node runs as a `step.run()` for durability + per-node retries.
+ * Large intermediate data (meeting transcripts, embeddings, etc.) is
+ * stored in `pipeline_step_data` in Neon — Inngest steps only return
+ * lightweight metadata (counts). This avoids the ~4MB step output limit.
  *
  * Event: `helm/pipeline.run.requested`
  * Data:  { pipelineId: number, runId: number, userId: string }
@@ -17,9 +17,10 @@ import {
   pipelineNodes,
   pipelineEdges,
   pipelineRuns,
+  pipelineStepData,
   pipelines,
 } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import {
   topoSortGeneric,
   getExecutor,
@@ -27,8 +28,39 @@ import {
 } from '@/lib/pipeline-engine';
 import type { DbPipelineNode, DbPipelineEdge, Row, PipelineLogEntry } from '@/lib/pipeline-engine-types';
 
+// ── Helpers ──────────────────────────────────────────────────────────
+
+/** Write step output rows to Neon staging table. */
+async function stageRows(runId: number, nodeId: number, rows: Row[]) {
+  if (rows.length === 0) return;
+  // Chunk into 500-row batches to avoid query size limits
+  for (let i = 0; i < rows.length; i += 500) {
+    const batch = rows.slice(i, i + 500);
+    await db.insert(pipelineStepData).values({
+      runId,
+      nodeId,
+      dataJson: JSON.stringify(batch),
+    });
+  }
+}
+
+/** Read staged rows from parent nodes. */
+async function readParentRows(runId: number, parentNodeIds: number[]): Promise<Row[]> {
+  if (parentNodeIds.length === 0) return [];
+  const staged = await db.select().from(pipelineStepData)
+    .where(and(
+      eq(pipelineStepData.runId, runId),
+      inArray(pipelineStepData.nodeId, parentNodeIds),
+    ));
+  const rows: Row[] = [];
+  for (const s of staged) {
+    const parsed = JSON.parse(s.dataJson) as Row[];
+    rows.push(...parsed);
+  }
+  return rows;
+}
+
 // ── Serializable topology snapshot ───────────────────────────────────
-// We load topology once in a step.run() so it's memoized on replay.
 
 interface TopologySnapshot {
   nodes: DbPipelineNode[];
@@ -51,8 +83,6 @@ export const pipelineRunFunction = inngest.createFunction(
     const topology = (await step.run('load-topology', async () => {
       const nodes = await db.select().from(pipelineNodes).where(eq(pipelineNodes.pipelineId, pipelineId));
       const edges = await db.select().from(pipelineEdges).where(eq(pipelineEdges.pipelineId, pipelineId));
-
-      // Return plain objects — Inngest serializes via JSON, so no class instances.
       return {
         nodes: nodes.map((n: DbPipelineNode) => ({ ...n })),
         edges: edges.map((e: DbPipelineEdge) => ({ ...e })),
@@ -65,18 +95,15 @@ export const pipelineRunFunction = inngest.createFunction(
       await step.run('mark-completed-empty', async () => {
         await db.update(pipelineRuns).set({
           status: 'completed',
-          rowsInput: 0,
-          rowsOutput: 0,
-          rowsErrored: 0,
+          rowsInput: 0, rowsOutput: 0, rowsErrored: 0,
           logJson: JSON.stringify([{ nodeId: 0, message: 'Pipeline has no nodes', level: 'warn' }]),
           completedAt: new Date(),
         }).where(eq(pipelineRuns.id, runId));
-        await db.update(pipelines).set({ lastRunAt: new Date(), updatedAt: new Date() }).where(eq(pipelines.id, pipelineId));
       });
       return { rowsInput: 0, rowsOutput: 0, rowsErrored: 0 };
     }
 
-    // ── Topo sort (pure, no DB needed — done outside a step) ──────────
+    // ── Topo sort ─────────────────────────────────────────────────────
     let sorted: DbPipelineNode[];
     try {
       sorted = topoSortGeneric<DbPipelineNode, DbPipelineEdge>(nodes, edges);
@@ -84,137 +111,123 @@ export const pipelineRunFunction = inngest.createFunction(
       const msg = err instanceof Error ? err.message : 'Topology error';
       await step.run('mark-failed-topo', async () => {
         await db.update(pipelineRuns).set({
-          status: 'failed',
-          errorMessage: msg,
-          completedAt: new Date(),
+          status: 'failed', errorMessage: msg, completedAt: new Date(),
         }).where(eq(pipelineRuns.id, runId));
       });
       throw new NonRetriableError(msg);
     }
 
-    // ── Build parent map ──────────────────────────────────────────────
-    const parents = new Map<number, number[]>(nodes.map((n) => [n.id, []]));
-    for (const e of edges) {
-      parents.get(e.targetNodeId)?.push(e.sourceNodeId);
-    }
+    // ── Build parent map + eligible nodes ─────────────────────────────
+    const parentMap = new Map<number, number[]>(nodes.map((n) => [n.id, []]));
+    for (const e of edges) parentMap.get(e.targetNodeId)?.push(e.sourceNodeId);
 
-    // ── Determine eligible source nodes (manual trigger) ──────────────
-    const isSource = (id: number) => (parents.get(id) ?? []).length === 0;
+    const isSource = (id: number) => (parentMap.get(id) ?? []).length === 0;
     const eligibleSourceIds = new Set<number>();
     for (const node of nodes) {
-      if (!isSource(node.id)) continue;
-      const trig = parseTriggerConfig(node.triggerConfig);
-      if (trig.kind === 'manual') {
-        eligibleSourceIds.add(node.id);
+      if (isSource(node.id)) {
+        const trig = parseTriggerConfig(node.triggerConfig);
+        if (trig.kind === 'manual') eligibleSourceIds.add(node.id);
       }
     }
 
-    // BFS from eligible sources
     const eligibleNodes = new Set<number>(eligibleSourceIds);
     const adj = new Map<number, number[]>(nodes.map((n) => [n.id, []]));
     for (const e of edges) adj.get(e.sourceNodeId)?.push(e.targetNodeId);
-    const bfsQueue: number[] = Array.from(eligibleSourceIds);
-    while (bfsQueue.length > 0) {
-      const id = bfsQueue.shift()!;
+    const queue: number[] = Array.from(eligibleSourceIds);
+    while (queue.length > 0) {
+      const id = queue.shift()!;
       for (const next of adj.get(id) ?? []) {
         if (!eligibleNodes.has(next)) {
           eligibleNodes.add(next);
-          bfsQueue.push(next);
+          queue.push(next);
         }
       }
     }
 
     // ── Execute each node as a durable step ───────────────────────────
-    // Outputs accumulate in a plain object (JSON-serializable between steps).
-    const outputByNodeId: Record<number, Row[]> = {};
     const log: PipelineLogEntry[] = [];
-    let rowsErrored = 0;
+    let totalRowsErrored = 0;
+    const outputCounts: Record<number, number> = {};
 
     log.push({
       nodeId: 0,
-      message: `Inngest pipeline-run: ${eligibleSourceIds.size} sources, ${eligibleNodes.size} of ${nodes.length} nodes will fire`,
+      message: `Inngest pipeline-run: ${eligibleSourceIds.size} sources, ${eligibleNodes.size}/${nodes.length} nodes eligible`,
       level: 'info',
     });
 
     for (const node of sorted) {
       if (!eligibleNodes.has(node.id)) continue;
 
-      const parentIds = parents.get(node.id) ?? [];
-      const inputRows: Row[] =
-        parentIds.length === 0
-          ? []
-          : parentIds.flatMap((pid) => outputByNodeId[pid] ?? []);
-
       const stepId = `node-${node.id}-${node.type}`;
+      const parentIds = parentMap.get(node.id) ?? [];
 
-      // Each node runs as an isolated, retriable step.
-      const result = await step.run(stepId, async (): Promise<{ rows: Row[]; rowsErrored: number; logMsg: string }> => {
+      const result = await step.run(stepId, async (): Promise<{ rowCount: number; rowsErrored: number; logEntries: PipelineLogEntry[] }> => {
+        // Read input from DB staging (not from step args)
+        const inputRows = await readParentRows(runId, parentIds);
+
         const executor = getExecutor(node.type);
         if (!executor) {
-          throw new NonRetriableError(`No executor registered for node type "${node.type}"`);
+          throw new NonRetriableError(`No executor for node type "${node.type}"`);
         }
 
         let config: Record<string, unknown> = {};
         if (node.configJson) {
           try {
             config = JSON.parse(node.configJson) as Record<string, unknown>;
-          } catch (err) {
-            const msg = err instanceof Error ? err.message : 'parse error';
-            throw new NonRetriableError(`Node ${node.id} (${node.type}): invalid configJson — ${msg}`);
+          } catch {
+            throw new NonRetriableError(`Node ${node.id}: invalid configJson`);
           }
         }
 
-        // Build a local ctx for this step's execution.
         const stepCtx = {
-          pipelineId,
-          runId,
-          userId,
+          pipelineId, runId, userId,
           log: [] as PipelineLogEntry[],
           rowsErrored: 0,
         };
 
         const outputRows = await executor(config, inputRows, node, stepCtx);
-        const localErrored = stepCtx.rowsErrored;
-        const logMsg = `${node.type} (${node.label}): in=${inputRows.length} → out=${outputRows.length}`;
 
-        // Return JSON-serializable data only.
-        return { rows: outputRows, rowsErrored: localErrored, logMsg };
+        // Stage output rows to Neon
+        await stageRows(runId, node.id, outputRows);
+
+        return {
+          rowCount: outputRows.length,
+          rowsErrored: stepCtx.rowsErrored,
+          logEntries: stepCtx.log,
+        };
       });
 
-      outputByNodeId[node.id] = result.rows;
-      rowsErrored += result.rowsErrored;
-      log.push({ nodeId: node.id, message: result.logMsg, level: 'info' });
+      outputCounts[node.id] = result.rowCount;
+      totalRowsErrored += result.rowsErrored;
+      log.push(...result.logEntries);
+      log.push({ nodeId: node.id, message: `${node.type} (${node.label}): out=${result.rowCount}`, level: 'info' });
     }
 
     // ── Compute final counts ──────────────────────────────────────────
     let rowsInput = 0;
+    for (const id of eligibleSourceIds) rowsInput += outputCounts[id] ?? 0;
     let rowsOutput = 0;
-    for (const node of sorted) {
-      if (eligibleSourceIds.has(node.id)) {
-        rowsInput += (outputByNodeId[node.id] ?? []).length;
-      }
-    }
-    // rowsOutput = last eligible node's output count
     for (let i = sorted.length - 1; i >= 0; i--) {
       if (eligibleNodes.has(sorted[i].id)) {
-        rowsOutput = (outputByNodeId[sorted[i].id] ?? []).length;
+        rowsOutput = outputCounts[sorted[i].id] ?? 0;
         break;
       }
     }
 
-    // ── Mark completed ────────────────────────────────────────────────
+    // ── Mark completed + clean up staging ─────────────────────────────
     await step.run('mark-completed', async () => {
       await db.update(pipelineRuns).set({
         status: 'completed',
-        rowsInput,
-        rowsOutput,
-        rowsErrored,
+        rowsInput, rowsOutput, rowsErrored: totalRowsErrored,
         logJson: JSON.stringify(log),
         completedAt: new Date(),
       }).where(eq(pipelineRuns.id, runId));
       await db.update(pipelines).set({ lastRunAt: new Date(), updatedAt: new Date() }).where(eq(pipelines.id, pipelineId));
+
+      // Clean up staging data for this run
+      await db.delete(pipelineStepData).where(eq(pipelineStepData.runId, runId));
     });
 
-    return { rowsInput, rowsOutput, rowsErrored };
+    return { rowsInput, rowsOutput, rowsErrored: totalRowsErrored };
   },
 );
