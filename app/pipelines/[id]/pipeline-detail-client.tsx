@@ -170,12 +170,16 @@ function PipelineNodeConfig({
   isSource,
   onUpdate,
   onClose,
+  getAllNodes,
+  getAllEdges,
 }: {
   node: Node<NodeData>;
   pipelineId: number;
   isSource: boolean;
   onUpdate: (id: string, updates: Record<string, unknown>) => void;
   onClose: () => void;
+  getAllNodes: () => Node<NodeData>[];
+  getAllEdges: () => Edge[];
 }) {
   const [config, setConfig] = useState<Record<string, unknown>>(
     (node.data.config as Record<string, unknown>) || {}
@@ -195,17 +199,31 @@ function PipelineNodeConfig({
     fetch("/api/connections?kind=openai&status=active").then((r) => r.json()).then((d) => { if (Array.isArray(d)) setOpenaiConns(d); }).catch(() => {});
   }, []);
 
-  // Auto-sync every config/triggerConfig change into React Flow node state so
-  // edits survive switching nodes without requiring a manual Save click.
-  // The top-level canvas Save button still persists everything to the DB.
-  useEffect(() => {
-    onUpdate(node.id, { config, triggerConfig });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config, triggerConfig]);
+  const [saving, setSaving] = useState(false);
 
-  const save = () => {
-    onUpdate(node.id, { config, triggerConfig });
-    toast.success("Node config saved");
+  const save = async () => {
+    setSaving(true);
+    try {
+      // 1. Push config into React Flow state
+      onUpdate(node.id, { config, triggerConfig });
+      // 2. Persist full canvas to DB (nodes state may not reflect the above
+      //    update synchronously, so we merge manually for the API payload)
+      const updatedNodes = getAllNodes().map((n) =>
+        n.id === node.id ? { ...n, data: { ...n.data, config, triggerConfig } } : n
+      );
+      const edges = getAllEdges();
+      await apiFetch(`/api/pipelines/${pipelineId}/canvas`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nodes: updatedNodes, edges }),
+      });
+      toast.success("Node saved");
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const type = String(node.data.type);
@@ -836,7 +854,9 @@ function PipelineNodeConfig({
           </div>
         )}
         {renderFields()}
-        <Button onClick={save} className="w-full" size="sm">Save</Button>
+        <Button onClick={save} disabled={saving} className="w-full" size="sm">
+          {saving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</> : "Save"}
+        </Button>
       </CardContent>
     </Card>
   );
@@ -1095,14 +1115,18 @@ export function PipelineDetailClient({ id }: { id: string }) {
                 </Panel>
               </ReactFlow>
               {selectedNode && (
-                <PipelineNodeConfig
-                  key={selectedNode.id}
-                  node={selectedNode}
-                  pipelineId={pipelineId}
-                  isSource={!edges.some((e) => e.target === selectedNode.id)}
-                  onUpdate={handleNodeUpdate}
-                  onClose={() => setSelectedNode(null)}
-                />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <PipelineNodeConfig
+                    key={selectedNode.id}
+                    node={selectedNode}
+                    pipelineId={pipelineId}
+                    isSource={!edges.some((e) => e.target === selectedNode.id)}
+                    onUpdate={handleNodeUpdate}
+                    onClose={() => setSelectedNode(null)}
+                    getAllNodes={() => nodes}
+                    getAllEdges={() => edges}
+                  />
+                </div>
               )}
             </div>
           </TabsContent>
