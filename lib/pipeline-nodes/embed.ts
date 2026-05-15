@@ -57,6 +57,10 @@ export const embed: NodeExecutor = async (rawConfig, inputRows, node, ctx) => {
   // This prevents hitting OpenAI's 300k token limit when processing long meeting transcripts.
   const MAX_ESTIMATED_TOKENS = 250_000;
   const TOKEN_CHARS_RATIO = 4; // chars per token estimate
+  // Per-item limit: text-embedding-3-small accepts max 8192 tokens per input.
+  // Truncate any single item that would exceed this to keep it within bounds.
+  const MAX_ITEM_TOKENS = 8192;
+  const MAX_ITEM_CHARS = MAX_ITEM_TOKENS * TOKEN_CHARS_RATIO; // 32768 chars
 
   /**
    * Build token-aware batches: each batch is limited by batchSize (row count)
@@ -94,11 +98,17 @@ export const embed: NodeExecutor = async (rawConfig, inputRows, node, ctx) => {
 
   const out: Row[] = [];
   let batchCount = 0;
+  let truncatedCount = 0;
   for (const batch of batches) {
     const inputs: string[] = [];
     for (const row of batch) {
       const text = row[cfg.contentField];
-      inputs.push(typeof text === 'string' ? text : '');
+      let textStr = typeof text === 'string' ? text : '';
+      if (textStr.length > MAX_ITEM_CHARS) {
+        textStr = textStr.slice(0, MAX_ITEM_CHARS);
+        truncatedCount += 1;
+      }
+      inputs.push(textStr);
     }
     try {
       const resp = await openai.embeddings.create({ model: cfg.model, input: inputs });
@@ -118,6 +128,13 @@ export const embed: NodeExecutor = async (rawConfig, inputRows, node, ctx) => {
     }
   }
 
+  if (truncatedCount > 0) {
+    ctx.log.push({
+      nodeId: node.id,
+      message: `embed: ${truncatedCount} item(s) truncated to ${MAX_ITEM_CHARS} chars to fit per-item token limit`,
+      level: 'warn',
+    });
+  }
   ctx.log.push({
     nodeId: node.id,
     message: `embed: ${out.length} rows embedded across ${batchCount} batch(es) (model=${cfg.model})`,
