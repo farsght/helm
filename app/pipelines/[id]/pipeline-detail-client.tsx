@@ -195,6 +195,14 @@ function PipelineNodeConfig({
     fetch("/api/connections?kind=openai&status=active").then((r) => r.json()).then((d) => { if (Array.isArray(d)) setOpenaiConns(d); }).catch(() => {});
   }, []);
 
+  // Auto-sync every config/triggerConfig change into React Flow node state so
+  // edits survive switching nodes without requiring a manual Save click.
+  // The top-level canvas Save button still persists everything to the DB.
+  useEffect(() => {
+    onUpdate(node.id, { config, triggerConfig });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, triggerConfig]);
+
   const save = () => {
     onUpdate(node.id, { config, triggerConfig });
     toast.success("Node config saved");
@@ -1088,6 +1096,7 @@ export function PipelineDetailClient({ id }: { id: string }) {
               </ReactFlow>
               {selectedNode && (
                 <PipelineNodeConfig
+                  key={selectedNode.id}
                   node={selectedNode}
                   pipelineId={pipelineId}
                   isSource={!edges.some((e) => e.target === selectedNode.id)}
