@@ -1,4 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
@@ -11,11 +13,25 @@ const isPublicRoute = createRouteMatcher([
   '/.well-known/workflow(.*)', // Vercel Workflow SDK runtime routes — must be public
 ])
 
-export default clerkMiddleware(async (auth, request) => {
+// Check if Clerk is configured
+const isClerkConfigured = !!(
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+  process.env.CLERK_SECRET_KEY
+)
+
+// Fallback middleware when Clerk is not configured
+function noAuthMiddleware(request: NextRequest) {
+  return NextResponse.next()
+}
+
+// Clerk middleware when configured
+const authMiddleware = clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect()
   }
 })
+
+export default isClerkConfigured ? authMiddleware : noAuthMiddleware
 
 export const config = {
   matcher: [
