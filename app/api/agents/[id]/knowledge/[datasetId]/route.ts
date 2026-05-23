@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthUserId } from '@/lib/auth';
 import { db } from '@/db';
 import { agentDefinitions, agentKnowledgeLinks } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -12,7 +12,7 @@ async function ensureOwnedAgent(agentId: number, userId: string) {
 
 /** Update a specific agent⇆dataset link. */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string; datasetId: string }> }) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id, datasetId } = await params;
   const agentId = Number(id);
@@ -36,7 +36,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 /** Remove a specific agent⇆dataset link. */
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string; datasetId: string }> }) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id, datasetId } = await params;
   const agentId = Number(id);

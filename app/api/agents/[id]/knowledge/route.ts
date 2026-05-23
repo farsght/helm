@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthUserId } from '@/lib/auth';
 import { db } from '@/db';
 import { agentDefinitions, agentKnowledgeLinks, datasets } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -12,7 +12,7 @@ async function ensureOwnedAgent(agentId: number, userId: string) {
 
 /** List knowledge dataset links for this agent. */
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const agent = await ensureOwnedAgent(Number(id), userId);
@@ -34,7 +34,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
 /** Attach a dataset. Body: { datasetId: number, pathPrefix?: string, topK?: number } */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const agentId = Number(id);
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
 /** Detach a dataset. Body: { datasetId: number } */
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const agentId = Number(id);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthUserId } from '@/lib/auth';
 import { db } from '@/db';
 import { notebooks, notebookCells } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -10,7 +10,7 @@ async function verifyOwnership(notebookId: number, userId: string) {
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string; cellId: string }> }) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id, cellId } = await params;
@@ -35,7 +35,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string; cellId: string }> }) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id, cellId } = await params;

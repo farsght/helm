@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthUserId } from '@/lib/auth';
 import { db } from '@/db';
 import { settings } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -24,7 +24,7 @@ function serializeValue(value: SettingsValue): string {
  * Values are JSON-parsed when possible, otherwise returned as raw strings.
  */
 export async function GET() {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
@@ -47,7 +47,7 @@ export async function GET() {
  * values are stringified.
  */
 export async function PUT(request: NextRequest) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {

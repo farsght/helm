@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthUserId } from '@/lib/auth';
 import { db } from '@/db';
 import { messages, conversations, prospects, connectedAccounts } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -19,7 +19,7 @@ interface SendMessageRequest {
 }
 
 export async function POST(request: NextRequest) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {

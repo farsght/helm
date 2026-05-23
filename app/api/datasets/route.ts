@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthUserId } from '@/lib/auth';
 import * as Papa from 'papaparse';
 
 import { db } from '@/db';
@@ -8,7 +8,7 @@ import { eq, sql } from 'drizzle-orm';
 import { inferSchema, normalizeRow, type DatasetColumn } from '@/lib/dataset-import';
 
 export async function GET() {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
@@ -34,7 +34,7 @@ export async function GET() {
  *      → parses CSV, infers schema, bulk-inserts rows.
  */
 export async function POST(request: NextRequest) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const contentType = request.headers.get('content-type') || '';

@@ -11,7 +11,7 @@
 
 import { NextResponse } from 'next/server';
 import { eq, and } from 'drizzle-orm';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthUserId } from '@/lib/auth';
 import { db } from '@/db';
 import { datasets } from '@/db/schema';
 import { ingestVaultDataset, type VaultSourceMeta } from '@/lib/knowledge-ingest';
@@ -29,7 +29,7 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   const { id } = await params;

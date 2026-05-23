@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthUserId } from '@/lib/auth';
 import { db } from '@/db';
 import { settings } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -44,7 +44,7 @@ async function setSetting(userId: string, key: string, value: SettingsValue): Pr
 }
 
 export async function GET() {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
@@ -65,7 +65,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {

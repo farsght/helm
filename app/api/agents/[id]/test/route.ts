@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { getAuthUserId } from '@/lib/auth';
 import { db } from '@/db';
 import { agentDefinitions } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -11,7 +11,7 @@ import { runAgent, AgentRuntimeError, AgentNotFoundError, AgentConfigError } fro
  * Returns the AgentRunResult or a structured error.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const agentId = Number(id);
