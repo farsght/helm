@@ -113,7 +113,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 / Plan 04 completion)*
 
-- [ ] 03-05-PLAN.md — Webhooks modals: EventTypesInput + WebhookCreateModal + WebhookSecretReveal (copy-once) + WebhookRotateSecretModal + barrel finalization (DATA-06, NOTIF-02)
+- [x] 03-05-PLAN.md — Webhooks modals: EventTypesInput + WebhookCreateModal + WebhookSecretReveal (copy-once) + WebhookRotateSecretModal + barrel finalization (DATA-06, NOTIF-02)
 
 **Wave 4** *(blocked on Wave 2/3 completion — Plans 03 + 05 both done)*
 
@@ -147,5 +147,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
 | 2. Headless Core Port | 5/5 | Complete   | 2026-05-29 |
-| 3. Adapter Seam, Tenancy & Notifications | 4/6 | In Progress|  |
+| 3. Adapter Seam, Tenancy & Notifications | 5/6 | In Progress|  |
 | 4. Contract-Gated Surfaces & Monorepo Port | 0/TBD | Not started | - |
