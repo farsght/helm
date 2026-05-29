@@ -147,6 +147,40 @@ Per-resource hooks: `useDatasetsQueryOptions`, `useWorkflowQueryOptions`,
 
 ---
 
+## Package Validation
+
+Run all package quality checks before copying to the Farsight monorepo:
+
+```bash
+# In packages/ui:
+npm run build           # build dist/
+npx publint             # verify exports map correctness (exit 0)
+npm run check:attw      # verify type exports for bundler/ESM-only profile (exit 0)
+```
+
+### attw Scope
+
+`check:attw` validates `@farsight/ui` for its intentional design:
+
+- **Validated:** `--profile esm-only` — the bundler profile, which is the only profile
+  Farsight's Vite/`apps/web` consumer will use. The `.` entry must be green.
+- **Excluded entrypoints:** `theme.css` and `styles/globals.css` — these are CSS assets
+  with no `.d.ts` counterpart. attw cannot resolve CSS entries; excluding them is correct
+  and honest (not masking a real type problem).
+- **Out of attw scope (by design):**
+  - `node10` / `node16-CJS` profiles — the library is deliberately ESM-only
+    (`type: "module"`, `moduleResolution: "bundler"`, `platform: "browser"`). CJS output
+    is not a project requirement.
+  - `./theme.css` / `./styles/globals.css` subpath entries — CSS exports have no associated
+    type declarations; they are excluded via `--exclude-entrypoints`.
+
+The check uses `pnpm pack` (not `npm pack`) so that `publishConfig.exports` is applied —
+the tarball attw reads contains the real `dist/index.d.ts`, not the dev `src/index.ts`.
+Passing `--ignore-rules internal-resolution-error` is explicitly NOT used; any real
+dist-level type resolution error will surface as a failure.
+
+---
+
 ## Farsight Monorepo Copy Runbook
 
 `@farsight/ui` is developed in the Helm repo and copied into the Farsight monorepo
@@ -156,7 +190,7 @@ Per-resource hooks: `useDatasetsQueryOptions`, `useWorkflowQueryOptions`,
 # 1. Build and verify the package is publish/port-clean
 pnpm --filter @farsight/ui build
 npx publint packages/ui
-npx @arethetypeswrong/cli packages/ui
+npm run check:attw --prefix packages/ui
 
 # 2. Copy to the Farsight monorepo
 cp -r packages/ui ~/Projects/farsight-platform/packages/ui
