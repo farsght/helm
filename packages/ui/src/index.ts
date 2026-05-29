@@ -95,6 +95,17 @@ export type { ApiClient, CreateApiClientOptions } from './client/create-client'
 export { toFarsightError, isFarsightError, matchCode } from './errors/farsight-error'
 export type { FarsightError, FarsightSchemaError } from './errors/farsight-error'
 
+// Dataset hooks (Phase 4)
+export { datasetKeys, useDatasetsQueryOptions, useDatasetQueryOptions, useDatasetRecordsQueryOptions, useDeleteDatasetMutation, useSearchDatasetMutation } from './hooks/use-datasets'
+
+// Dataset surfaces (Phase 4)
+export { DatasetList } from './components/datasets/dataset-list'
+export type { DatasetListProps } from './components/datasets/dataset-list'
+export { DatasetDetail } from './components/datasets/dataset-detail'
+export type { DatasetDetailProps } from './components/datasets/dataset-detail'
+export { DatasetRecords } from './components/datasets/dataset-records'
+export { DatasetSearch } from './components/datasets/dataset-search'
+
 // UI primitives
 export { Button, buttonVariants } from './components/ui/button'
 export { Label } from './components/ui/label'
