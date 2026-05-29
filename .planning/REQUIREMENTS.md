@@ -16,9 +16,9 @@ Requirements for the initial portable library. Each maps to a roadmap phase.
 
 ### Theming
 
-- [ ] **THEME-01**: CSS-variable semantic token contract lifted from `app/globals.css` `@theme` and shipped as a `./theme.css` subpath export
-- [ ] **THEME-02**: Consumer setup documented (`@source` directive + `@xyflow/react` CSS import order); dark mode via `.dark` token override — the library owns the token contract, not the theme toggle/persistence
-- [ ] **THEME-03**: JS/TS token export so charts read `tokens.chart[1]` instead of hardcoded hex (fixes the UI-REVIEW chart-color / light-mode-tooltip blocker)
+- [x] **THEME-01**: CSS-variable semantic token contract lifted from `app/globals.css` `@theme` and shipped as a `./theme.css` subpath export
+- [x] **THEME-02**: Consumer setup documented (`@source` directive + `@xyflow/react` CSS import order); dark mode via `.dark` token override — the library owns the token contract, not the theme toggle/persistence
+- [x] **THEME-03**: JS/TS token export so charts read `tokens.chart[1]` instead of hardcoded hex (fixes the UI-REVIEW chart-color / light-mode-tooltip blocker)
 
 ### Design-System / Headless Core
 
@@ -99,9 +99,9 @@ Each requirement maps to exactly one phase. See `.planning/ROADMAP.md` for phase
 | PKG-02 | Phase 1 | Complete |
 | PKG-03 | Phase 1 | Pending |
 | PKG-04 | Phase 1 | Complete |
-| THEME-01 | Phase 1 | Pending |
-| THEME-02 | Phase 1 | Pending |
-| THEME-03 | Phase 1 | Pending |
+| THEME-01 | Phase 1 | Complete |
+| THEME-02 | Phase 1 | Complete |
+| THEME-03 | Phase 1 | Complete |
 | CORE-01 | Phase 2 | Pending |
 | CORE-02 | Phase 2 | Pending |
 | CORE-03 | Phase 2 | Pending |
