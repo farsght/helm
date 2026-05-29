@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: milestone
 status: verifying
 stopped_at: Phase 2 Plan 4 complete — DataGrid surface (17 components + hook + lib + types) ported, characterization tests passing
-last_updated: "2026-05-29T11:09:06.257Z"
+last_updated: "2026-05-29T11:22:02.793Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 8
-  completed_plans: 7
-  percent: 25
+  completed_plans: 8
+  percent: 50
 ---
 
 # Project State
@@ -30,7 +30,7 @@ Plan: 5 of 5
 Status: Phase complete — ready for verification
 Last activity: 2026-05-29
 
-Progress: [█████████░] 88%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [█████████░] 88%
 | Phase 01 P03 | 35 | 3 tasks | 5 files |
 | Phase 02 P02 | 35 | 2 tasks | 40 files |
 | Phase 02 P04 | 35 | 2 tasks | 31 files |
+| Phase 02 P05 | 35 | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,7 @@ Recent decisions affecting current work:
 - [Phase ?]: D-08/D-10: Toaster useTheme() default = system; next-themes already optional peer, added to neverBundle
 - [Phase ?]: D-11 transition note recorded in STATE.md for /gsd-transition: Toaster read-only next-themes peer does not violate library out-of-scope boundary
 - [Phase ?]: D-06 honored: use-data-grid.ts copied verbatim (3273 lines, zero nuqs), no state model change
+- [Phase ?]: DataTable nuqs seam removed
 
 ### Pending Todos
 
@@ -110,6 +112,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-29T11:09:01.168Z
+Last session: 2026-05-29T11:22:02.776Z
 Stopped at: Phase 2 Plan 4 complete — DataGrid surface (17 components + hook + lib + types) ported, characterization tests passing
 Resume file: None
