@@ -24,7 +24,7 @@ Requirements for the initial portable library. Each maps to a roadmap phase.
 
 - [x] **CORE-01**: Zero `next/*` and `@clerk/nextjs/server` imports across in-scope components, enforced by a CI import-guard
 - [x] **CORE-02**: 34 shadcn `ui/` primitives + page primitives (`PageHeader`, `EmptyState`, `ConfirmDialog`, `Toaster`) ported with `@/` paths rewritten to package-local
-- [ ] **CORE-03**: DataGrid/DataTable + `use-data-grid.ts` decoupled-then-ported with characterization tests (ported, not rewritten)
+- [x] **CORE-03**: DataGrid/DataTable + `use-data-grid.ts` decoupled-then-ported with characterization tests (ported, not rewritten)
 - [x] **CORE-04**: Loading / error / empty states standardized as first-class conventions; `alert()` replaced by Sonner toast and `confirm()` by `ConfirmDialog`
 - [x] **CORE-05**: Accessibility baseline — visible focus rings, full keyboard operability, `aria-label` on icon-only buttons
 
@@ -104,7 +104,7 @@ Each requirement maps to exactly one phase. See `.planning/ROADMAP.md` for phase
 | THEME-03 | Phase 1 | Complete |
 | CORE-01 | Phase 2 | Complete |
 | CORE-02 | Phase 2 | Complete |
-| CORE-03 | Phase 2 | Pending |
+| CORE-03 | Phase 2 | Complete |
 | CORE-04 | Phase 2 | Complete |
 | CORE-05 | Phase 2 | Complete |
 | DATA-01 | Phase 3 | Pending |
