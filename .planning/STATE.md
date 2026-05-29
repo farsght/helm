@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 4 context gathered
-last_updated: "2026-05-29T20:41:29.621Z"
-last_activity: 2026-05-29 -- Phase 4 planning complete
+last_updated: "2026-05-29T20:59:22.157Z"
+last_activity: 2026-05-29 -- Phase 04 execution started
 progress:
   total_phases: 4
   completed_phases: 3
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Farsight's `apps/web` can install one package and get a working, themed, data-wired UI for its core domain — decoupled from Helm's Next.js/Clerk-server/Drizzle stack and wired to the typed `@farsight/contracts`.
-**Current focus:** Phase 4 — contract gated surfaces & monorepo port
+**Current focus:** Phase 04 — contract-gated-surfaces-monorepo-port
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-29 -- Phase 4 planning complete
+Phase: 04 (contract-gated-surfaces-monorepo-port) — EXECUTING
+Plan: 1 of 6
+Status: Executing Phase 04
+Last activity: 2026-05-29 -- Phase 04 execution started
 
 Progress: [██████████] 100%
 
