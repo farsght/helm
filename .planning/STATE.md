@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 2 context gathered
-last_updated: "2026-05-29T09:50:56.225Z"
-last_activity: 2026-05-29 -- Phase 02 planning complete
+stopped_at: Phase 2 Plan 1 complete
+last_updated: "2026-05-29T12:30:00.000Z"
+last_activity: 2026-05-29 -- 02-01 Wave 0 enablement complete
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 8
-  completed_plans: 3
+  completed_plans: 4
   percent: 25
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Farsight's `apps/web` can install one package and get a working, themed, data-wired UI for its core domain — decoupled from Helm's Next.js/Clerk-server/Drizzle stack and wired to the typed `@farsight/contracts`.
-**Current focus:** Phase 2 — headless core port
+**Current focus:** Phase 02 — Headless Core Port
 
 ## Current Position
 
-Phase: 2
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-05-29 -- Phase 02 planning complete
+Phase: 02 (Headless Core Port) — EXECUTING
+Plan: 2 of 5
+Status: Executing Phase 02
+Last activity: 2026-05-29 -- 02-01 Wave 0 enablement complete
 
 Progress: [██████████] 100%
 
@@ -67,6 +67,8 @@ Recent decisions affecting current work:
 - [Phase ?]: BRANCH A selected: tsdown 0.22.1 supports unbundle:true
 - [Phase ?]: deps.neverBundle used over external in tsdown.config.ts — external is deprecated in tsdown 0.22.x
 - [Phase ?]: CSS stub files created for theme.css/globals.css and dist copy step added — publishConfig.exports satisfied, publint passes
+- [02-01]: vitest-axe@0.1.0 extend-expect provides types only; runtime registration requires expect.extend(vitestAxeMatchers) from vitest-axe/matchers
+- [02-01]: ESLint flat config for TSX requires @typescript-eslint/parser in languageOptions.parser; default espree fails on TS generics
 - [Phase ?]: Phase 2 alias rewrite rule correction: PATTERNS.md says '../lib/utils' but correct depth from src/components/ui/ is '../../lib/utils' — all 34 Phase 2 component ports must use the two-level path
 - [Phase ?]: radix-ui and class-variance-authority added to deps.neverBundle in tsdown.config.ts — prevents peer vendoring into dist/node_modules despite peerDependencies declaration
 
@@ -96,6 +98,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-29T08:35:21.777Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-headless-core-port/02-CONTEXT.md
+Last session: 2026-05-29T12:30:00.000Z
+Stopped at: Phase 2 Plan 1 complete — Wave 0 enablement (vitest + check-imports + eslint-jsx-a11y + Button axe smoke) delivered
+Resume file: .planning/phases/02-headless-core-port/02-02-PLAN.md

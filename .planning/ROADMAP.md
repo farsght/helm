@@ -68,7 +68,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — Test/CI harness: vitest.config.ts + vitest.setup.ts + check-imports.sh (3-rule guard) + eslint.config.mjs (jsx-a11y) + Button axe smoke test (CORE-01, CORE-05)
+- [x] 02-01-PLAN.md — Test/CI harness: vitest.config.ts + vitest.setup.ts + check-imports.sh (3-rule guard) + eslint.config.mjs (jsx-a11y) + Button axe smoke test (CORE-01, CORE-05)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -123,6 +123,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
-| 2. Headless Core Port | 0/5 | Not started | - |
+| 2. Headless Core Port | 1/5 | Executing | 2026-05-29 |
 | 3. Adapter Seam, Tenancy & Notifications | 0/TBD | Not started | - |
 | 4. Contract-Gated Surfaces & Monorepo Port | 0/TBD | Not started | - |
