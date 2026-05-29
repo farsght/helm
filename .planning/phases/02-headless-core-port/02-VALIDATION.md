@@ -1,11 +1,17 @@
 ---
 phase: 2
 slug: headless-core-port
-status: draft
-nyquist_compliant: false
+status: approved
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-05-29
+approved: 2026-05-29
 ---
+
+<!-- nyquist_compliant: every CORE-01..05 requirement maps to an automated verify command
+     (grep guard / vitest render / characterization / vitest-axe / eslint-jsx-a11y); no watch-mode
+     flags; Wave 0 gaps are enumerated and assigned to Plan 02-01. wave_0_complete flips to true
+     during execution once Plan 02-01 (the Wave 0 enablement slice) ships. -->
 
 # Phase 2 — Validation Strategy
 
@@ -82,11 +88,11 @@ created: 2026-05-29
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references (vitest config, check-imports.sh, eslint config)
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (vitest config, check-imports.sh, eslint config)
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-05-29

@@ -879,22 +879,18 @@ export default [
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **`@tanstack/react-virtual` version in Helm**
+1. **`@tanstack/react-virtual` version in Helm** — **RESOLVED:** Helm's root `package.json` pins `@tanstack/react-virtual` at `^3.13.24` (verified during planning); `packages/ui` declares the same `^3.13.24`. Related DataGrid/DataTable deps confirmed: `@tanstack/react-table ^8.21.3`, `@dnd-kit/core ^6.3.1`, `@dnd-kit/sortable ^10.0.0`, `@dnd-kit/modifiers ^9.0.0`, `@dnd-kit/utilities ^3.2.2`.
    - What we know: `use-data-grid.ts` imports from `@tanstack/react-virtual`; it must be declared in packages/ui
-   - What's unclear: The exact version pin in Helm's package.json was not verified during research
-   - Recommendation: Run `npm view @tanstack/react-virtual version` and match Helm's version at port time
+   - Resolution: match Helm's pins above; no `npm view` round-trip needed.
 
-2. **`sortable.tsx` in-scope vs. out-of-scope**
+2. **`sortable.tsx` in-scope vs. out-of-scope** — **RESOLVED:** In scope — `sortable.tsx` is ported as one of the 34 `ui/` files (Plan 02), and `@dnd-kit/*` is added to `packages/ui` deps + `neverBundle`. The DataGrid filter-menu imports `from "@/components/ui/sortable"` → rewritten same-dir relative. xyflow conflict check deferred to Phase 4 (PORT-01).
    - What we know: It's one of the 34 ui/ files; uses `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`; no next/* imports
-   - What's unclear: Does the DataGrid filter-menu depend on it? (data-grid-filter-menu imports `from "@/components/ui/sortable"`)
-   - Recommendation: Port `sortable.tsx` as part of the 34. Add dnd-kit packages to packages/ui dependencies. Verify it doesn't conflict with xyflow in Phase 4.
 
-3. **`'use client'` directive threshold update for Phase 1 CI script**
-   - What we know: `packages/ui/scripts/check-directives.sh` has `EXPECTED=1` (Phase 1 walked only Button+Label); Phase 2 should update to 26
-   - What's unclear: Phase 2 adds Toaster (client), ErrorState (server-safe), new skeletons (server-safe). Count may be 27 or 28.
-   - Recommendation: At Phase 2 completion, count `'use client'` files in dist/ and update EXPECTED accordingly. Don't preset the number.
+3. **`'use client'` directive threshold update for Phase 1 CI script** — **RESOLVED (runtime-discovered):** The final `EXPECTED` value is intentionally NOT preset — Plan 05's phase-gate task counts `'use client'` files in built output and updates `check-directives.sh` `EXPECTED` from `1` to the empirical count (~26–28; Toaster is client, ErrorState + new skeletons are server-safe).
+   - What we know: `packages/ui/scripts/check-directives.sh` has `EXPECTED=1` (Phase 1 walked only Button+Label); Phase 2 raises it.
+   - Resolution: count at phase completion per Plan 05 gate; don't preset the number.
 
 ---
 
