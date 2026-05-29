@@ -91,25 +91,41 @@ Explicitly excluded — documented to prevent scope creep. Most are anti-feature
 
 ## Traceability
 
-To be populated during roadmap creation. Each requirement maps to exactly one phase.
+Each requirement maps to exactly one phase. See `.planning/ROADMAP.md` for phase detail.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PKG-01..04 | TBD | Pending |
-| THEME-01..03 | TBD | Pending |
-| CORE-01..05 | TBD | Pending |
-| DATA-01..06 | TBD | Pending |
-| NOTIF-01..02 | TBD | Pending |
-| DSET-01 | TBD | Pending |
-| PIPE-01 | TBD | Pending |
-| AGNT-01 | TBD | Pending |
-| PORT-01..02 | TBD | Pending |
+| PKG-01 | Phase 1 | Pending |
+| PKG-02 | Phase 1 | Pending |
+| PKG-03 | Phase 1 | Pending |
+| PKG-04 | Phase 1 | Pending |
+| THEME-01 | Phase 1 | Pending |
+| THEME-02 | Phase 1 | Pending |
+| THEME-03 | Phase 1 | Pending |
+| CORE-01 | Phase 2 | Pending |
+| CORE-02 | Phase 2 | Pending |
+| CORE-03 | Phase 2 | Pending |
+| CORE-04 | Phase 2 | Pending |
+| CORE-05 | Phase 2 | Pending |
+| DATA-01 | Phase 3 | Pending |
+| DATA-02 | Phase 3 | Pending |
+| DATA-03 | Phase 3 | Pending |
+| DATA-04 | Phase 3 | Pending |
+| DATA-05 | Phase 3 | Pending |
+| DATA-06 | Phase 3 | Pending |
+| NOTIF-01 | Phase 3 | Pending |
+| NOTIF-02 | Phase 3 | Pending |
+| DSET-01 | Phase 4 | Pending |
+| PIPE-01 | Phase 4 | Pending |
+| AGNT-01 | Phase 4 | Pending |
+| PORT-01 | Phase 4 | Pending |
+| PORT-02 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 24 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 24 ⚠️ (resolved by roadmapper)
+- Mapped to phases: 24 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-29*
-*Last updated: 2026-05-29 after initial definition*
+*Last updated: 2026-05-29 after roadmap creation (traceability populated)*

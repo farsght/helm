@@ -1,0 +1,76 @@
+# Project State
+
+## Project Reference
+
+See: .planning/PROJECT.md (updated 2026-05-29)
+
+**Core value:** Farsight's `apps/web` can install one package and get a working, themed, data-wired UI for its core domain — decoupled from Helm's Next.js/Clerk-server/Drizzle stack and wired to the typed `@farsight/contracts`.
+**Current focus:** Phase 1 — Package Foundation & Theming
+
+## Current Position
+
+Phase: 1 of 4 (Package Foundation & Theming)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-05-29 — Roadmap created (4 phases, foundation-first, 24/24 requirements mapped)
+
+Progress: [░░░░░░░░░░] 0%
+
+## Performance Metrics
+
+**Velocity:**
+- Total plans completed: 0
+- Average duration: — min
+- Total execution time: 0.0 hours
+
+**By Phase:**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| - | - | - | - |
+
+**Recent Trend:**
+- Last 5 plans: —
+- Trend: —
+
+*Updated after each plan completion*
+
+## Accumulated Context
+
+### Decisions
+
+Decisions are logged in PROJECT.md Key Decisions table.
+Recent decisions affecting current work:
+
+- Roadmap: Foundation-first ordering adopted (research strongly converged) — headless core moves before the adapter seam; adapter seam proven against the live notifications/webhooks domain before contract-gated surfaces.
+- Roadmap: Coupling-to-shed is shallow (design system + DataGrid have zero `next/` imports; only 3 components use `next/navigation`) — the real work is the adapter seam + packaging discipline, not rewriting components.
+
+### Pending Todos
+
+[From .planning/todos/pending/ — ideas captured during sessions]
+
+None yet.
+
+### Blockers/Concerns
+
+[Issues that affect future work]
+
+- **Phase 3 (research flag, HIGH priority):** `@farsight/contracts` export shape is unverified (fluent SDK? `RouteSpec` manifest? OpenAPI doc?). This determines the `client/create-client.ts` implementation — verify before/at the start of Phase 3 planning; do not hand-roll a client if Farsight ships a fluent SDK.
+- **Phase 3:** Live-vs-contract-only endpoint inventory not yet recorded (notifications/webhooks asserted live; pipelines/datasets/agents contract-only-maybe). Confirm per-endpoint deployment status during Phase 3 planning; gate each Phase 4 surface on a real-endpoint call.
+- **Phase 3:** Project-selection UX + URL shape undecided (project scope axis has no Helm equivalent) — decide during Phase 3 tenant-context design.
+- **Phase 2:** `lucide-react` major bump (Helm `^0.576.0` → 1.x) — audit icon imports during the port.
+- **Cross-cutting hard gates:** (1) org/project cache-key correctness, (2) `'use client'` preservation, (3) Tailwind v4 `@source` distribution, (4) peer-dep dedupe, (5) contracts-ahead-of-endpoints sequencing — each mapped to the phase where it is cheapest to get right.
+
+## Deferred Items
+
+Items acknowledged and carried forward from previous milestone close:
+
+| Category | Item | Status | Deferred At |
+|----------|------|--------|-------------|
+| *(none)* | | | |
+
+## Session Continuity
+
+Last session: 2026-05-29
+Stopped at: Roadmap and STATE created; REQUIREMENTS traceability populated.
+Resume file: None

@@ -96,3 +96,62 @@ Campaign sends → Resend (`lib/email-sender.ts`). One-off `/api/messages/send` 
 - `docs/pipelines-connections-foundation.md` — pipeline connections work-in-progress
 - `docs/archive/` — historical milestone snapshots, reference only
 - `db/schema.ts` — 35+ tables, source of truth for the data model
+
+---
+
+<!-- ──────────────────────────────────────────────────────────────────────
+     GSD-managed sections (get-shit-done). These describe the active planning
+     initiative and refresh via `/gsd-update`. The hand-written Helm guidance
+     ABOVE remains authoritative for working in THIS repo. Full codebase map:
+     `.planning/codebase/` · Roadmap: `.planning/ROADMAP.md` · Handoff: `.planning/STATE.md`.
+     (Redundant GSD stack/conventions/architecture blocks were intentionally
+     omitted — they duplicate the sections above and the codebase map.)
+     ────────────────────────────────────────────────────────────────────── -->
+
+<!-- GSD:project-start source:PROJECT.md -->
+## GSD Initiative — Farsight UI Library (Helm Extraction)
+
+A portable React component library extracted from Helm's frontend and rebuilt to be backend-agnostic, destined to live as `packages/ui` in the Farsight pnpm monorepo and be consumed by Farsight's `apps/web`. It carries Helm's design system plus four feature surfaces (pipelines, agents, datasets/knowledge, notifications + webhooks), decoupled from Next.js / Clerk-server / Drizzle and wired to Farsight's typed `@farsight/contracts` SDK. The extraction and decoupling work happens in this Helm repo ("prep here, then port"); the cleaned package is later copied into the Farsight monorepo.
+
+**Core Value:** Farsight's `apps/web` can install one package and get a working, themed, data-wired UI for its core domain — without rebuilding Helm's mature components from scratch. If everything else slips, the components must render and function decoupled from Helm's Next.js/Clerk-server/Drizzle stack and against Farsight's typed contracts.
+
+### Constraints
+
+- **Tech stack**: Library must be framework-agnostic React (no Next.js runtime deps) — consumed by a Vite/React `apps/web`, built as a pnpm-workspace package.
+- **Tech stack**: Data access goes through `@farsight/contracts` (typed SDK adapter), not direct DB or Helm's `apiFetch`. Honor the RFC-7807 `ApiErrorEnvelope` error shape.
+- **Compatibility**: Tenancy is org/project, not per-user. Auth is Clerk via its React client (no `@clerk/nextjs/server`).
+- **Styling**: Package owns theming (Tailwind preset + CSS-var tokens) because `apps/web` is greenfield-styled.
+- **Dependencies**: Three of four ported feature surfaces (pipelines, datasets, agents) depend on Farsight Phase 1 backend contracts that may not be live yet — adapters may target contract specs ahead of live endpoints. Notifications/webhooks endpoints are already live.
+- **Process**: Work and commits happen in this Helm repo; final artifact is copied into the Farsight monorepo `packages/ui`.
+<!-- GSD:project-end -->
+
+## GSD Roadmap (Vertical MVP · 4 phases)
+
+Detail in `.planning/ROADMAP.md`; requirements + traceability in `.planning/REQUIREMENTS.md`; session handoff in `.planning/STATE.md`. Each phase ships an `apps/web`-consumable increment.
+
+1. **Phase 1 — Package Foundation & Theming**: installable, themed, tree-shakeable package with one React version + `./theme.css` token contract (PKG-01..04, THEME-01..03)
+2. **Phase 2 — Headless Core Port**: 34 primitives + page primitives + DataGrid render framework-clean; a11y + loading/error/empty enforced at source (CORE-01..05)
+3. **Phase 3 — Adapter Seam, Tenancy & Notifications**: `<FarsightProvider>` + typed SDK + RFC-7807 + org/project tenant-namespaced hooks, proven on the live notifications/webhooks surface (DATA-01..06, NOTIF-01..02). *Plan-time research flag: verify the `@farsight/contracts` export shape first; load the `clerk-react-patterns`/`clerk-tanstack-patterns`/`clerk-orgs` skills.*
+4. **Phase 4 — Contract-Gated Surfaces & Monorepo Port**: datasets, pipelines, agents on contracts + verified `workspace:*` consumption from an external Vite app (DSET-01, PIPE-01, AGNT-01, PORT-01..02)
+
+Next: `/gsd-plan-phase 1`.
+
+<!-- GSD:workflow-start source:GSD defaults -->
+## GSD Workflow Enforcement
+
+Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
+
+Use these entry points:
+- `/gsd-quick` for small fixes, doc updates, and ad-hoc tasks
+- `/gsd-debug` for investigation and bug fixing
+- `/gsd-execute-phase` for planned phase work
+
+Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
+<!-- GSD:workflow-end -->
+
+<!-- GSD:profile-start -->
+## Developer Profile
+
+> Profile not yet configured. Run `/gsd-profile-user` to generate your developer profile.
+> This section is managed by `generate-claude-profile` -- do not edit manually.
+<!-- GSD:profile-end -->
