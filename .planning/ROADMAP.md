@@ -104,7 +104,7 @@ Plans:
 
 **Wave 1** *(blocked on Wave 0 completion)*
 
-- [ ] 03-02-PLAN.md — Adapter seam foundation: FarsightProvider + useTenant + useApiClient + create-client.ts + FarsightError helpers + tokens.warning + barrel section (DATA-01, DATA-02, DATA-04, DATA-05)
+- [x] 03-02-PLAN.md — Adapter seam foundation: FarsightProvider + useTenant + useApiClient + create-client.ts + FarsightError helpers + tokens.warning + barrel section (DATA-01, DATA-02, DATA-04, DATA-05)
 
 **Wave 2** *(Plans 03 and 04 run in parallel — blocked on Wave 1 completion)*
 
@@ -147,5 +147,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
 | 2. Headless Core Port | 5/5 | Complete   | 2026-05-29 |
-| 3. Adapter Seam, Tenancy & Notifications | 1/6 | In Progress|  |
+| 3. Adapter Seam, Tenancy & Notifications | 2/6 | In Progress|  |
 | 4. Contract-Gated Surfaces & Monorepo Port | 0/TBD | Not started | - |
