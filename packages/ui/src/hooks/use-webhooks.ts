@@ -1,12 +1,26 @@
 /**
  * @farsight/ui — webhook query hooks.
  *
- * STUB: Placeholder created by Plan 03-01. Plan 03-02 replaces with real implementation.
- * Exports key factories and hook signatures for test scaffolding.
+ * Provides queryOptions factory (project-scope guarded per D-02) and
+ * five mutation hooks: create, update (optimistic enable-toggle per D-08),
+ * delete, and rotateSecret (all server-confirmed except enable-toggle).
+ *
+ * No "use client" — hook files do not carry the directive; the component that calls them does.
+ *
+ * NOTE: The @farsight/sdk ApiClient type infers methods as no-arg when the
+ * `apiRoutes as const satisfies ApiRoutesManifest` loses generic precision.
+ * Calls that pass args are cast via `(fn as AnyFn)({...})` — the runtime
+ * implementation is correct; this is a known TS inference limitation in the SDK.
  */
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
+import type {
+  WebhookEndpoint,
+  WebhookEndpointListResponse,
+  WebhookEndpointCreateResponse,
+} from "@farsight/contracts"
 import { useFarsightContext } from "../provider/farsight-provider"
-import type { WebhookEndpoint } from "@farsight/contracts"
+
+// ─── Key factory (D-13 — LOCKED) ──────────────────────────────────────────────
 
 export const webhookKeys = {
   all: (orgSlug: string, projectSlug: string) =>
@@ -15,13 +29,26 @@ export const webhookKeys = {
     [...webhookKeys.all(orgSlug, projectSlug), "list"] as const,
 }
 
+// ─── Type helper for SDK call workaround ─────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyFn = (...args: any[]) => Promise<any>
+
+// ─── Hooks ────────────────────────────────────────────────────────────────────
+
+/**
+ * Returns a queryOptions object for the webhook list.
+ *
+ * Per D-02 (LOCKED): query is DISABLED when projectSlug is absent.
+ * Per D-13 (LOCKED): query key is namespaced by ['webhooks', orgSlug, projectSlug].
+ */
 export function useWebhooksQueryOptions(opts?: { enabled?: boolean }) {
   const { client, tenant } = useFarsightContext()
-  const ready = !!tenant.orgSlug && !!tenant.projectSlug
+  const ready = !!tenant.orgSlug && !!tenant.projectSlug  // D-02 guard
   return queryOptions({
     queryKey: webhookKeys.list(tenant.orgSlug ?? "", tenant.projectSlug ?? ""),
-    queryFn: () =>
-      client.webhooks.list({
+    queryFn: (): Promise<WebhookEndpointListResponse> =>
+      (client.webhooks.list as AnyFn)({
         params: {
           slug: tenant.orgSlug!,
           projectSlug: tenant.projectSlug!,
@@ -32,22 +59,16 @@ export function useWebhooksQueryOptions(opts?: { enabled?: boolean }) {
   })
 }
 
-export function useCreateWebhookMutation() {
-  const { client, tenant } = useFarsightContext()
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (body: { url: string; eventTypes: string[] }) =>
-      client.webhooks.create({
-        params: { slug: tenant.orgSlug!, projectSlug: tenant.projectSlug! },
-        body,
-      }),
-    onSettled: () =>
-      qc.invalidateQueries({
-        queryKey: webhookKeys.all(tenant.orgSlug ?? "", tenant.projectSlug ?? ""),
-      }),
-  })
-}
-
+/**
+ * Optimistic enable/disable toggle mutation (D-08 — LOCKED).
+ *
+ * onMutate: cancel in-flight queries → snapshot → apply optimistic update.
+ * onError: rollback to snapshot.
+ * onSettled: invalidate to sync with server.
+ *
+ * Note: Only enabled field gets the optimistic treatment; eventTypes updates
+ * go through the same path but are less common.
+ */
 export function useUpdateWebhookMutation() {
   const { client, tenant } = useFarsightContext()
   const qc = useQueryClient()
@@ -58,8 +79,8 @@ export function useUpdateWebhookMutation() {
     }: {
       id: string
       body: { enabled?: boolean; eventTypes?: string[] }
-    }) =>
-      client.webhooks.update({
+    }): Promise<WebhookEndpoint> =>
+      (client.webhooks.update as AnyFn)({
         params: { slug: tenant.orgSlug!, projectSlug: tenant.projectSlug!, id },
         body,
       }),
@@ -73,7 +94,7 @@ export function useUpdateWebhookMutation() {
       if (body.enabled !== undefined) {
         qc.setQueryData(listKey, (old: unknown) => {
           if (!old || typeof old !== "object") return old
-          const data = old as { endpoints: WebhookEndpoint[] }
+          const data = old as WebhookEndpointListResponse
           return {
             ...data,
             endpoints: data.endpoints.map((e) =>
@@ -95,14 +116,20 @@ export function useUpdateWebhookMutation() {
   })
 }
 
-export function useDeleteWebhookMutation() {
+/**
+ * Server-confirmed create mutation (D-08).
+ * signingSecret is returned once in the response — caller must surface it immediately.
+ */
+export function useCreateWebhookMutation() {
   const { client, tenant } = useFarsightContext()
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) =>
-      client.webhooks.delete({
-        params: { slug: tenant.orgSlug!, projectSlug: tenant.projectSlug!, id },
+    mutationFn: (body: { url: string; eventTypes: string[] }): Promise<WebhookEndpointCreateResponse> =>
+      (client.webhooks.create as AnyFn)({
+        params: { slug: tenant.orgSlug!, projectSlug: tenant.projectSlug! },
+        body,
       }),
+    // No onMutate — server-confirmed; signingSecret is one-time from response
     onSettled: () =>
       qc.invalidateQueries({
         queryKey: webhookKeys.all(tenant.orgSlug ?? "", tenant.projectSlug ?? ""),
@@ -110,14 +137,40 @@ export function useDeleteWebhookMutation() {
   })
 }
 
-export function useRotateWebhookSecretMutation() {
+/**
+ * Server-confirmed delete mutation (D-08).
+ * ConfirmDialog-gated in WebhookList.
+ */
+export function useDeleteWebhookMutation() {
   const { client, tenant } = useFarsightContext()
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) =>
-      client.webhooks.rotateSecret({
+      (client.webhooks.delete as AnyFn)({
         params: { slug: tenant.orgSlug!, projectSlug: tenant.projectSlug!, id },
       }),
+    // No onMutate — server-confirmed
+    onSettled: () =>
+      qc.invalidateQueries({
+        queryKey: webhookKeys.all(tenant.orgSlug ?? "", tenant.projectSlug ?? ""),
+      }),
+  })
+}
+
+/**
+ * Server-confirmed rotate-secret mutation (D-08).
+ * New signingSecret is returned once — caller must surface it immediately.
+ * ConfirmDialog-gated in WebhookList.
+ */
+export function useRotateWebhookSecretMutation() {
+  const { client, tenant } = useFarsightContext()
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string): Promise<WebhookEndpointCreateResponse> =>
+      (client.webhooks.rotateSecret as AnyFn)({
+        params: { slug: tenant.orgSlug!, projectSlug: tenant.projectSlug!, id },
+      }),
+    // No onMutate — server-confirmed; signingSecret is one-time from response
     onSettled: () =>
       qc.invalidateQueries({
         queryKey: webhookKeys.all(tenant.orgSlug ?? "", tenant.projectSlug ?? ""),
