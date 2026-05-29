@@ -31,6 +31,7 @@ export const tokens = {
     mutedFg:     'var(--color-muted-foreground)',
     destructive: 'var(--color-destructive)',
     border:      'var(--color-border)',
+    warning:     'var(--color-chart-4)',
   },
 } as const
 
