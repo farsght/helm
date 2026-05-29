@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Plan 04-01 complete (Wave-0 harness + Vite scaffold)
-last_updated: "2026-05-29T21:17:11.897Z"
+last_updated: "2026-05-29T21:24:25.307Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 20
-  completed_plans: 16
+  completed_plans: 17
   percent: 75
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-05-29)
 ## Current Position
 
 Phase: 04 (contract-gated-surfaces-monorepo-port) — EXECUTING
-Plan: 3 of 6 (04-01 complete)
+Plan: 4 of 6 (04-01 complete)
 Status: Ready to execute
 Last activity: 2026-05-29
 
-Progress: [████████░░] 80%
+Progress: [█████████░] 85%
 
 ## Performance Metrics
 
@@ -65,6 +65,7 @@ Progress: [████████░░] 80%
 | Phase 03 P04 | 20 | 2 tasks | 4 files |
 | Phase 03 P05 | 15 | 2 tasks | 5 files |
 | Phase 03 P06 | 20 | 2 tasks | 6 files |
+| Phase 04 P03 | 18 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,9 @@ Recent decisions affecting current work:
 - [04-01]: Import-safe Wave-0 stub approach mirrored from Phase 3 (commit fdacc22) — 6 test files import key factories LIVE from real source paths; 6 minimal source stubs (shaped key factories + throwing/null placeholders) at final paths keep `npx vitest run` clean (114 pass + 25 todo, 0 module-not-found). Stubs intentionally overwritten by flesh-out plans 04-02/04-04/04-05.
 - [04-01]: src/index.ts intentionally NOT touched in Wave 0 — barrel registration ownership stays with the flesh-out plans (04-02/04-04/04-05) so throwing/null placeholders never leak into the public API (tsdown barrel-export trap discipline).
 - [04-01]: Root pnpm-workspace.yaml must also list ../farsight-platform/packages/sdk + contracts (not just packages/* + examples/*) — packages/ui depends on them via workspace:*, and root-level resolution otherwise fails ERR_PNPM_WORKSPACE_PKG_NOT_FOUND.
+- [Phase ?]: canvas-kit has no @xyflow/react CSS import — consumer global CSS owns it
+- [Phase ?]: toDefinition meta Pick excludes schemaVersion; always literal 1 inside the fn (Pitfall 2 enforced)
+- [Phase ?]: validatePipelineGraph re-exported from @farsight/contracts; not hand-rolled
 
 ### Pending Todos
 
@@ -127,6 +131,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-29T21:17:11.889Z
+Last session: 2026-05-29T21:24:25.297Z
 Stopped at: Plan 04-01 complete (Wave-0 harness + Vite scaffold)
 Resume file: None

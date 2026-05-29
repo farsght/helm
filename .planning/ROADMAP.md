@@ -148,7 +148,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 0 completion — runs parallel to Wave 1)*
 
-- [ ] 04-03-PLAN.md — canvas-kit extraction + pipeline-adapter + node-ids (PIPE-01)
+- [x] 04-03-PLAN.md — canvas-kit extraction + pipeline-adapter + node-ids (PIPE-01)
 
 **Wave 3** *(blocked on Waves 1 + 2 completion)*
 
@@ -171,4 +171,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
 | 2. Headless Core Port | 5/5 | Complete   | 2026-05-29 |
 | 3. Adapter Seam, Tenancy & Notifications | 6/6 | Complete    | 2026-05-29 |
-| 4. Contract-Gated Surfaces & Monorepo Port | 2/6 | In Progress|  |
+| 4. Contract-Gated Surfaces & Monorepo Port | 3/6 | In Progress|  |

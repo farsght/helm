@@ -48,7 +48,7 @@ Requirements for the initial portable library. Each maps to a roadmap phase.
 
 ### Pipelines Surface
 
-- [ ] **PIPE-01**: Pipelines `@xyflow/react` canvas + run views bound to `pipelines` / `pipeline_runs` contracts; locks the xyflow CSS import-order contract with a visual smoke test
+- [x] **PIPE-01**: Pipelines `@xyflow/react` canvas + run views bound to `pipelines` / `pipeline_runs` contracts; locks the xyflow CSS import-order contract with a visual smoke test
 
 ### Agents Surface
 
@@ -116,7 +116,7 @@ Each requirement maps to exactly one phase. See `.planning/ROADMAP.md` for phase
 | NOTIF-01 | Phase 3 | Complete |
 | NOTIF-02 | Phase 3 | Complete |
 | DSET-01 | Phase 4 | Complete |
-| PIPE-01 | Phase 4 | Pending |
+| PIPE-01 | Phase 4 | Complete |
 | AGNT-01 | Phase 4 | Pending |
 | PORT-01 | Phase 4 | Pending |
 | PORT-02 | Phase 4 | Pending |
