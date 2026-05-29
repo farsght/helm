@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 2 Plan 1 complete — Wave 0 enablement (vitest + check-imports + eslint-jsx-a11y + Button axe smoke) delivered
-last_updated: "2026-05-29T10:34:47.151Z"
+last_updated: "2026-05-29T10:44:57.657Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 8
-  completed_plans: 5
+  completed_plans: 6
   percent: 25
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-05-29)
 ## Current Position
 
 Phase: 02 (Headless Core Port) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-05-29
 
-Progress: [██████░░░░] 63%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
@@ -73,6 +73,10 @@ Recent decisions affecting current work:
 - [Phase ?]: Phase 2 alias rewrite rule correction: PATTERNS.md says '../lib/utils' but correct depth from src/components/ui/ is '../../lib/utils' — all 34 Phase 2 component ports must use the two-level path
 - [Phase ?]: radix-ui and class-variance-authority added to deps.neverBundle in tsdown.config.ts — prevents peer vendoring into dist/node_modules despite peerDependencies declaration
 - [Phase ?]: accordion.tsx absent from Helm source — ported 31 new files for 34 total in packages/ui
+- [Phase ?]: D-02 enforced: ErrorState purely presentational, zero HTTP/RFC-7807 references
+- [Phase ?]: D-03 delivered: CardGridSkeleton, ListSkeleton, DetailSkeleton as named primitives using Array.from SSR-safe repetition
+- [Phase ?]: D-08/D-10: Toaster useTheme() default = system; next-themes already optional peer, added to neverBundle
+- [Phase ?]: D-11 transition note recorded in STATE.md for /gsd-transition: Toaster read-only next-themes peer does not violate library out-of-scope boundary
 
 ### Pending Todos
 
@@ -104,6 +108,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-29T10:34:41.066Z
+Last session: 2026-05-29T10:44:15.569Z
 Stopped at: Phase 2 Plan 1 complete — Wave 0 enablement (vitest + check-imports + eslint-jsx-a11y + Button axe smoke) delivered
 Resume file: None

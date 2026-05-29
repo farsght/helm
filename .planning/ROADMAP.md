@@ -76,7 +76,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion — Plans 03/04/05 run in parallel)*
 
-- [ ] 02-03-PLAN.md — Page primitives: port PageHeader/EmptyState/ConfirmDialog + new ErrorState (D-02) + new Toaster (D-08/D-10) + three layout skeletons (D-03) + package.json next-themes peer reclassification (CORE-02, CORE-04, CORE-05)
+- [x] 02-03-PLAN.md — Page primitives: port PageHeader/EmptyState/ConfirmDialog + new ErrorState (D-02) + new Toaster (D-08/D-10) + three layout skeletons (D-03) + package.json next-themes peer reclassification (CORE-02, CORE-04, CORE-05)
 - [ ] 02-04-PLAN.md — DataGrid port: 17 component files + use-data-grid.ts (3273 lines, framework-clean, no state changes per D-06) + lib/types files + characterization tests (CORE-03, CORE-05)
 - [ ] 02-05-PLAN.md — DataTable port: 9 component files + use-data-table.ts nuqs seam (D-05/D-06/D-07: React.useState default + controlled state/onStateChange props) + utility hooks + lib/types/config + characterization tests + final check-directives.sh threshold update (CORE-03, CORE-04, CORE-05)
 
@@ -123,6 +123,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
-| 2. Headless Core Port | 2/5 | In Progress|  |
+| 2. Headless Core Port | 3/5 | In Progress|  |
 | 3. Adapter Seam, Tenancy & Notifications | 0/TBD | Not started | - |
 | 4. Contract-Gated Surfaces & Monorepo Port | 0/TBD | Not started | - |
