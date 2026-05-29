@@ -140,7 +140,7 @@ Plans:
 Plans:
 **Wave 0**
 
-- [ ] 04-01-PLAN.md — Test harness stubs (6 test files for all 3 surfaces) + examples/farsight-ui-consumer Vite scaffold + root pnpm-workspace.yaml (DSET-01, PIPE-01, AGNT-01, PORT-01, PORT-02)
+- [x] 04-01-PLAN.md — Test harness stubs (6 test files for all 3 surfaces) + examples/farsight-ui-consumer Vite scaffold + root pnpm-workspace.yaml (DSET-01, PIPE-01, AGNT-01, PORT-01, PORT-02)
 
 **Wave 1** *(blocked on Wave 0 completion)*
 
@@ -171,4 +171,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
 | 2. Headless Core Port | 5/5 | Complete   | 2026-05-29 |
 | 3. Adapter Seam, Tenancy & Notifications | 6/6 | Complete    | 2026-05-29 |
-| 4. Contract-Gated Surfaces & Monorepo Port | 0/6 | Not started | - |
+| 4. Contract-Gated Surfaces & Monorepo Port | 1/6 | In Progress|  |

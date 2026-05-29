@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 4 context gathered
+stopped_at: Plan 04-01 complete
 last_updated: "2026-05-29T20:59:22.157Z"
-last_activity: 2026-05-29 -- Phase 04 execution started
+last_activity: 2026-05-29 -- Plan 04-01 complete (Wave-0 harness + Vite scaffold)
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 20
-  completed_plans: 14
-  percent: 70
+  completed_plans: 15
+  percent: 75
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-05-29)
 ## Current Position
 
 Phase: 04 (contract-gated-surfaces-monorepo-port) — EXECUTING
-Plan: 1 of 6
+Plan: 2 of 6 (04-01 complete)
 Status: Executing Phase 04
-Last activity: 2026-05-29 -- Phase 04 execution started
+Last activity: 2026-05-29 -- Plan 04-01 complete (Wave-0 harness + Vite scaffold)
 
-Progress: [██████████] 100%
+Progress: [███████▌  ] 75%
 
 ## Performance Metrics
 
@@ -93,6 +93,9 @@ Recent decisions affecting current work:
 - [03-01]: Vite static-analyzes dynamic import() strings at transform time — Wave-0 stubs require real source files (not just import guards); source stubs throw clearly until Plans 02-04 ship real implementations
 - [03-01]: farsight-error.ts + hook factories fully implemented in Wave-0 (not just stubs) since they only depend on @farsight/sdk which is now available
 - [Phase ?]: AnyFn cast pattern in use-webhooks.ts — same SDK inference gap fix as 03-03
+- [04-01]: Import-safe Wave-0 stub approach mirrored from Phase 3 (commit fdacc22) — 6 test files import key factories LIVE from real source paths; 6 minimal source stubs (shaped key factories + throwing/null placeholders) at final paths keep `npx vitest run` clean (114 pass + 25 todo, 0 module-not-found). Stubs intentionally overwritten by flesh-out plans 04-02/04-04/04-05.
+- [04-01]: src/index.ts intentionally NOT touched in Wave 0 — barrel registration ownership stays with the flesh-out plans (04-02/04-04/04-05) so throwing/null placeholders never leak into the public API (tsdown barrel-export trap discipline).
+- [04-01]: Root pnpm-workspace.yaml must also list ../farsight-platform/packages/sdk + contracts (not just packages/* + examples/*) — packages/ui depends on them via workspace:*, and root-level resolution otherwise fails ERR_PNPM_WORKSPACE_PKG_NOT_FOUND.
 
 ### Pending Todos
 
@@ -125,5 +128,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-05-29T18:48:06.001Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-contract-gated-surfaces-monorepo-port/04-CONTEXT.md
+Stopped at: Plan 04-01 complete (Wave-0 harness + Vite scaffold)
+Resume file: .planning/phases/04-contract-gated-surfaces-monorepo-port/04-02-PLAN.md
