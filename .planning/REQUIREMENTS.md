@@ -30,17 +30,17 @@ Requirements for the initial portable library. Each maps to a roadmap phase.
 
 ### Adapter Seam + Tenancy
 
-- [ ] **DATA-01**: `<FarsightProvider>` mounts an (injectable) `QueryClient` + Clerk React client + tenant context `{ orgId, orgSlug, role, userId, projectId }`
-- [ ] **DATA-02**: Typed SDK client over `@farsight/contracts` attaching the Clerk Bearer token + org header
-- [ ] **DATA-03**: `queryOptions`-factory data hooks with tenant-namespaced query keys (`['<resource>', orgId, projectId, …]`) — no cross-tenant cache bleed on org switch
-- [ ] **DATA-04**: RFC-7807/9457 `ApiErrorEnvelope` parsed into a typed error discriminated on the `type` URI (status / detail / extension members surfaced; `detail` never parsed for control flow)
-- [ ] **DATA-05**: Org/project tenancy remodel — both scope axes plus `role` modeled from the start; no per-`userId` assumptions carried over from Helm
-- [ ] **DATA-06**: Optimistic mutation updates encoded in mutation-hook factories; end-to-end type flow (rename a `@farsight/contracts` field → compile error at the call site)
+- [x] **DATA-01**: `<FarsightProvider>` mounts an (injectable) `QueryClient` + Clerk React client + tenant context `{ orgId, orgSlug, role, userId, projectId }`
+- [x] **DATA-02**: Typed SDK client over `@farsight/contracts` attaching the Clerk Bearer token + org header
+- [x] **DATA-03**: `queryOptions`-factory data hooks with tenant-namespaced query keys (`['<resource>', orgId, projectId, …]`) — no cross-tenant cache bleed on org switch
+- [x] **DATA-04**: RFC-7807/9457 `ApiErrorEnvelope` parsed into a typed error discriminated on the `type` URI (status / detail / extension members surfaced; `detail` never parsed for control flow)
+- [x] **DATA-05**: Org/project tenancy remodel — both scope axes plus `role` modeled from the start; no per-`userId` assumptions carried over from Helm
+- [x] **DATA-06**: Optimistic mutation updates encoded in mutation-hook factories; end-to-end type flow (rename a `@farsight/contracts` field → compile error at the call site)
 
 ### Notifications + Webhooks Surface (adapter proving ground — live endpoints)
 
-- [ ] **NOTIF-01**: Notifications inbox + notification-preferences UI bound to the live `/me/notifications` + `/me/notification-preferences` endpoints
-- [ ] **NOTIF-02**: Outbound-webhooks management UI (register, list, toggle/eventTypes, rotate signing secret, delete) on the live webhooks endpoints
+- [x] **NOTIF-01**: Notifications inbox + notification-preferences UI bound to the live `/me/notifications` + `/me/notification-preferences` endpoints
+- [x] **NOTIF-02**: Outbound-webhooks management UI (register, list, toggle/eventTypes, rotate signing secret, delete) on the live webhooks endpoints
 
 ### Datasets Surface
 
@@ -107,14 +107,14 @@ Each requirement maps to exactly one phase. See `.planning/ROADMAP.md` for phase
 | CORE-03 | Phase 2 | Complete |
 | CORE-04 | Phase 2 | Complete |
 | CORE-05 | Phase 2 | Complete |
-| DATA-01 | Phase 3 | Pending |
-| DATA-02 | Phase 3 | Pending |
-| DATA-03 | Phase 3 | Pending |
-| DATA-04 | Phase 3 | Pending |
-| DATA-05 | Phase 3 | Pending |
-| DATA-06 | Phase 3 | Pending |
-| NOTIF-01 | Phase 3 | Pending |
-| NOTIF-02 | Phase 3 | Pending |
+| DATA-01 | Phase 3 | Complete |
+| DATA-02 | Phase 3 | Complete |
+| DATA-03 | Phase 3 | Complete |
+| DATA-04 | Phase 3 | Complete |
+| DATA-05 | Phase 3 | Complete |
+| DATA-06 | Phase 3 | Complete |
+| NOTIF-01 | Phase 3 | Complete |
+| NOTIF-02 | Phase 3 | Complete |
 | DSET-01 | Phase 4 | Pending |
 | PIPE-01 | Phase 4 | Pending |
 | AGNT-01 | Phase 4 | Pending |

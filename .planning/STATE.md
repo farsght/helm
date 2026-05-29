@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Phase 3 UI-SPEC approved
-last_updated: "2026-05-29T14:07:34.323Z"
-last_activity: 2026-05-29 -- Phase 3 planning complete
+last_updated: "2026-05-29T16:39:01.047Z"
+last_activity: 2026-05-29
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 14
-  completed_plans: 8
+  completed_plans: 9
   percent: 50
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Farsight's `apps/web` can install one package and get a working, themed, data-wired UI for its core domain — decoupled from Helm's Next.js/Clerk-server/Drizzle stack and wired to the typed `@farsight/contracts`.
-**Current focus:** Phase 3 — adapter seam, tenancy & notifications proving ground
+**Current focus:** Phase 3 — Adapter Seam, Tenancy & Notifications Proving Ground
 
 ## Current Position
 
-Phase: 3
-Plan: Not started
+Phase: 3 (Adapter Seam, Tenancy & Notifications Proving Ground) — EXECUTING
+Plan: 2 of 6
 Status: Ready to execute
-Last activity: 2026-05-29 -- Phase 3 planning complete
+Last activity: 2026-05-29
 
-Progress: [██████████] 100%
+Progress: [██████░░░░] 64%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [██████████] 100%
 | Phase 02 P02 | 35 | 2 tasks | 40 files |
 | Phase 02 P04 | 35 | 2 tasks | 31 files |
 | Phase 02 P05 | 35 | 2 tasks | 16 files |
+| Phase 03 P01 | 45 | 2 tasks | 37 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,9 @@ Recent decisions affecting current work:
 - [Phase ?]: D-11 transition note recorded in STATE.md for /gsd-transition: Toaster read-only next-themes peer does not violate library out-of-scope boundary
 - [Phase ?]: D-06 honored: use-data-grid.ts copied verbatim (3273 lines, zero nuqs), no state model change
 - [Phase ?]: DataTable nuqs seam removed
+- [03-01]: pnpm-workspace.yaml at packages/ui level includes ~/Projects/farsight-platform/packages/sdk + contracts — cleanest resolution for SDK's workspace:* dep on contracts without modifying Farsight source
+- [03-01]: Vite static-analyzes dynamic import() strings at transform time — Wave-0 stubs require real source files (not just import guards); source stubs throw clearly until Plans 02-04 ship real implementations
+- [03-01]: farsight-error.ts + hook factories fully implemented in Wave-0 (not just stubs) since they only depend on @farsight/sdk which is now available
 
 ### Pending Todos
 
@@ -113,6 +117,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-29T13:41:05.820Z
+Last session: 2026-05-29T16:39:01.040Z
 Stopped at: Phase 3 UI-SPEC approved
-Resume file: .planning/phases/03-adapter-seam-tenancy-notifications-proving-ground/03-UI-SPEC.md
+Resume file: None

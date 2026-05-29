@@ -100,7 +100,7 @@ Plans:
 Plans:
 **Wave 0**
 
-- [ ] 03-01-PLAN.md — Workspace linking (@farsight/sdk + @farsight/contracts via file: deps) + test harness (13 stub test files + 2 helper files; mock fetchImpl factory) (DATA-01..06, NOTIF-01/02)
+- [x] 03-01-PLAN.md — Workspace linking (@farsight/sdk + @farsight/contracts via file: deps) + test harness (13 stub test files + 2 helper files; mock fetchImpl factory) (DATA-01..06, NOTIF-01/02)
 
 **Wave 1** *(blocked on Wave 0 completion)*
 
@@ -147,5 +147,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
 | 2. Headless Core Port | 5/5 | Complete   | 2026-05-29 |
-| 3. Adapter Seam, Tenancy & Notifications | 0/6 | Not started | - |
+| 3. Adapter Seam, Tenancy & Notifications | 1/6 | In Progress|  |
 | 4. Contract-Gated Surfaces & Monorepo Port | 0/TBD | Not started | - |
