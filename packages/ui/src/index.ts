@@ -106,6 +106,37 @@ export type { DatasetDetailProps } from './components/datasets/dataset-detail'
 export { DatasetRecords } from './components/datasets/dataset-records'
 export { DatasetSearch } from './components/datasets/dataset-search'
 
+// Workflow (pipeline) hooks (Phase 4)
+export { workflowKeys, useWorkflowsQueryOptions, useWorkflowQueryOptions, useCreateWorkflowMutation, useUpdateWorkflowMutation, useRunWorkflowMutation, useDeleteWorkflowMutation } from './hooks/use-workflows'
+
+// Workflow (pipeline) surfaces (Phase 4)
+export { WorkflowList } from './components/pipelines/workflow-list'
+export type { WorkflowListProps } from './components/pipelines/workflow-list'
+export { WorkflowCanvas } from './components/pipelines/workflow-canvas'
+export type { WorkflowCanvasProps } from './components/pipelines/workflow-canvas'
+export { WorkflowRunView } from './components/pipelines/workflow-run-view'
+export type { WorkflowRunViewProps } from './components/pipelines/workflow-run-view'
+export { SourceNode } from './components/pipelines/nodes/source-node'
+export { TransformNode } from './components/pipelines/nodes/transform-node'
+export { SinkNode } from './components/pipelines/nodes/sink-node'
+export { toFlowNode, toDefinition, validatePipelineGraph } from './components/pipelines/pipeline-adapter'
+export { NODE_IDS, nodeTypeFor } from './components/pipelines/node-ids'
+export type { NodeIdKey } from './components/pipelines/node-ids'
+
+// Canvas-kit (Phase 4)
+export { CanvasFlow } from './components/canvas-kit/canvas-flow'
+export type { CanvasFlowProps } from './components/canvas-kit/canvas-flow'
+export { CanvasBackground } from './components/canvas-kit/canvas-background'
+export { CanvasControls } from './components/canvas-kit/canvas-controls'
+export { CanvasMiniMap } from './components/canvas-kit/canvas-minimap'
+export { CanvasPanel } from './components/canvas-kit/canvas-panel'
+export type { CanvasPanelProps } from './components/canvas-kit/canvas-panel'
+export { CanvasInspector } from './components/canvas-kit/canvas-inspector'
+export type { CanvasInspectorProps } from './components/canvas-kit/canvas-inspector'
+export { CanvasPalette } from './components/canvas-kit/canvas-palette'
+export type { CanvasPaletteProps, PaletteItem } from './components/canvas-kit/canvas-palette'
+export { autoLayout } from './components/canvas-kit/auto-layout'
+
 // UI primitives
 export { Button, buttonVariants } from './components/ui/button'
 export { Label } from './components/ui/label'
