@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "pnpm --filter @farsight/ui build && vite",
     "build": "pnpm --filter @farsight/ui build && vite build",
+    "build:treeshake": "pnpm --filter @farsight/ui build && vite build --config vite.treeshake.config.ts",
     "preview": "vite preview"
   },
   "dependencies": {
