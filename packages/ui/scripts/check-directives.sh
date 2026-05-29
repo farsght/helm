@@ -18,9 +18,10 @@ fi
 CLIENT_COUNT=$(grep -rl '"use client"' "$DIST_DIR" 2>/dev/null | grep '\.js$' | wc -l | tr -d ' ')
 
 # Phase 1 threshold: >= 1 (Label carries the directive; Button correctly omits it)
-# Phase 2 threshold: 26 — all 34 components ported, 26 carry 'use client' (verified against dist/)
-# Note: Toaster (Plan 03) will add 1 more, bringing final Phase 2 count to 27
-EXPECTED=26
+# Phase 2 threshold: 50 — full surface exported: 26 ui/ primitives + Toaster + DataGrid (17 files,
+# most carry 'use client') + DataTable (9 files) + page skeletons/dialogs + hooks.
+# Verified by counting dist/*.js files containing '"use client"' after Phase 2 export fix.
+EXPECTED=50
 
 if [ "$CLIENT_COUNT" -lt "$EXPECTED" ]; then
   echo "FAIL: 'use client' directives missing in dist/ — got $CLIENT_COUNT, expected >= $EXPECTED"
