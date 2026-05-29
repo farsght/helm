@@ -56,6 +56,7 @@ interface UseDataTableProps<TData>
       | "manualFiltering"
       | "manualPagination"
       | "manualSorting"
+      | "onStateChange"
     >,
     Required<Pick<TableOptions<TData>, "pageCount">>,
     DataTableStateProps {
