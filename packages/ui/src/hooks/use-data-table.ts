@@ -190,18 +190,18 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
   const onColumnFiltersChange = React.useCallback(
     (updaterOrValue: Updater<ColumnFiltersState>) => {
       if (enableAdvancedFilter) return;
-
-      setInternalColumnFilters((prev) => {
-        const next =
-          typeof updaterOrValue === "function"
-            ? updaterOrValue(prev)
-            : updaterOrValue;
-
-        debouncedSetColumnFilters(next);
-        return next;
-      });
+      // Use the effective (controlled) value as the base so that function-form
+      // updaters receive the correct previous state in controlled mode. The
+      // debouncedSetColumnFilters callback already guards setInternalColumnFilters
+      // behind `if (!controlledState?.columnFilters)`, so internal state is only
+      // mutated in uncontrolled mode.
+      const next =
+        typeof updaterOrValue === "function"
+          ? updaterOrValue(columnFilters)
+          : updaterOrValue;
+      debouncedSetColumnFilters(next);
     },
-    [debouncedSetColumnFilters, enableAdvancedFilter],
+    [columnFilters, debouncedSetColumnFilters, enableAdvancedFilter],
   );
 
   const table = useReactTable({
