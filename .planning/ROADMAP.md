@@ -95,7 +95,30 @@ Plans:
   3. A backend RFC-7807/9457 error renders as a typed error discriminated on the `type` URI (status/detail/extension surfaced; `detail` never drives control flow), and renaming a `@farsight/contracts` field produces a compile error at the call site
   4. A user can view their notifications inbox, edit notification preferences, and register/list/toggle/rotate-secret/delete outbound webhooks against the live `/me/notifications`, `/me/notification-preferences`, and webhooks endpoints — with optimistic updates and loading/error/empty states wired through the hook shape
 
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+**Wave 0**
+
+- [ ] 03-01-PLAN.md — Workspace linking (@farsight/sdk + @farsight/contracts via file: deps) + test harness (13 stub test files + 2 helper files; mock fetchImpl factory) (DATA-01..06, NOTIF-01/02)
+
+**Wave 1** *(blocked on Wave 0 completion)*
+
+- [ ] 03-02-PLAN.md — Adapter seam foundation: FarsightProvider + useTenant + useApiClient + create-client.ts + FarsightError helpers + tokens.warning + barrel section (DATA-01, DATA-02, DATA-04, DATA-05)
+
+**Wave 2** *(Plans 03 and 04 run in parallel — blocked on Wave 1 completion)*
+
+- [ ] 03-03-PLAN.md — Notifications vertical: use-notifications + use-notification-preferences hooks + NotificationBell + NotificationInbox + NotificationItem + NotificationPreferences surfaces (DATA-03, DATA-06, NOTIF-01)
+- [ ] 03-04-PLAN.md — Webhooks list vertical: use-webhooks hooks (all 5 mutations) + WebhookHealthBadge + WebhookList surface with ConfirmDialog gates + no-project guard (DATA-02, DATA-03, DATA-06, NOTIF-02)
+
+**Wave 3** *(blocked on Wave 2 / Plan 04 completion)*
+
+- [ ] 03-05-PLAN.md — Webhooks modals: EventTypesInput + WebhookCreateModal + WebhookSecretReveal (copy-once) + WebhookRotateSecretModal + barrel finalization (DATA-06, NOTIF-02)
+
+**Wave 4** *(blocked on Wave 2/3 completion — Plans 03 + 05 both done)*
+
+- [ ] 03-06-PLAN.md — Final gate: barrel audit + check-directives.sh threshold update + full vitest suite + tsc --noEmit + check-imports.sh (DATA-01..06, NOTIF-01/02)
+
 **UI hint**: yes
 
 ### Phase 4: Contract-Gated Surfaces & Monorepo Port
@@ -124,5 +147,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
 | 2. Headless Core Port | 5/5 | Complete   | 2026-05-29 |
-| 3. Adapter Seam, Tenancy & Notifications | 0/TBD | Not started | - |
+| 3. Adapter Seam, Tenancy & Notifications | 0/6 | Not started | - |
 | 4. Contract-Gated Surfaces & Monorepo Port | 0/TBD | Not started | - |
