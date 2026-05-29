@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Package Foundation & Theming** - Buildable `packages/ui` with subpath exports, peer-dep hygiene, `'use client'`-preserving artifact, and the lifted CSS-variable token contract (completed 2026-05-29)
 - [x] **Phase 2: Headless Core Port** - 34 primitives + page primitives + DataGrid/DataTable ported framework-clean, with loading/error/empty + a11y conventions enforced at source (completed 2026-05-29)
-- [ ] **Phase 3: Adapter Seam, Tenancy & Notifications Proving Ground** - `<FarsightProvider>` + typed SDK + RFC-7807 errors + org/project tenant-namespaced hooks, proven end-to-end against the live notifications/webhooks surface
+- [x] **Phase 3: Adapter Seam, Tenancy & Notifications Proving Ground** - `<FarsightProvider>` + typed SDK + RFC-7807 errors + org/project tenant-namespaced hooks, proven end-to-end against the live notifications/webhooks surface (completed 2026-05-29)
 - [ ] **Phase 4: Contract-Gated Surfaces & Monorepo Port** - Datasets, pipelines, and agents surfaces on Farsight contracts, plus verified `workspace:*` consumption from an external Vite app
 
 ## Phase Details
@@ -117,7 +117,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 2/3 completion — Plans 03 + 05 both done)*
 
-- [ ] 03-06-PLAN.md — Final gate: barrel audit + check-directives.sh threshold update + full vitest suite + tsc --noEmit + check-imports.sh (DATA-01..06, NOTIF-01/02)
+- [x] 03-06-PLAN.md — Final gate: barrel audit + check-directives.sh threshold update + full vitest suite + tsc --noEmit + check-imports.sh (DATA-01..06, NOTIF-01/02)
 
 **UI hint**: yes
 
@@ -147,5 +147,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
 | 2. Headless Core Port | 5/5 | Complete   | 2026-05-29 |
-| 3. Adapter Seam, Tenancy & Notifications | 5/6 | In Progress|  |
+| 3. Adapter Seam, Tenancy & Notifications | 6/6 | Complete   | 2026-05-29 |
 | 4. Contract-Gated Surfaces & Monorepo Port | 0/TBD | Not started | - |
