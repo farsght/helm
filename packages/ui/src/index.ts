@@ -68,6 +68,15 @@ export { NotificationInbox } from './components/notifications/notification-inbox
 export type { NotificationInboxProps } from './components/notifications/notification-inbox'
 export { NotificationPreferences } from './components/notifications/notification-preferences'
 
+// Webhook hooks (Phase 3)
+export { webhookKeys, useWebhooksQueryOptions, useCreateWebhookMutation, useUpdateWebhookMutation, useDeleteWebhookMutation, useRotateWebhookSecretMutation } from './hooks/use-webhooks'
+
+// Webhook surfaces (Phase 3)
+export { WebhookHealthBadge } from './components/webhooks/webhook-health-badge'
+export type { WebhookHealthBadgeProps } from './components/webhooks/webhook-health-badge'
+export { WebhookList } from './components/webhooks/webhook-list'
+export type { WebhookListProps } from './components/webhooks/webhook-list'
+
 // Provider & adapter seam (Phase 3)
 export { FarsightProvider, useFarsightContext, FarsightContext } from './provider/farsight-provider'
 export type { FarsightProviderProps, TenantContext, FarsightContextValue } from './provider/farsight-provider'
