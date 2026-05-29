@@ -34,6 +34,7 @@ export default defineConfig({
       '@dnd-kit/modifiers',
       'lucide-react',
       'sonner',
+      'next-themes',
       'cmdk',
       'react-day-picker',
       '@radix-ui/react-direction',
