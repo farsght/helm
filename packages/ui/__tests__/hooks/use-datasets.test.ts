@@ -5,8 +5,11 @@
  * created in Plan 04-01. Deeper behaviour covered by it.todo stubs, promoted
  * to live assertions in Plan 04-02 once the full implementation ships.
  */
+import * as React from "react"
+import { renderHook } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
-import { datasetKeys } from "../../src/hooks/use-datasets"
+import { datasetKeys, useDatasetsQueryOptions } from "../../src/hooks/use-datasets"
+import { TestProvider } from "../helpers/test-provider"
 
 describe("useDatasets — DSET-01", () => {
   it("datasetKeys.list includes orgSlug and projectSlug", () => {
@@ -24,9 +27,21 @@ describe("useDatasets — DSET-01", () => {
     expect(JSON.stringify(keyA)).not.toBe(JSON.stringify(keyB))
   })
 
-  it.todo("useDatasetsQueryOptions enabled=false when projectSlug is null (D-02 guard)")
+  it("useDatasetsQueryOptions enabled=false when projectSlug is null (D-02 guard)", () => {
+    const { result } = renderHook(() => useDatasetsQueryOptions(), {
+      wrapper: ({ children }) =>
+        React.createElement(TestProvider, { orgSlug: "my-org", projectSlug: null }, children),
+    })
+    expect(result.current.enabled).toBe(false)
+  })
 
-  it.todo("useDatasetsQueryOptions enabled=true when orgSlug and projectSlug are present")
+  it("useDatasetsQueryOptions enabled=true when orgSlug and projectSlug are present", () => {
+    const { result } = renderHook(() => useDatasetsQueryOptions(), {
+      wrapper: ({ children }) =>
+        React.createElement(TestProvider, { orgSlug: "my-org", projectSlug: "my-project" }, children),
+    })
+    expect(result.current.enabled).toBe(true)
+  })
 
   it.todo("useDatasetsQueryOptions fetchImpl round-trip — calls client.datasets.list with correct params")
 
