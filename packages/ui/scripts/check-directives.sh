@@ -25,8 +25,12 @@ CLIENT_COUNT=$(grep -rl '"use client"' "$DIST_DIR" 2>/dev/null | grep '\.js$' | 
 #   webhooks (list, endpoint-row, secret-reveal, create-modal, rotate-secret-modal, event-types-input),
 #   hooks (use-notifications, use-webhooks, use-notification-preferences),
 #   errors (farsight-error), client (create-client) = 12 additional files.
-# Verified by counting dist/*.js files containing '"use client"' after Phase 3 build.
-EXPECTED=62
+# Phase 4 threshold: 84 — adds canvas-kit (canvas-flow, canvas-background, canvas-controls,
+#   canvas-minimap, canvas-panel, canvas-inspector, canvas-palette) + datasets (dataset-list,
+#   dataset-detail, dataset-records, dataset-search) + pipelines (workflow-list, workflow-canvas,
+#   workflow-run-view + source/transform/sink nodes) + agents (agent-chat-view, agent-message)
+#   to prior 62. Verified by counting dist/*.js files containing '"use client"' after Phase 4 build.
+EXPECTED=84
 
 if [ "$CLIENT_COUNT" -lt "$EXPECTED" ]; then
   echo "FAIL: 'use client' directives missing in dist/ — got $CLIENT_COUNT, expected >= $EXPECTED"
