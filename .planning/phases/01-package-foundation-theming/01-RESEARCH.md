@@ -641,7 +641,12 @@ echo "PASS: $CLIENT_COUNT 'use client' files in dist/"
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+> **All three resolved — none blocks Phase 1, and no Phase 1 plan task depends on any of these answers:**
+> 1. **RESOLVED** — `apps/smoke` location: deferred to Phase 4 PORT-01. The Phase 1 walking skeleton uses a local `tsx` import smoke inside the Helm-staged package (no workspace app needed); the truly-external-consumer proof is PORT-01.
+> 2. **RESOLVED** — `globals.css` backward-compat: a Farsight-monorepo concern, deferred to the Phase 4 port. Phase 1 ships `theme.css` standalone in the Helm-staged package; reconciling Farsight's `globals.css` happens at port time.
+> 3. **RESOLVED** — `lucide-react` major drift: deferred to the Phase 2 icon audit. No icons are ported in Phase 1 (only Button + Label).
 
 1. **Should `apps/smoke` live inside the Farsight monorepo or be a truly external repo?**
    - What we know: PKG-02 requires "exactly one React version" proof; PORT-01 (Phase 4) requires verified workspace consumption from an external consumer

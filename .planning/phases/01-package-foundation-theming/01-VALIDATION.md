@@ -2,7 +2,7 @@
 phase: 1
 slug: package-foundation-theming
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-05-29
 ---
@@ -30,7 +30,7 @@ created: 2026-05-29
 | **Framework** | Vitest 4.x (already configured in Helm: `vitest.config.ts`) for any unit checks; build-output assertions via Node + grep |
 | **Config file** | `vitest.config.ts` (Helm, existing); new `packages/ui/tsdown.config.ts` (Wave 0 creates) |
 | **Quick run command** | `npx tsdown -c packages/ui/tsdown.config.ts` (build exits 0) |
-| **Full suite command** | build + `npx publint packages/ui` + `grep -rl "'use client'" packages/ui/dist/ \| wc -l` (assert ≥ 26) + `npx @arethetypeswrong/cli --pack packages/ui` |
+| **Full suite command** | build + `npx publint packages/ui` + `grep -rl "'use client'" packages/ui/dist/ \| wc -l` (assert **≥ 1 for Phase 1** — only Button+Label are ported and exactly one carries the directive; threshold rises to ≥ 26 in Phase 2 once all 34 `ui/*` are ported) + `npx @arethetypeswrong/cli --pack packages/ui` |
 | **Estimated runtime** | ~30–60 seconds (standalone build) |
 
 ---
@@ -38,7 +38,7 @@ created: 2026-05-29
 ## Sampling Rate
 
 - **After every task commit:** standalone build exits 0 (`npx tsdown -c packages/ui/tsdown.config.ts`)
-- **After every plan wave:** full suite — build + publint + `'use client'` grep (≥26) + attw types check
+- **After every plan wave:** full suite — build + publint + `'use client'` grep (**≥1 for Phase 1**; rises to ≥26 in Phase 2) + attw types check
 - **Before `/gsd:verify-work`:** full suite green; local import smoke renders one themed primitive
 - **Max feedback latency:** ~60 seconds
 
@@ -50,7 +50,7 @@ created: 2026-05-29
 |-----|----------|-----------|------------------------------|-----------------------------|
 | PKG-01 | `sideEffects: ["**/*.css"]` set; exports map has per-component + CSS subpaths | Static assertion | `node -e "const p=require('./packages/ui/package.json'); if(!Array.isArray(p.sideEffects)||!p.exports) process.exit(1)"` | bundle-analysis that importing Button excludes xyflow (needs consumer bundler) |
 | PKG-02 | Correct peers declared incl. `@clerk/react` (NOT `@clerk/clerk-react`), `@xyflow/react`, `@tanstack/react-query`, react, react-dom | Static assertion | `node -e "const p=require('./packages/ui/package.json'); const pd=p.peerDependencies||{}; ['react','react-dom','@clerk/react','@xyflow/react','@tanstack/react-query'].forEach(k=>{if(!pd[k])process.exit(1)})"` | one-React proof via `pnpm list react -r` + Farsight root `overrides.react` |
-| PKG-03 | `'use client'` preserved in built output | grep on dist | `npx tsdown -c packages/ui/tsdown.config.ts && [ $(grep -rl \"'use client'\" packages/ui/dist/ \| wc -l) -ge 26 ]` | re-assert under Farsight build |
+| PKG-03 | `'use client'` preserved in built output | grep on dist | `npx tsdown -c packages/ui/tsdown.config.ts && [ $(grep -rl \"'use client'\" packages/ui/dist/ \| wc -l) -ge 1 ]` — Phase 1 ports Button (server-safe, NO directive) + Label (HAS directive) → exactly 1 file proves preservation; threshold rises to ≥ 26 in Phase 2 | re-assert under Farsight build |
 | PKG-04 | Build succeeds; `dist/` has `.js` + `.d.ts`; publint clean; types resolve | Build smoke | `npx tsdown -c packages/ui/tsdown.config.ts && ls packages/ui/dist/*.d.ts >/dev/null && npx publint packages/ui` | `attw --pack` under workspace resolution |
 | THEME-01 | `./theme.css` subpath resolves; file has NO `@import "tailwindcss"` | grep + exports check | `grep -q '@import \"tailwindcss\"' packages/ui/src/styles/theme.css && exit 1; node -e "const p=require('./packages/ui/package.json'); if(!p.exports['./theme.css'])process.exit(1)"` | consumer `@source` discovery validated in Farsight `apps/web` |
 | THEME-02 | Dark mode via `.dark` token override present; consumer setup (`@source`, xyflow CSS order) documented | grep + doc check | `grep -q '\\.dark' packages/ui/src/styles/theme.css && test -f packages/ui/README.md` | visual: classes generate + dark applies in a real consumer |
@@ -64,7 +64,7 @@ Phase 1 introduces no new test framework (build-output assertions + existing Vit
 
 - [ ] `packages/ui/package.json` — `type: module`, `exports` map, `sideEffects: ["**/*.css"]`, `peerDependencies` (+ `peerDependenciesMeta`)
 - [ ] `packages/ui/tsdown.config.ts` — externalize peers, preserve `'use client'` (`rollup-preserve-directives` + unbundled/per-module output — verify the exact tsdown key against live docs), emit `.d.ts`
-- [ ] `packages/ui/src/styles/theme.css` — `@theme` tokens lifted verbatim from Helm `app/globals.css`; NO `@import "tailwindcss"`; `@source "../.."` + `.dark` overrides
+- [ ] `packages/ui/src/styles/theme.css` — `@theme` tokens lifted verbatim from Helm `app/globals.css`; NO `@import "tailwindcss"`; `@source "../../src"` (resolves to `packages/ui/src` — NOT `"../.."`, which would scan `dist/`+`node_modules` and inflate generated CSS) + `.dark` overrides
 - [ ] `packages/ui/src/lib/tokens.ts` — JS/TS token export (chart colors as `var(--color-chart-N)` strings)
 - [ ] `packages/ui/README.md` — consumer setup (peer versions, `@source`, `@xyflow/react` CSS import order, provider mount placeholder)
 
@@ -81,12 +81,12 @@ Phase 1 introduces no new test framework (build-output assertions + existing Vit
 
 ## Validation Sign-Off
 
-- [ ] All tasks have an automated Helm-side verify or a Wave 0 dependency
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 60s
-- [ ] Deferred-to-port checks explicitly tagged (not silently dropped)
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have an automated Helm-side verify or a Wave 0 dependency
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify (4 auto tasks across 3 plans, each with an `<automated>` block)
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 60s
+- [x] Deferred-to-port checks explicitly tagged (PKG-02 root `pnpm.overrides` + `pnpm list react -r` single-version proof → Phase 4 PORT-01; not silently dropped)
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-05-29
