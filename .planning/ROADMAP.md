@@ -135,7 +135,30 @@ Plans:
   4. A minimal external Vite app consuming the package via `workspace:*` resolves utility classes via `@source`, applies tokens, and renders the canvases — validated outside Helm, not only inside it
   5. A consumer-setup README documents required peer versions, `@source` config, xyflow CSS import order, and `<FarsightProvider>` mount
 
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+**Wave 0**
+
+- [ ] 04-01-PLAN.md — Test harness stubs (6 test files for all 3 surfaces) + examples/farsight-ui-consumer Vite scaffold + root pnpm-workspace.yaml (DSET-01, PIPE-01, AGNT-01, PORT-01, PORT-02)
+
+**Wave 1** *(blocked on Wave 0 completion)*
+
+- [ ] 04-02-PLAN.md — Datasets vertical (walking slice): use-datasets.ts + DatasetList/Detail/Records/Search + barrel registration (DSET-01)
+
+**Wave 2** *(blocked on Wave 0 completion — runs parallel to Wave 1)*
+
+- [ ] 04-03-PLAN.md — canvas-kit extraction + pipeline-adapter + node-ids (PIPE-01)
+
+**Wave 3** *(blocked on Waves 1 + 2 completion)*
+
+- [ ] 04-04-PLAN.md — Pipelines vertical: use-workflows.ts + WorkflowList/Canvas/RunView + 3 nodes + barrel registration (PIPE-01)
+- [ ] 04-05-PLAN.md — Agents vertical: use-agents.ts + AgentChatView/AgentMessage + barrel registration (AGNT-01)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 04-06-PLAN.md — PORT-01 Vite app wiring + PORT-02 CONSUMER.md + publint/attw + check-directives.sh update + full phase gate (PORT-01, PORT-02)
+
 **UI hint**: yes
 
 ## Progress
@@ -148,4 +171,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
 | 2. Headless Core Port | 5/5 | Complete   | 2026-05-29 |
 | 3. Adapter Seam, Tenancy & Notifications | 6/6 | Complete    | 2026-05-29 |
-| 4. Contract-Gated Surfaces & Monorepo Port | 0/TBD | Not started | - |
+| 4. Contract-Gated Surfaces & Monorepo Port | 0/6 | Not started | - |
