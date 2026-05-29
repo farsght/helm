@@ -1,0 +1,25 @@
+{
+  "name": "@farsight/ui-consumer-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @farsight/ui build && vite",
+    "build": "pnpm --filter @farsight/ui build && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@farsight/ui": "workspace:*",
+    "@clerk/react": "^6.0.0",
+    "@tanstack/react-query": "^5.0.0",
+    "@xyflow/react": "^12.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sonner": "^1.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^6.0.0"
+  }
+}
