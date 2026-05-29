@@ -204,6 +204,34 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
     [columnFilters, debouncedSetColumnFilters, enableAdvancedFilter],
   );
 
+  // Wrap rowSelection and columnVisibility handlers so they notify onStateChange
+  // (same mechanism used by pagination/sort/filter). Without this, a controlled
+  // parent that listens to onStateChange never learns about row-selection or
+  // column-visibility changes. DataTableState already declares both fields.
+  const onRowSelectionChange = React.useCallback(
+    (updaterOrValue: Updater<RowSelectionState>) => {
+      const newRowSelection =
+        typeof updaterOrValue === "function"
+          ? updaterOrValue(rowSelection)
+          : updaterOrValue;
+      notifyStateChange({ rowSelection: newRowSelection });
+      setRowSelection(newRowSelection);
+    },
+    [rowSelection, notifyStateChange],
+  );
+
+  const onColumnVisibilityChange = React.useCallback(
+    (updaterOrValue: Updater<VisibilityState>) => {
+      const newColumnVisibility =
+        typeof updaterOrValue === "function"
+          ? updaterOrValue(columnVisibility)
+          : updaterOrValue;
+      notifyStateChange({ columnVisibility: newColumnVisibility });
+      setColumnVisibility(newColumnVisibility);
+    },
+    [columnVisibility, notifyStateChange],
+  );
+
   const table = useReactTable({
     ...tableProps,
     columns,
@@ -221,11 +249,11 @@ export function useDataTable<TData>(props: UseDataTableProps<TData>) {
       enableColumnFilter: false,
     },
     enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange,
     onPaginationChange,
     onSortingChange,
     onColumnFiltersChange,
-    onColumnVisibilityChange: setColumnVisibility,
+    onColumnVisibilityChange,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
