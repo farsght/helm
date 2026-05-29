@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Plan 04-06 complete (PORT-01 Vite consumer + PORT-02 docs) — phase 04 ready for verification
+status: complete
+stopped_at: Phase 04 verified (PASS-WITH-LIMITATIONS) — milestone v1.0 all 4 phases complete; ready for completion review
 last_updated: "2026-05-29T22:10:52.299Z"
 last_activity: 2026-05-29
 progress:
@@ -128,7 +128,9 @@ Items acknowledged and carried forward from previous milestone close:
 
 | Category | Item | Status | Deferred At |
 |----------|------|--------|-------------|
-| *(none)* | | | |
+| Manual UAT (D-03) | Live-endpoint round-trip: DatasetList / WorkflowCanvas run / AgentChatView submit+poll against a real Clerk session + api.farsght.com | Pending human test | Phase 04 |
+| Monorepo port (D-06) | Physical copy of packages/ui into ~/Projects/farsight-platform + workspace wire + single-React verify — follow packages/ui/CONSUMER.md runbook | Pending human run | Phase 04 |
+| Packaging (PORT-02) | attw exits 1: bundler profile 🟢 (the consumer that matters) but node10/node16-CJS + ./theme.css/./styles/globals.css subpaths fail — pre-existing ESM-only/CSS-subpath limitation. Follow-up only if node/CJS consumer support needed (CJS build + per-subpath .d.ts, or drop CSS subpaths from attw scope) | Acknowledged limitation | Phase 04 |
 
 ## Transition Notes
 
