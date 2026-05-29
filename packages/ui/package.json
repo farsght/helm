@@ -28,7 +28,9 @@
     "build": "tsdown -c tsdown.config.ts && mkdir -p dist/styles && cp src/styles/theme.css dist/styles/theme.css && cp src/styles/globals.css dist/styles/globals.css"
   },
   "dependencies": {
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.0",
+    "radix-ui": "^1.4.3",
     "tailwind-merge": "^3.0.0"
   },
   "devDependencies": {
