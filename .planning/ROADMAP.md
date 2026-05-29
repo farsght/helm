@@ -63,7 +63,23 @@ Plans:
   4. No `alert()` or `confirm()` remains in ported components — destructive confirms use `ConfirmDialog` and transient messages use Sonner toast; every surface exposes standardized loading/error/empty states
   5. Components show visible focus rings, are fully keyboard-operable, and icon-only buttons carry `aria-label`
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 02-01-PLAN.md — Test/CI harness: vitest.config.ts + vitest.setup.ts + check-imports.sh (3-rule guard) + eslint.config.mjs (jsx-a11y) + Button axe smoke test (CORE-01, CORE-05)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 02-02-PLAN.md — 34 ui/ primitives port: alias rewrite + 'use client' preservation + neverBundle updates + render smoke tests (CORE-01, CORE-02, CORE-05)
+
+**Wave 3** *(blocked on Wave 2 completion — Plans 03/04/05 run in parallel)*
+
+- [ ] 02-03-PLAN.md — Page primitives: port PageHeader/EmptyState/ConfirmDialog + new ErrorState (D-02) + new Toaster (D-08/D-10) + three layout skeletons (D-03) + package.json next-themes peer reclassification (CORE-02, CORE-04, CORE-05)
+- [ ] 02-04-PLAN.md — DataGrid port: 17 component files + use-data-grid.ts (3273 lines, framework-clean, no state changes per D-06) + lib/types files + characterization tests (CORE-03, CORE-05)
+- [ ] 02-05-PLAN.md — DataTable port: 9 component files + use-data-table.ts nuqs seam (D-05/D-06/D-07: React.useState default + controlled state/onStateChange props) + utility hooks + lib/types/config + characterization tests + final check-directives.sh threshold update (CORE-03, CORE-04, CORE-05)
+
 **UI hint**: yes
 
 ### Phase 3: Adapter Seam, Tenancy & Notifications Proving Ground
@@ -107,6 +123,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
-| 2. Headless Core Port | 0/TBD | Not started | - |
+| 2. Headless Core Port | 0/5 | Not started | - |
 | 3. Adapter Seam, Tenancy & Notifications | 0/TBD | Not started | - |
 | 4. Contract-Gated Surfaces & Monorepo Port | 0/TBD | Not started | - |
