@@ -290,7 +290,7 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
 
-import { cn } from "@/lib/utils"   // ← REWRITE to: import { cn } from "../lib/utils"
+import { cn } from "@/lib/utils"   // ← REWRITE to: import { cn } from "../../lib/utils"
 ```
 
 **Import pattern (client component — has `'use client'`)** — from `components/ui/chart.tsx` (lines 1–7):
@@ -301,7 +301,7 @@ import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 import type { TooltipValueType } from "recharts"
 
-import { cn } from "@/lib/utils"   // ← REWRITE to: import { cn } from "../lib/utils"
+import { cn } from "@/lib/utils"   // ← REWRITE to: import { cn } from "../../lib/utils"
 ```
 
 **Core component pattern (CVA + Slot — server safe)** — from `components/ui/button.tsx` (lines 7–64):
@@ -374,7 +374,9 @@ Client components (have `'use client'`): all remaining 26 including `alert-dialo
 **Source:** Every `components/ui/*.tsx` in Helm
 **Apply to:** All 34 component files when porting to `packages/ui/src/components/ui/`
 
-Every occurrence of `import ... from "@/lib/utils"` becomes `import ... from "../lib/utils"` (one level up from `components/ui/` to `lib/`). If components import other components from `@/components/ui/...`, those become `import ... from "./<component-name>"` (same directory).
+Every occurrence of `import ... from "@/lib/utils"` becomes `import ... from "../../lib/utils"` (**two** levels up: from `src/components/ui/` → `src/components/` → `src/`, then into `lib/`). If components import other components from `@/components/ui/...`, those become `import ... from "./<component-name>"` (same directory).
+
+> **CORRECTED IN PHASE 1 (verified empirically):** the path is `../../lib/utils`, **not** `../lib/utils`. `src/components/ui/` sits two directories below `src/`, while `lib/` is directly under `src/`, so one `../` only reaches `src/components/` and fails to resolve. The Phase 1 walking-skeleton port (Button/Label) confirmed `../../lib/utils` resolves and `../lib/utils` does not. Apply `../../lib/utils` to all 34 Phase 2 ports.
 
 No other aliases are present in the Helm `components/ui/` files — `@/lib/utils` is the only cross-package import.
 
