@@ -11,7 +11,9 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@farsight/sdk": ["../../../farsight-platform/packages/sdk/src/index.ts"],
+      "@farsight/contracts": ["../../../farsight-platform/packages/contracts/src/index.ts"]
     }
   },
   "include": ["src/**/*"],
