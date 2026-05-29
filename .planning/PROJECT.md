@@ -23,6 +23,9 @@ Farsight's `apps/web` can install one package and get a working, themed, data-wi
 - ✓ Tailwind + CSS-variable design tokens — `text-foreground` / `bg-card` / `border-border` etc., `cn()` merge util — existing
 - ✓ Library build tooling — `packages/ui` package (`@farsight/ui`, `private:true`): subpath `exports`, `sideEffects:["**/*.css"]`, 5 peers (`@clerk/react` corrected name, clerk/xyflow/query optional), tsdown unbundled per-module ESM build with `rollup-preserve-directives`, `cn()` util, publint clean — **validated Phase 1**
 - ✓ Design-system token contract as a consumable `./theme.css` subpath + `tokens.ts` JS export (lifted verbatim from `app/globals.css`, no `@import "tailwindcss"`), with `'use client'` preservation proven through the build via a Button/Label walking skeleton — **validated Phase 1**
+- ✓ Headless design-system core — all 34 `ui/` primitives + page primitives (`PageHeader`, `EmptyState`, `ConfirmDialog`, new `ErrorState`, new themed `Toaster`, 3 new layout skeletons) + DataGrid/DataTable render framework-clean and are exported from the package entry (`src/index.ts`) into dist; CI import-guard (`check-imports.sh`) proves zero `next/*` / `@clerk/nextjs/server` / `alert()`/`confirm()` while allowing `next-themes`; zero `@/` aliases remain — **validated Phase 2 (CORE-01, CORE-02, CORE-04)**
+- ✓ DataTable headless URL-state seam — `use-data-table.ts` has nuqs removed, defaults to internal React state, exposes opt-in controlled `state`/`onStateChange` props (`DataTableState`/`DataTableStateProps`); the 3,273-line DataGrid hook ported with no state-model change; characterization tests pin both internal-default and controlled-override modes — **validated Phase 2 (CORE-03)**
+- ✓ Accessibility + loading/error/empty as first-class conventions — vitest-axe + `eslint-plugin-jsx-a11y` wired into CI (0 errors); `CONVENTIONS.md` documents the four-branch loading/error/empty pattern + destructive→`ConfirmDialog`/transient→Sonner-toast rule; focus-ring visibility + keyboard traversal + Toaster theme-sync carried to manual UAT (verified at consumer-integration in Phase 4) — **validated Phase 2 (CORE-04, CORE-05)**
 
 ### Active
 
@@ -33,7 +36,7 @@ Farsight's `apps/web` can install one package and get a working, themed, data-wi
 - [ ] Swap `@clerk/nextjs/server` for Clerk's framework-agnostic React client; library assumes Clerk on the consumer
 - [ ] Reshape data-bound components from Helm's per-user (`userId`) tenancy to Farsight's org/project tenant context (`{ orgId, orgSlug, role, userId }`)
 - [~] Establish the package as the authoritative design system — CSS-variable token export landed in Phase 1 (`./theme.css` + `tokens.ts`); the shareable Tailwind **preset** is still outstanding (Farsight `apps/web` is greenfield-styled)
-- [ ] Make the design-system layer portable — primitives, page primitives, DataGrid/DataTable, hooks build and consume cleanly outside Next.js
+- [x] Make the design-system layer portable — primitives, page primitives, DataGrid/DataTable, hooks build and consume cleanly outside Next.js (Phase 2)
 - [ ] Port the pipelines surface (xyflow canvas + run views) onto Farsight pipelines/pipeline_runs contracts
 - [ ] Port the agents surface (definitions + canvas + runs) onto Farsight agents contracts
 - [ ] Port the datasets/knowledge surface onto Farsight datasets contracts
@@ -81,6 +84,10 @@ Farsight's `apps/web` can install one package and get a working, themed, data-wi
 | Scope = design system + 4 feature surfaces (pipelines, agents, datasets, notifications+webhooks) | These map to Farsight's domain; CRM/campaigns/knowledge-backend excluded | — Pending |
 | Build tool = tsdown (not tsup fallback); peer name `@clerk/react` (not `@clerk/clerk-react`) | tsdown 0.22.x `unbundle:true` gives per-module output + `rollup-preserve-directives`; `@clerk/react` is the correct framework-agnostic package (01-RESEARCH Finding 2) | Decided & validated (Phase 1) |
 | `radix-ui` + `class-variance-authority` are `dependencies` (not peers) | Component-lib primitives the package ships its own copy of; unlike React they are not singleton-sensitive | Decided (Phase 1 gap closure) |
+| Toaster reads theme via `next-themes` as an **optional** peer; library does not own toggle/persistence/FOUC | Real light/dark Sonner sync without coupling the library to theme state; degrades to `theme="system"` when no consumer `ThemeProvider` is mounted (D-10). Clarifies the theming boundary: library **reads** theme, consumer **owns** it | Decided & validated (Phase 2) |
+| DataTable URL-state is an injectable seam (controlled `state`/`onStateChange`, internal-state default), not a hook rewrite; `nuqs`/`lib/parsers.ts` stay out of the package | Keeps the port within "ported, not rewritten"; live URL-sync round-trip is proven by the Phase 4 Vite consumer (PORT-01) (D-05/06/07) | Decided & validated (Phase 2) |
+| shadcn.io is a pattern source, not a dependency — skeletons/`ErrorState` re-implemented from scratch | shadcn.io Pro license prohibits redistribution inside a derived/copied package; MIT `<Skeleton>` primitive is the build block (D-12/D-13/D-14) | Decided & validated (Phase 2) |
+| CI import-guard = bash grep script (`check-imports.sh`); a11y = vitest-axe + `eslint-plugin-jsx-a11y` | Cheapest CI-friendly mechanism, composes with Phase 1's `check-directives.sh`; focus-ring visibility stays a manual check (no false auto-claim) | Decided & validated (Phase 2) |
 
 ## Evolution
 
@@ -100,4 +107,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-29 — Phase 1 (Package Foundation & Theming) complete: `packages/ui` builds as a themed, tree-shakeable, `'use client'`-preserving artifact with the lifted CSS-var token contract.*
+*Last updated: 2026-05-29 — Phase 2 (Headless Core Port) complete: the full design system — 34 `ui/` primitives, page primitives (incl. new `ErrorState`, themed `Toaster`, 3 layout skeletons), and DataGrid/DataTable — renders framework-clean and is exported from the package entry, with a CI import-guard, the DataTable nuqs→injectable-state seam, and a11y + loading/error/empty conventions as first-class primitives. Focus-ring/keyboard/theme-sync manual UAT carried to Phase 4 consumer integration.*
