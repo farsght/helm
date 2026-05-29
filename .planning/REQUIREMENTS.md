@@ -44,7 +44,7 @@ Requirements for the initial portable library. Each maps to a roadmap phase.
 
 ### Datasets Surface
 
-- [ ] **DSET-01**: Datasets list/detail + RAG search UI bound to Farsight `datasets` contracts (UI only — no ingestion/chunking/pgvector backend)
+- [x] **DSET-01**: Datasets list/detail + RAG search UI bound to Farsight `datasets` contracts (UI only — no ingestion/chunking/pgvector backend)
 
 ### Pipelines Surface
 
@@ -115,7 +115,7 @@ Each requirement maps to exactly one phase. See `.planning/ROADMAP.md` for phase
 | DATA-06 | Phase 3 | Complete |
 | NOTIF-01 | Phase 3 | Complete |
 | NOTIF-02 | Phase 3 | Complete |
-| DSET-01 | Phase 4 | Pending |
+| DSET-01 | Phase 4 | Complete |
 | PIPE-01 | Phase 4 | Pending |
 | AGNT-01 | Phase 4 | Pending |
 | PORT-01 | Phase 4 | Pending |

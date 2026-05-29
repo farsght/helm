@@ -144,7 +144,7 @@ Plans:
 
 **Wave 1** *(blocked on Wave 0 completion)*
 
-- [ ] 04-02-PLAN.md — Datasets vertical (walking slice): use-datasets.ts + DatasetList/Detail/Records/Search + barrel registration (DSET-01)
+- [x] 04-02-PLAN.md — Datasets vertical (walking slice): use-datasets.ts + DatasetList/Detail/Records/Search + barrel registration (DSET-01)
 
 **Wave 2** *(blocked on Wave 0 completion — runs parallel to Wave 1)*
 
@@ -171,4 +171,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
 | 2. Headless Core Port | 5/5 | Complete   | 2026-05-29 |
 | 3. Adapter Seam, Tenancy & Notifications | 6/6 | Complete    | 2026-05-29 |
-| 4. Contract-Gated Surfaces & Monorepo Port | 1/6 | In Progress|  |
+| 4. Contract-Gated Surfaces & Monorepo Port | 2/6 | In Progress|  |
