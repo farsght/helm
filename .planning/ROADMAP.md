@@ -153,7 +153,7 @@ Plans:
 **Wave 3** *(blocked on Waves 1 + 2 completion)*
 
 - [x] 04-04-PLAN.md — Pipelines vertical: use-workflows.ts + WorkflowList/Canvas/RunView + 3 nodes + barrel registration (PIPE-01)
-- [ ] 04-05-PLAN.md — Agents vertical: use-agents.ts + AgentChatView/AgentMessage + barrel registration (AGNT-01)
+- [x] 04-05-PLAN.md — Agents vertical: use-agents.ts + AgentChatView/AgentMessage + barrel registration (AGNT-01)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -171,4 +171,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
 | 2. Headless Core Port | 5/5 | Complete   | 2026-05-29 |
 | 3. Adapter Seam, Tenancy & Notifications | 6/6 | Complete    | 2026-05-29 |
-| 4. Contract-Gated Surfaces & Monorepo Port | 4/6 | In Progress|  |
+| 4. Contract-Gated Surfaces & Monorepo Port | 5/6 | In Progress|  |
