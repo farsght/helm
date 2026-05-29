@@ -4,5 +4,7 @@
 // No @clerk/* mocks — packages/ui has no clerk imports
 
 import '@testing-library/jest-dom'
-import 'vitest-axe/extend-expect'
-// vitest-axe/extend-expect adds toHaveNoViolations() matcher to expect()
+import * as vitestAxeMatchers from 'vitest-axe/matchers'
+import { expect } from 'vitest'
+// Register vitest-axe matchers (toHaveNoViolations) — extend-expect provides types only
+expect.extend(vitestAxeMatchers)

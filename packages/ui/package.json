@@ -41,6 +41,8 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.2",
     "@testing-library/react": "^16.3.2",
+    "@typescript-eslint/eslint-plugin": "^8.60.0",
+    "@typescript-eslint/parser": "^8.60.0",
     "@vitejs/plugin-react": "^6.0.2",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "jsdom": "^29.1.1",
