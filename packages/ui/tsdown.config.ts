@@ -23,6 +23,8 @@ export default defineConfig({
       '@clerk/react',
       '@xyflow/react',
       '@tanstack/react-query',
+      '@tanstack/react-table',
+      '@tanstack/react-virtual',
       // Externalize UI primitives and utilities — resolved from consumer's node_modules
       'radix-ui',
       'class-variance-authority',
