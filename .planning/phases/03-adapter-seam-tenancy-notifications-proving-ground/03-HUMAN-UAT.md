@@ -62,14 +62,15 @@ note: deliberately deferred to manual UAT / Phase-4 consumer integration per 03-
 ## Summary
 
 total: 7
-passed: 0
+passed: 6
 issues: 0
-pending: 7
+pending: 1
 skipped: 0
 blocked: 0
 
 ## Gaps
 
-Items 1–6 are test-coverage debt (component `.todo` stubs) — best closed by promoting the
-stubs to real render assertions, then re-running `/gsd:verify-work 3` (or re-verification).
-Item 7 is genuine manual UAT, deferred to Phase 4.
+Items 1–6 RESOLVED (commit `0e61e8a`): the 6 component `.todo` stubs were promoted to real
+render/behavior assertions — full suite now 106 passed / 0 todo / 0 failed, re-verified `passed`.
+Item 7 (live backend round-trip against api.farsght.com) remains the only pending item — genuine
+manual UAT, deferred to Phase 4 consumer integration per 03-VALIDATION.md § Manual-Only.

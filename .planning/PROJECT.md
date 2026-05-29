@@ -32,15 +32,15 @@ Farsight's `apps/web` can install one package and get a working, themed, data-wi
 <!-- New work this project builds toward. -->
 
 - [ ] Decouple in-scope components from Next.js App Router — remove RSC `page.tsx`/`*-client.tsx` split, `next/navigation`, `next/headers`, `'use client'`-as-Next-boundary assumptions
-- [ ] Replace Drizzle/Neon + `lib/api.ts` `apiFetch` data access with SDK-adapter hooks/providers against the typed `@farsight/contracts`
-- [ ] Swap `@clerk/nextjs/server` for Clerk's framework-agnostic React client; library assumes Clerk on the consumer
-- [ ] Reshape data-bound components from Helm's per-user (`userId`) tenancy to Farsight's org/project tenant context (`{ orgId, orgSlug, role, userId }`)
+- [x] Replace Drizzle/Neon + `lib/api.ts` `apiFetch` data access with SDK-adapter hooks/providers against the typed `@farsight/contracts` — `<FarsightProvider>` thin-wraps `@farsight/sdk` `createApiClient`; `queryOptions`-factory hooks (Phase 3)
+- [x] Swap `@clerk/nextjs/server` for Clerk's framework-agnostic React client; library assumes Clerk on the consumer — provider reads org via `@clerk/react` `useAuth`/`useOrganization` (Phase 3)
+- [x] Reshape data-bound components from Helm's per-user (`userId`) tenancy to Farsight's org/project tenant context — `useTenant()` → `{ userId, orgId, orgSlug, role, projectSlug? }`; slug-namespaced query keys + hard-remount cache reset; active org via Clerk JWT claim + path slugs, **no org header** (R-01); errors discriminate on `code` not a `type` URI (R-02) (Phase 3)
 - [~] Establish the package as the authoritative design system — CSS-variable token export landed in Phase 1 (`./theme.css` + `tokens.ts`); the shareable Tailwind **preset** is still outstanding (Farsight `apps/web` is greenfield-styled)
 - [x] Make the design-system layer portable — primitives, page primitives, DataGrid/DataTable, hooks build and consume cleanly outside Next.js (Phase 2)
 - [ ] Port the pipelines surface (xyflow canvas + run views) onto Farsight pipelines/pipeline_runs contracts
 - [ ] Port the agents surface (definitions + canvas + runs) onto Farsight agents contracts
 - [ ] Port the datasets/knowledge surface onto Farsight datasets contracts
-- [ ] Build notifications + webhooks UI (in-app inbox, notification preferences, outbound-webhook management) against Farsight's already-live endpoints — largely new UI, not a port
+- [x] Build notifications + webhooks UI (in-app inbox + bell, notification preferences, outbound-webhook management with copy-once signing-secret reveal) against Farsight's live endpoints — `NotificationBell`/`NotificationInbox`/`NotificationPreferences` + `WebhookList`/health-badge/create/rotate modals on the seam; live backend round-trip carried to Phase-4 manual UAT (Phase 3)
 - [x] Set up library build tooling — package entry/exports, peer dependencies, build pipeline producing a consumable artifact (Phase 1)
 - [ ] Provide a clean port path into the Farsight monorepo `packages/ui` (workspace-consumable by `apps/web`)
 
@@ -107,4 +107,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-29 — Phase 2 (Headless Core Port) complete: the full design system — 34 `ui/` primitives, page primitives (incl. new `ErrorState`, themed `Toaster`, 3 layout skeletons), and DataGrid/DataTable — renders framework-clean and is exported from the package entry, with a CI import-guard, the DataTable nuqs→injectable-state seam, and a11y + loading/error/empty conventions as first-class primitives. Focus-ring/keyboard/theme-sync manual UAT carried to Phase 4 consumer integration.*
+*Last updated: 2026-05-29 — Phase 3 (Adapter Seam, Tenancy & Notifications Proving Ground) complete: `<FarsightProvider>` thin-wraps `@farsight/sdk` `createApiClient` (injectable QueryClient + Clerk-React + org/project tenant context via `useTenant()`), typed `FarsightError` discriminated on `code`, slug-namespaced query keys with hard-remount cache reset (cross-tenant bleed proven by test), and three live-endpoint surfaces — notifications inbox + bell, preferences, and outbound-webhooks management (copy-once signing-secret). Verified `passed` (8/8 must-haves, 106 tests, tsc/import/directive gates green). Reconciliations R-01 (no org header), R-02 (`code` not `type` URI), R-03 (`projectSlug` in tenant) folded in. Live backend round-trip carried to Phase 4 consumer integration. Phase 4 (Contract-Gated Surfaces & Monorepo Port) is next.*
