@@ -14,13 +14,18 @@ export default defineConfig({
     preserveDirectives() as any,
   ],
   deps: {
-    // Externalize all peer dependencies — consumers provide these at runtime
+    // Externalize all peer dependencies and their sub-paths — consumers provide these at runtime
     neverBundle: [
       'react',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
       'react-dom',
       '@clerk/react',
       '@xyflow/react',
       '@tanstack/react-query',
+      // Externalize UI primitives and utilities — resolved from consumer's node_modules
+      'radix-ui',
+      'class-variance-authority',
     ],
   },
 })
