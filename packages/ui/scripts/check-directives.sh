@@ -20,8 +20,13 @@ CLIENT_COUNT=$(grep -rl '"use client"' "$DIST_DIR" 2>/dev/null | grep '\.js$' | 
 # Phase 1 threshold: >= 1 (Label carries the directive; Button correctly omits it)
 # Phase 2 threshold: 50 — full surface exported: 26 ui/ primitives + Toaster + DataGrid (17 files,
 # most carry 'use client') + DataTable (9 files) + page skeletons/dialogs + hooks.
-# Verified by counting dist/*.js files containing '"use client"' after Phase 2 export fix.
-EXPECTED=50
+# Phase 3 threshold: 62 — adds Phase-2 count (50) + Phase-3 new 'use client' files:
+#   provider (farsight-provider), notifications (bell, inbox, item, preferences),
+#   webhooks (list, endpoint-row, secret-reveal, create-modal, rotate-secret-modal, event-types-input),
+#   hooks (use-notifications, use-webhooks, use-notification-preferences),
+#   errors (farsight-error), client (create-client) = 12 additional files.
+# Verified by counting dist/*.js files containing '"use client"' after Phase 3 build.
+EXPECTED=62
 
 if [ "$CLIENT_COUNT" -lt "$EXPECTED" ]; then
   echo "FAIL: 'use client' directives missing in dist/ — got $CLIENT_COUNT, expected >= $EXPECTED"
