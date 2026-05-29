@@ -21,7 +21,7 @@ findings:
   warning: 3
   info: 2
   total: 9
-status: issues_found
+status: fixed
 ---
 
 # Phase 02: Code Review Report
@@ -297,6 +297,24 @@ nothing and muddies the abstraction.
 
 ---
 
+---
+
+## Fixes Applied
+
+All Critical and Warning findings resolved 2026-05-29:
+
+- **CR-01 / CR-02** (fixed, commit `2a2f272`): Added named exports for all Phase 2 symbols — page primitives (PageHeader, EmptyState, ConfirmDialog, ErrorState, Toaster, CardGridSkeleton, ListSkeleton, DetailSkeleton), DataGrid surface (DataGrid + all sub-components + types), DataTable surface (DataTable + all sub-components + useDataTable hook + DataTableState/DataTableStateProps types), and both useDataGrid/useDataGridUndoRedo hooks — to `src/index.ts`. Build now outputs 336 dist files including all page/data-grid/data-table modules.
+- **CR-03** (fixed, commit `931d29c`): `onColumnFiltersChange` now resolves the effective (controlled) `columnFilters` value as the base for function-form updaters, mirroring `onPaginationChange`/`onSortingChange`. Internal state is only mutated via the existing `debouncedSetColumnFilters` guard (`if (!controlledState?.columnFilters)`).
+- **CR-04** (fixed, commit `991287b`): Wrapped `onRowSelectionChange` and `onColumnVisibilityChange` in `useCallback` handlers that call `notifyStateChange` before updating internal state. Controlled parents now receive state-change events for row-selection and column-visibility mutations immediately.
+- **WR-01** (fixed, commit `b2422a2`): `check-imports.sh` Rule 1 grep pattern updated from `'from "next/'` to `"from ['\"]next/"` — now catches both single- and double-quoted `next/*` imports. `next-themes` (no trailing slash) still does not match.
+- **WR-02** (fixed, commit `5ed0e2f`): Added `"@testing-library/jest-dom": "^6.9.1"` to `packages/ui/package.json` `devDependencies`.
+- **WR-03** (fixed, commit `80f7a94`): Vitest `@/` alias updated from `path.resolve(__dirname, 'src')` to `path.resolve(__dirname, '.')` to match tsconfig `"@/*": ["./*"]` (both now resolve to package root).
+- **Directive gate** (updated, commit `d970812`): `check-directives.sh` EXPECTED updated from 26 to 50 — the true count after all Phase 2 components are built into dist/.
+
+Gates confirmed green: `npm run build`, `bash check-directives.sh`, `bash check-imports.sh`, `npm test` (7 files, 38 tests).
+
 _Reviewed: 2026-05-29_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
+_Fixed: 2026-05-29_
+_Fixer: Claude (gsd-code-fixer)_
