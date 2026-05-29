@@ -26,6 +26,18 @@ export default defineConfig({
       // Externalize UI primitives and utilities — resolved from consumer's node_modules
       'radix-ui',
       'class-variance-authority',
+      // Phase 2 additions: externalize new deps used by ported components
+      'recharts',
+      '@dnd-kit/core',
+      '@dnd-kit/sortable',
+      '@dnd-kit/utilities',
+      '@dnd-kit/modifiers',
+      'lucide-react',
+      'sonner',
+      'cmdk',
+      'react-day-picker',
+      '@radix-ui/react-direction',
+      '@radix-ui/react-slot',
     ],
   },
 })
