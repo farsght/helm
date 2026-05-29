@@ -76,8 +76,8 @@ Inherited from Phase 3. No new tokens. Additions for Phase 4 surfaces:
 | Token | Tailwind | px | Usage in Phase 4 |
 |-------|----------|----|------------------|
 | xs | `gap-1` / `p-1` | 4px | Icon-to-text gap inside dataset status badges, agent message part gaps |
-| sm | `gap-2` / `p-2` | 8px | Dataset list row cell padding; agent composer bottom padding |
-| md | `gap-4` / `p-4` | 16px | Default card body padding; canvas inspector panel padding; chat bubble padding |
+| sm | `gap-2` / `p-2` | 8px | Dataset list row cell padding; agent composer bottom padding; chat bubble vertical padding; canvas node inner padding |
+| md | `gap-4` / `p-4` | 16px | Default card body padding; canvas inspector panel padding; chat bubble horizontal padding |
 | lg | `gap-6` / `p-6` | 24px | Section padding inside modals; workflow node inspector panel |
 | xl | `gap-8` / `p-8` | 32px | Top-level surface padding (DatasetList, WorkflowList page wrappers) |
 | 2xl | 48px | — | Not used in Phase 4 surfaces |
@@ -87,13 +87,11 @@ Inherited from Phase 3. No new tokens. Additions for Phase 4 surfaces:
 
 - **Canvas viewport:** The xyflow canvas area itself uses `h-full w-full` with no explicit padding
   token — the canvas fills its container. The `ReactFlow` component handles internal spacing.
-- **Canvas node inner padding:** `p-3` (12px) for source/transform/sink node bodies — between
-  the standard md (16px) and sm (8px) to keep nodes compact without crowding the label.
 - **Chat composer textarea:** `min-h-[80px]` for the agent message input — not a spacing token
   but a layout constraint for the textarea (minimum 2 lines visible).
-- **Agent message bubble:** User bubbles `px-4 py-2.5` (16px / 10px), assistant bubbles
-  `px-4 py-3` (16px / 12px) — the 10px / 12px y-padding is a one-step deviation from the
-  standard sm/md scale; acceptable for chat bubble ergonomics.
+- **Agent message bubble y-padding:** Assistant bubbles use `py-3` (24px y-equivalent via
+  `px-4 py-3`) — the 12px y-padding maps to `py-3` which is on-grid as 3×4=12. User bubbles
+  use `px-4 py-2` (16px / 8px) — both values are in the standard scale.
 
 ---
 
@@ -140,7 +138,7 @@ replace the Helm `stroke: "#266DF0"` anti-pattern with token references.
 | Destructive | `text-destructive` / `--color-destructive` | red `oklch(0.577 0.245 27.325)` | adjusted | Dataset delete confirm button; error ErrorState icon; disabled-node overlay |
 
 **Accent reserved for:** Dataset "Run search" and "Delete" (before confirm) buttons; workflow
-"Run workflow" button; canvas node selected-state ring; chat "Send" button; active xyflow
+"Run pipeline" button; canvas node selected-state ring; chat "Send" button; active xyflow
 handles (connection points). Do NOT use `text-primary` for general body text, timestamps,
 metadata, or node type annotations.
 
@@ -209,7 +207,7 @@ components need to be installed. Full list of primitives consumed:
 
 | Primitive | From | Used in |
 |-----------|------|---------|
-| `Button` | `ui/button` | All CTAs: Run search, Run workflow, Send message, Delete, Cancel |
+| `Button` | `ui/button` | All CTAs: Run search, Run pipeline, Send message, Delete, Cancel |
 | `Badge` | `ui/badge` | Dataset kind, status badges, run status, node type labels |
 | `Input` | `ui/input` | DatasetSearch query input, WorkflowCanvas node name field |
 | `Textarea` | `ui/textarea` | AgentChatView composer (multi-line message input) |
@@ -251,6 +249,8 @@ is the correct primitive for server-paginated data with column headers.
 ### 1. DatasetList
 
 **Form factor:** Full-width page with DataTable, toolbar above.
+
+**Primary visual anchor:** The Name column (`text-sm font-medium`) is the first legible element per row and the row-click target.
 
 **Anatomy:**
 - Page wrapper: `<div className="p-8">` (xl spacing)
@@ -300,7 +300,7 @@ is the correct primitive for server-paginated data with column headers.
 **Anatomy:**
 - Search form: `<form className="flex gap-2" onSubmit={handleSearch}>`
   - `<Input type="search" placeholder="Search dataset..." className="flex-1" />` with `<Label className="sr-only">Search query</Label>`
-  - `<Button type="submit" disabled={isPending}>` — "Search" (idle) / "Searching..." (pending)
+  - `<Button type="submit" disabled={isPending}>` — "Search dataset" (idle) / "Searching..." (pending)
 - Backend indicator: `<p className="text-xs text-muted-foreground mt-2">` — shows which backend is active when a result is available: "Vector search", "AI search", or "Keyword search" per color contract above
 - Result list: `<div className="mt-4 space-y-3">` — `{results.matches.map((match) => <SearchResultItem key={...} match={match} backend={backend} />)}`
 - `indexingPending` notice (vectorize only): `<div className="flex gap-2 rounded-md bg-[var(--color-chart-4)]/10 px-3 py-2 text-xs text-[var(--color-chart-4)] mb-3">` — `<AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />Results may be incomplete while indexing is in progress.`
@@ -309,7 +309,7 @@ is the correct primitive for server-paginated data with column headers.
 
 **`SearchResultItem` — discriminated by `backend`:**
 
-All three branches share a wrapper: `<div className="rounded-md border bg-card p-3 space-y-1">`.
+All three branches share a wrapper: `<div className="rounded-md border bg-card p-4 space-y-1">`.
 
 | `backend` | Match shape | Primary text | Secondary text | Score |
 |-----------|-------------|-------------|----------------|-------|
@@ -368,7 +368,7 @@ page heading reads "Pipelines" (matching Helm's UX terminology). The URL namespa
 
 **Overall layout:**
 ```
-[canvas toolbar — top bar: name + active badge + Run/Save buttons]
+[canvas toolbar — top bar: name + active badge + Run pipeline/Save pipeline buttons]
 [xyflow canvas — fills remaining height]
   [canvas palette — left side, absolute positioned]
   [canvas inspector — right side, slides in when node selected]
@@ -379,7 +379,7 @@ page heading reads "Pipelines" (matching Helm's UX terminology). The URL namespa
 **Canvas toolbar:**
 - `<div className="flex items-center justify-between border-b bg-card px-4 py-2">`
 - Left: `<Button variant="ghost" size="sm" onClick={onBack} aria-label="Back to pipeline list"><ChevronLeft className="h-4 w-4" /></Button>` + workflow name `<h2 className="text-base font-medium ml-1">` + active badge
-- Right: `<Button variant="outline" size="sm" disabled={!isDirty || isSaving} onClick={handleSave}>` — "Save" (idle) / "Saving..." (pending) + `<Button size="sm" disabled={isRunning} onClick={handleRun}>` — "Run" (idle) / "Running..." (pending)
+- Right: `<Button variant="outline" size="sm" disabled={!isDirty || isSaving} onClick={handleSave}>` — "Save pipeline" (idle) / "Saving..." (pending) + `<Button size="sm" disabled={isRunning} onClick={handleRun}>` — "Run pipeline" (idle) / "Running..." (pending)
 
 **Canvas area:**
 - `<div className="relative flex-1 h-full">`
@@ -400,7 +400,9 @@ page heading reads "Pipelines" (matching Helm's UX terminology). The URL namespa
 - Header: `<div className="flex items-center justify-between p-4 border-b">` — node name `<h3 className="text-base font-medium">` + `<Button variant="ghost" size="icon" aria-label="Close inspector" onClick={deselectNode}><X className="h-4 w-4" /></Button>`
 - Node type label: `<code className="text-xs font-mono text-muted-foreground px-4">` — the Farsight NodeId string
 - Parameters form: `<div className="p-4 space-y-4 overflow-y-auto">` — one `<div>` per parameter key with `<Label>` + `<Input>` or `<Textarea>`. Parameters are `Record<string, unknown>` — render all string/number values as `<Input type="text">`, boolean values as `<Switch>`.
-- Save parameters: `<Button className="mx-4 mb-4 w-[calc(100%-2rem)]" onClick={handleSaveParams}>Apply</Button>`
+- Save parameters: `<Button className="mx-4 mb-4 w-[calc(100%-2rem)]" onClick={handleSaveParams}>Apply changes</Button>`
+
+**Canvas node inner padding:** `p-2` (8px) for source/transform/sink node bodies — keeps nodes compact without crowding the label.
 
 **Keyboard / a11y for canvas:**
 - Canvas zoom buttons: `aria-label="Zoom in"`, `aria-label="Zoom out"`, `aria-label="Fit view"` (via Tooltip)
@@ -414,7 +416,7 @@ page heading reads "Pipelines" (matching Helm's UX terminology). The URL namespa
 
 ### 6. WorkflowRunView
 
-**Form factor:** Inline status card below the canvas toolbar, shown after "Run" is triggered.
+**Form factor:** Inline status card below the canvas toolbar, shown after "Run pipeline" is triggered.
 
 **Anatomy:**
 - `<div className="border rounded-md bg-card px-4 py-3 flex items-center gap-3">` (appears below toolbar, above canvas)
@@ -483,9 +485,9 @@ system:    [full-width centered italic muted text]
 - Message wrapper: `<div className={cn("flex items-end gap-2 mb-3", role === 'user' ? "flex-row-reverse" : "flex-row")}>`
 - Avatar (user): `<div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-xs text-primary-foreground font-medium flex-shrink-0">` — first letter of userId or "U"
 - Avatar (assistant): `<div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0"><Bot className="h-4 w-4 text-muted-foreground" /></div>`
-- Bubble: `<div className={cn("max-w-[75%] rounded-2xl px-4 py-2.5", role === 'user' ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted text-foreground rounded-bl-sm")}>`
+- Bubble: `<div className={cn("max-w-[75%] rounded-2xl px-4 py-2", role === 'user' ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted text-foreground rounded-bl-sm")}>`
 - Parts renderer: render `parts[]` — for `type: 'text'` render `<p className="text-sm leading-relaxed whitespace-pre-wrap">`. For unknown part types, render nothing (pass-through opacity-0 placeholder). Never `dangerouslySetInnerHTML`.
-- Timestamp: `<time className="text-[10px] text-muted-foreground flex-shrink-0 mb-1">` — relative format ("just now", "2m ago")
+- Timestamp: `<time className="text-xs text-muted-foreground flex-shrink-0 mb-1">` — relative format ("just now", "2m ago")
 
 **System messages:** `<p className="text-xs text-muted-foreground italic text-center my-2 px-4">` — full-width, no bubble, no avatar.
 
@@ -513,7 +515,7 @@ system:    [full-width centered italic muted text]
 | DatasetDetail loading error | "Could not load dataset" |
 | DatasetSearch tab label | "Search" |
 | DatasetSearch input placeholder | "Search dataset..." |
-| DatasetSearch submit (idle) | "Search" |
+| DatasetSearch submit (idle) | "Search dataset" |
 | DatasetSearch submit (pending) | "Searching..." |
 | DatasetSearch initial empty heading | "Search this dataset" |
 | DatasetSearch initial empty body | "Enter a query above to find records." |
@@ -544,10 +546,10 @@ system:    [full-width centered italic muted text]
 | WorkflowList toolbar CTA | "New pipeline" |
 | WorkflowList error | "Could not load pipelines" + "Check your connection and try again." |
 | WorkflowCanvas back button aria-label | "Back to pipeline list" |
-| WorkflowCanvas save button (idle) | "Save" |
+| WorkflowCanvas save button (idle) | "Save pipeline" |
 | WorkflowCanvas save button (pending) | "Saving..." |
 | WorkflowCanvas save error toast | "Could not save pipeline. Try again." |
-| WorkflowCanvas run button (idle) | "Run" |
+| WorkflowCanvas run button (idle) | "Run pipeline" |
 | WorkflowCanvas run button (pending) | "Running..." |
 | WorkflowCanvas run error toast | "Could not start pipeline run. Try again." |
 | WorkflowCanvas loading error | "Could not load pipeline" |
@@ -557,7 +559,7 @@ system:    [full-width centered italic muted text]
 | WorkflowRunView — failed status | "Run failed" |
 | WorkflowRunView dismiss aria-label | "Dismiss run status" |
 | CanvasInspector close aria-label | "Close inspector" |
-| CanvasInspector apply button | "Apply" |
+| CanvasInspector apply button | "Apply changes" |
 | CanvasControls zoom-in aria-label | "Zoom in" |
 | CanvasControls zoom-out aria-label | "Zoom out" |
 | CanvasControls fit-view aria-label | "Fit view" |
@@ -584,8 +586,8 @@ system:    [full-width centered italic muted text]
 | Action | Confirmation approach | Confirm label | Cancel label |
 |--------|-----------------------|---------------|--------------|
 | Delete dataset | ConfirmDialog (destructive=true) | "Delete dataset" | "Keep dataset" |
-| Run workflow | None (trigger, not destructive — but irreversible) | — | — |
-| Save pipeline definition | None (auto-save on "Save" click; creates new immutable version) | — | — |
+| Run pipeline | None (trigger, not destructive — but irreversible) | — | — |
+| Save pipeline definition | None (auto-save on "Save pipeline" click; creates new immutable version) | — | — |
 
 **Note on dataset delete:** The Helm source uses `confirm()` — Phase 4 replaces this with
 `ConfirmDialog` per CORE-04 (REQUIREMENTS.md) and CONTEXT.md R-03.
@@ -625,9 +627,9 @@ All Phase 4 surfaces inherit and extend the Phase-2 CORE-05 baseline.
 | AgentChatView | 3 skeleton message rows | `<ErrorState title="Could not load messages" description="..." onRetry={refetch} />` | `<EmptyState title="Start a conversation" description="Send a message to begin." icon={MessageCircle} />` |
 
 **Mutation pending states:**
-- "Save" button: `disabled` + "Saving..." during `useUpdateWorkflow` mutation
-- "Run" button: `disabled` + "Running..." during `useRunWorkflow` mutation
-- "Search" button: `disabled` + "Searching..." during `useSearchDataset` mutation
+- "Save pipeline" button: `disabled` + "Saving..." during `useUpdateWorkflow` mutation
+- "Run pipeline" button: `disabled` + "Running..." during `useRunWorkflow` mutation
+- "Search dataset" button: `disabled` + "Searching..." during `useSearchDataset` mutation
 - "Send" button: `disabled` during `useSubmitAgentMessage` mutation (icon-only — use `aria-busy="true"` + spinner `<Loader2>` replacing `<Send>` icon during pending)
 - Dataset delete ConfirmDialog confirm button: `disabled` during `useDeleteDataset` mutation
 
