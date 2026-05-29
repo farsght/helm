@@ -76,7 +76,7 @@ Inherited from Phase 3. No new tokens. Additions for Phase 4 surfaces:
 | Token | Tailwind | px | Usage in Phase 4 |
 |-------|----------|----|------------------|
 | xs | `gap-1` / `p-1` | 4px | Icon-to-text gap inside dataset status badges, agent message part gaps |
-| sm | `gap-2` / `p-2` | 8px | Dataset list row cell padding; agent composer bottom padding; chat bubble vertical padding; canvas node inner padding |
+| sm | `gap-2` / `p-2` | 8px | Dataset list row cell padding; agent composer bottom padding; chat bubble vertical padding; canvas node inner padding; WorkflowList row vertical padding; AgentChatView header/composer chrome padding; AgentMessage gap between messages |
 | md | `gap-4` / `p-4` | 16px | Default card body padding; canvas inspector panel padding; chat bubble horizontal padding |
 | lg | `gap-6` / `p-6` | 24px | Section padding inside modals; workflow node inspector panel |
 | xl | `gap-8` / `p-8` | 32px | Top-level surface padding (DatasetList, WorkflowList page wrappers) |
@@ -89,9 +89,6 @@ Inherited from Phase 3. No new tokens. Additions for Phase 4 surfaces:
   token — the canvas fills its container. The `ReactFlow` component handles internal spacing.
 - **Chat composer textarea:** `min-h-[80px]` for the agent message input — not a spacing token
   but a layout constraint for the textarea (minimum 2 lines visible).
-- **Agent message bubble y-padding:** Assistant bubbles use `py-3` (24px y-equivalent via
-  `px-4 py-3`) — the 12px y-padding maps to `py-3` which is on-grid as 3×4=12. User bubbles
-  use `px-4 py-2` (16px / 8px) — both values are in the standard scale.
 
 ---
 
@@ -279,12 +276,14 @@ is the correct primitive for server-paginated data with column headers.
 
 **Form factor:** Detail page with metadata panel + records table + search tab.
 
+**Primary visual anchor:** The dataset name heading (`text-lg font-medium`) at the top of the metadata card.
+
 **Anatomy:**
 - Page wrapper: `<div className="p-8 space-y-6">`
-- Back link: `<Button variant="ghost" size="sm" onClick={() => onNavigate(backHref)} className="mb-2">` — `<ChevronLeft className="h-4 w-4 mr-1" />Back` — consumer-provided `backHref` prop
+- Back link: `<Button variant="ghost" size="sm" onClick={() => onNavigate(backHref)} className="mb-2">` — `<ChevronLeft className="h-4 w-4 mr-1" />Back to datasets` — consumer-provided `backHref` prop
 - Metadata card: `<div className="rounded-lg border bg-card p-6">`
   - Heading: `<h2 className="text-lg font-medium">{name}</h2>` + optional `<p className="text-sm text-muted-foreground mt-1">{description}</p>`
-  - Metadata row: `<div className="flex flex-wrap gap-3 mt-3">` — Kind badge, Search backend badge, Record count `<span className="text-xs text-muted-foreground">`, Created/Updated dates
+  - Metadata row: `<div className="flex flex-wrap gap-4 mt-4">` — Kind badge, Search backend badge, Record count `<span className="text-xs text-muted-foreground">`, Created/Updated dates
 - Tabs: `kind` / `search` — plain `<div>` tab bar (`role="tablist"`) with `<button role="tab" aria-selected>` — shadcn Tabs primitive if available, otherwise manual
 - Records tab: DataTable of `NormalizedRecord` rows — id + createdAt columns + raw data columns (keys from first record's fields). Paginated with "Load more" pattern.
 - Search tab: `<DatasetSearch>` component (see §3 below)
@@ -302,8 +301,8 @@ is the correct primitive for server-paginated data with column headers.
   - `<Input type="search" placeholder="Search dataset..." className="flex-1" />` with `<Label className="sr-only">Search query</Label>`
   - `<Button type="submit" disabled={isPending}>` — "Search dataset" (idle) / "Searching..." (pending)
 - Backend indicator: `<p className="text-xs text-muted-foreground mt-2">` — shows which backend is active when a result is available: "Vector search", "AI search", or "Keyword search" per color contract above
-- Result list: `<div className="mt-4 space-y-3">` — `{results.matches.map((match) => <SearchResultItem key={...} match={match} backend={backend} />)}`
-- `indexingPending` notice (vectorize only): `<div className="flex gap-2 rounded-md bg-[var(--color-chart-4)]/10 px-3 py-2 text-xs text-[var(--color-chart-4)] mb-3">` — `<AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />Results may be incomplete while indexing is in progress.`
+- Result list: `<div className="mt-4 space-y-2">` — `{results.matches.map((match) => <SearchResultItem key={...} match={match} backend={backend} />)}`
+- `indexingPending` notice (vectorize only): `<div className="flex gap-2 rounded-md bg-[var(--color-chart-4)]/10 px-4 py-2 text-xs text-[var(--color-chart-4)] mb-2">` — `<AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" />Results may be incomplete while indexing is in progress.`
 - Loading (search in flight): 3 `<Skeleton className="h-16 w-full rounded-md" />` rows
 - Error: `<ErrorState title="Search failed" description="Try a different query or check your connection." onRetry={handleSearch} />`
 
@@ -341,6 +340,8 @@ All three branches share a wrapper: `<div className="rounded-md border bg-card p
 
 **Form factor:** Full-width page with card list, toolbar above.
 
+**Primary visual anchor:** The pipeline name per row (`text-sm font-medium`) + the "New pipeline" CTA button in the toolbar.
+
 **Naming note:** The component is named `WorkflowList` in the public API; the consumer-facing
 page heading reads "Pipelines" (matching Helm's UX terminology). The URL namespace used by
 `client.workflows.*` is documented as a reconciliation (R-02).
@@ -349,7 +350,7 @@ page heading reads "Pipelines" (matching Helm's UX terminology). The URL namespa
 - Page wrapper: `<div className="p-8">`
 - Heading row: `<div className="flex items-center justify-between mb-6">` — `<h2 className="text-lg font-medium">Pipelines</h2>` + `<Button size="sm" onClick={onCreateWorkflow}>New pipeline</Button>`
 - List: `<div className="rounded-lg border bg-card divide-y divide-border">` — one row per workflow
-- Workflow row: `<div className="flex items-center justify-between px-4 py-3 gap-4">`
+- Workflow row: `<div className="flex items-center justify-between px-4 py-2 gap-4">`
   - Name + slug: `<div><p className="text-sm font-medium">{name}</p><p className="text-xs text-muted-foreground font-mono">{slug}</p></div>`
   - Active badge: `<Badge variant={active ? "outline" : "secondary"} className={active ? "text-primary border-primary/30" : ""}>` — "Active" / "Inactive"
   - Version: `<span className="text-xs text-muted-foreground">v{activeVersion ?? "—"}</span>`
@@ -365,6 +366,8 @@ page heading reads "Pipelines" (matching Helm's UX terminology). The URL namespa
 ### 5. WorkflowCanvas (Pipeline canvas surface)
 
 **Form factor:** Full-viewport canvas with floating inspector panel and toolbar.
+
+**Primary visual anchor:** The canvas area + the top-bar "Run pipeline" / "Save pipeline" CTA pair.
 
 **Overall layout:**
 ```
@@ -419,7 +422,7 @@ page heading reads "Pipelines" (matching Helm's UX terminology). The URL namespa
 **Form factor:** Inline status card below the canvas toolbar, shown after "Run pipeline" is triggered.
 
 **Anatomy:**
-- `<div className="border rounded-md bg-card px-4 py-3 flex items-center gap-3">` (appears below toolbar, above canvas)
+- `<div className="border rounded-md bg-card px-4 py-2 flex items-center gap-2">` (appears below toolbar, above canvas)
 - Status icon: Lucide icon per run status color contract (loading spinner `<Loader2 className="h-4 w-4 animate-spin text-primary">` for `accepted`/`running`; `<CheckCircle2 className="h-4 w-4 text-primary">` for `completed`; `<XCircle className="h-4 w-4 text-destructive">` for `failed`)
 - Text: `<p className="text-sm">` — "Pipeline run {status}" + `<span className="font-mono text-xs text-muted-foreground ml-2">ID: {runId}</span>`
 - Dismiss: `<Button variant="ghost" size="icon" aria-label="Dismiss run status" className="ml-auto" onClick={dismissRun}><X className="h-3.5 w-3.5" /></Button>`
@@ -433,6 +436,8 @@ page heading reads "Pipelines" (matching Helm's UX terminology). The URL namespa
 **Form factor:** Full-height chat surface. Consumer provides `agentDefinitionId` as a prop —
 no agent enumeration or selection UI in this surface.
 
+**Primary visual anchor:** The message list (most recent message) + the composer Send control.
+
 **Anatomy:**
 ```
 [chat header: agent name + agentDefinitionId]
@@ -441,9 +446,9 @@ no agent enumeration or selection UI in this surface.
 ```
 
 - Chat wrapper: `<div className="flex flex-col h-full bg-background">`
-- Header: `<div className="flex items-center gap-3 border-b bg-card px-4 py-3 flex-shrink-0">` — `<Bot className="h-5 w-5 text-primary" />` + `<h2 className="text-base font-medium">{agentLabel ?? agentDefinitionId}</h2>` + status polling indicator (see below)
+- Header: `<div className="flex items-center gap-2 border-b bg-card px-4 py-2 flex-shrink-0">` — `<Bot className="h-5 w-5 text-primary" />` + `<h2 className="text-base font-medium">{agentLabel ?? agentDefinitionId}</h2>` + status polling indicator (see below)
 - Message list: `<ScrollArea className="flex-1" ref={scrollRef}>` — auto-scrolls to bottom on new messages
-- Composer: `<div className="border-t bg-card px-4 py-3 flex-shrink-0">`
+- Composer: `<div className="border-t bg-card px-4 py-2 flex-shrink-0">`
   - `<form className="flex gap-2 items-end" onSubmit={handleSubmit}>`
   - `<Textarea placeholder="Message the agent..." className="flex-1 min-h-[80px] resize-none" value={message} onChange={setMessage} onKeyDown={handleKeyDown} aria-label="Message input" />`
   - `<Button type="submit" size="icon" disabled={!message.trim() || isPending} aria-label="Send message" className="flex-shrink-0 self-end"><Send className="h-4 w-4" /></Button>`
@@ -482,7 +487,7 @@ assistant: [avatar icon]   [bubble: muted bg] [spacer flex-1]
 system:    [full-width centered italic muted text]
 ```
 
-- Message wrapper: `<div className={cn("flex items-end gap-2 mb-3", role === 'user' ? "flex-row-reverse" : "flex-row")}>`
+- Message wrapper: `<div className={cn("flex items-end gap-2 mb-2", role === 'user' ? "flex-row-reverse" : "flex-row")}>`
 - Avatar (user): `<div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-xs text-primary-foreground font-medium flex-shrink-0">` — first letter of userId or "U"
 - Avatar (assistant): `<div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0"><Bot className="h-4 w-4 text-muted-foreground" /></div>`
 - Bubble: `<div className={cn("max-w-[75%] rounded-2xl px-4 py-2", role === 'user' ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted text-foreground rounded-bl-sm")}>`
@@ -511,7 +516,7 @@ system:    [full-width centered italic muted text]
 | DatasetList empty heading | "No datasets" |
 | DatasetList empty body | "Create a dataset in Farsight to get started." |
 | DatasetList error | "Could not load datasets" + "Check your connection and try again." |
-| DatasetDetail back button | "Back" |
+| DatasetDetail back button | "Back to datasets" |
 | DatasetDetail loading error | "Could not load dataset" |
 | DatasetSearch tab label | "Search" |
 | DatasetSearch input placeholder | "Search dataset..." |
