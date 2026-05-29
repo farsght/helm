@@ -123,3 +123,16 @@
 - `lucide-react` `^0.576.0` → 1.x bump — audit icon imports during planning.
 - a11y verification mechanism for CORE-05 (axe / eslint-plugin-jsx-a11y / manual).
 - Live URL-sync proof for DataTable — Phase 4 / PORT-01.
+
+---
+
+## Addendum — Post-Discussion: shadcn.io Registry Exploration
+
+After the gray-area discussion closed, we explored the **shadcn.io** MCP (`shadcnio`) registry as a potential source of pre-built components. This produced three decisions folded into CONTEXT.md (D-12, D-13, D-14) and a reusable reference doc.
+
+- **Surveyed:** ~7,800 items; 6,167 blocks across 56 categories. Categories `skeleton` / `empty-state` / `error` map onto the Phase 2 L/E/E trio; `notification` / `tables` / `settings` / `chat` / `kanban` / `dashboard` map onto Phase 3/4 surfaces.
+- **D-12 (selected):** Source the skeleton set + ErrorState/EmptyState styling from shadcn.io blocks (decoupled, not hand-rolled). Seed candidates recorded.
+- **D-13 (selected, BLOCKING GATE):** Verify the shadcn.io Pro redistribution license before vendoring any premium source into `@farsight/ui`. Lowest risk = re-implement dataless patterns rather than copy verbatim.
+- **D-14:** shadcn.io is a pattern source, not a dependency; Phase 3/4 surface blocks are reference-only (rebuilt onto contracts).
+- **Artifact:** `.planning/references/shadcn-block-intake.md` — item-type triage + the transform pipeline (alias rewrite → named export → lift data → lift state to the D-05 seam → strip next/* → reconcile deps → verify registryDeps) + acceptance criteria + two worked examples (`CardGridSkeleton` dataless; `BulkActionsTable<T>` stateful).
+- **Not selected:** running a Phase-3 candidate (`notification-center`) through intake — deferred, as it needs the Phase 3 adapter seam to be meaningful.
