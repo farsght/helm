@@ -137,6 +137,14 @@ export { CanvasPalette } from './components/canvas-kit/canvas-palette'
 export type { CanvasPaletteProps, PaletteItem } from './components/canvas-kit/canvas-palette'
 export { autoLayout } from './components/canvas-kit/auto-layout'
 
+// Agent hooks (Phase 4)
+export { agentKeys, useAgentMessagesQueryOptions, useSubmitAgentMessage } from './hooks/use-agents'
+
+// Agent surfaces (Phase 4)
+export { AgentChatView } from './components/agents/agent-chat-view'
+export type { AgentChatViewProps } from './components/agents/agent-chat-view'
+export { AgentMessage } from './components/agents/agent-message'
+
 // UI primitives
 export { Button, buttonVariants } from './components/ui/button'
 export { Label } from './components/ui/label'
