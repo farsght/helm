@@ -10,5 +10,7 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     coverage: { reporter: ['text', 'lcov'], include: ['src/**'] },
   },
-  resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
+  // Align with tsconfig.json paths: "@/*" -> "./*" (package root, not src/).
+  // Both resolve @/foo to <package-root>/foo so TS and Vitest see the same file.
+  resolve: { alias: { '@': path.resolve(__dirname, '.') } },
 })
