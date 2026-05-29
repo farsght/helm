@@ -21,6 +21,8 @@ Farsight's `apps/web` can install one package and get a working, themed, data-wi
 - ✓ Agent UI — agent definitions, agent canvas (`app/agents/[id]/agent-canvas-client.tsx`), run history (`app/agents/runs/`) — existing
 - ✓ Datasets / knowledge UI — list/detail, ingest, RAG search surfaces (`app/datasets/`) — existing
 - ✓ Tailwind + CSS-variable design tokens — `text-foreground` / `bg-card` / `border-border` etc., `cn()` merge util — existing
+- ✓ Library build tooling — `packages/ui` package (`@farsight/ui`, `private:true`): subpath `exports`, `sideEffects:["**/*.css"]`, 5 peers (`@clerk/react` corrected name, clerk/xyflow/query optional), tsdown unbundled per-module ESM build with `rollup-preserve-directives`, `cn()` util, publint clean — **validated Phase 1**
+- ✓ Design-system token contract as a consumable `./theme.css` subpath + `tokens.ts` JS export (lifted verbatim from `app/globals.css`, no `@import "tailwindcss"`), with `'use client'` preservation proven through the build via a Button/Label walking skeleton — **validated Phase 1**
 
 ### Active
 
@@ -30,13 +32,13 @@ Farsight's `apps/web` can install one package and get a working, themed, data-wi
 - [ ] Replace Drizzle/Neon + `lib/api.ts` `apiFetch` data access with SDK-adapter hooks/providers against the typed `@farsight/contracts`
 - [ ] Swap `@clerk/nextjs/server` for Clerk's framework-agnostic React client; library assumes Clerk on the consumer
 - [ ] Reshape data-bound components from Helm's per-user (`userId`) tenancy to Farsight's org/project tenant context (`{ orgId, orgSlug, role, userId }`)
-- [ ] Establish the package as the authoritative design system — export theming as a shareable Tailwind preset + CSS-variable token export (Farsight `apps/web` is greenfield-styled)
+- [~] Establish the package as the authoritative design system — CSS-variable token export landed in Phase 1 (`./theme.css` + `tokens.ts`); the shareable Tailwind **preset** is still outstanding (Farsight `apps/web` is greenfield-styled)
 - [ ] Make the design-system layer portable — primitives, page primitives, DataGrid/DataTable, hooks build and consume cleanly outside Next.js
 - [ ] Port the pipelines surface (xyflow canvas + run views) onto Farsight pipelines/pipeline_runs contracts
 - [ ] Port the agents surface (definitions + canvas + runs) onto Farsight agents contracts
 - [ ] Port the datasets/knowledge surface onto Farsight datasets contracts
 - [ ] Build notifications + webhooks UI (in-app inbox, notification preferences, outbound-webhook management) against Farsight's already-live endpoints — largely new UI, not a port
-- [ ] Set up library build tooling — package entry/exports, peer dependencies, build pipeline producing a consumable artifact
+- [x] Set up library build tooling — package entry/exports, peer dependencies, build pipeline producing a consumable artifact (Phase 1)
 - [ ] Provide a clean port path into the Farsight monorepo `packages/ui` (workspace-consumable by `apps/web`)
 
 ### Out of Scope
@@ -74,9 +76,11 @@ Farsight's `apps/web` can install one package and get a working, themed, data-wi
 | Portability = component library in Farsight monorepo (`packages/ui`) | Reuse mature Helm UI; consumed by `apps/web` via workspace — not decouple-in-place, not a published npm dep | — Pending |
 | Data access via SDK-adapter hooks against `@farsight/contracts` | Least consumer wiring; leverages Farsight's typed contracts + conformance guarantees | — Pending |
 | Adopt Farsight org/project tenancy; Clerk React client | Library targets Farsight's actual tenancy + auth model, drops Next/Clerk-server coupling | — Pending |
-| Package is the authoritative design system | `apps/web` is greenfield-styled, so theming lives in the package (Tailwind preset + CSS-var export) | — Pending |
-| Develop in Helm repo, port to Farsight later ("prep here, then port") | Helm is the donor; keeps GSD execution/commits local while Farsight stays untouched until ready | — Pending |
+| Package is the authoritative design system | `apps/web` is greenfield-styled, so theming lives in the package (Tailwind preset + CSS-var export) | CSS-var token export shipped (Phase 1); Tailwind preset still pending |
+| Develop in Helm repo, port to Farsight later ("prep here, then port") | Helm is the donor; keeps GSD execution/commits local while Farsight stays untouched until ready | In progress — `packages/ui` staged in Helm (Phase 1) |
 | Scope = design system + 4 feature surfaces (pipelines, agents, datasets, notifications+webhooks) | These map to Farsight's domain; CRM/campaigns/knowledge-backend excluded | — Pending |
+| Build tool = tsdown (not tsup fallback); peer name `@clerk/react` (not `@clerk/clerk-react`) | tsdown 0.22.x `unbundle:true` gives per-module output + `rollup-preserve-directives`; `@clerk/react` is the correct framework-agnostic package (01-RESEARCH Finding 2) | Decided & validated (Phase 1) |
+| `radix-ui` + `class-variance-authority` are `dependencies` (not peers) | Component-lib primitives the package ships its own copy of; unlike React they are not singleton-sensitive | Decided (Phase 1 gap closure) |
 
 ## Evolution
 
@@ -96,4 +100,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-29 after initialization*
+*Last updated: 2026-05-29 — Phase 1 (Package Foundation & Theming) complete: `packages/ui` builds as a themed, tree-shakeable, `'use client'`-preserving artifact with the lifted CSS-var token contract.*
