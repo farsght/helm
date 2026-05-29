@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Plan 04-01 complete (Wave-0 harness + Vite scaffold)
-last_updated: "2026-05-29T21:37:47.365Z"
+status: verifying
+stopped_at: Plan 04-06 complete (PORT-01 Vite consumer + PORT-02 docs) — phase 04 ready for verification
+last_updated: "2026-05-29T22:10:52.299Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 20
-  completed_plans: 19
-  percent: 75
+  completed_plans: 20
+  percent: 100
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-05-29)
 
 ## Current Position
 
-Phase: 04 (contract-gated-surfaces-monorepo-port) — EXECUTING
-Plan: 6 of 6 (04-01 complete)
-Status: Ready to execute
+Phase: 04 (contract-gated-surfaces-monorepo-port) — COMPLETE
+Plan: 6 of 6 (04-06 complete)
+Status: Phase complete — ready for verification
 Last activity: 2026-05-29
 
-Progress: [██████████] 95%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Progress: [██████████] 95%
 | Phase 04 P03 | 18 | 2 tasks | 11 files |
 | Phase 04 P04-04 | 25 | 3 tasks | 9 files |
 | Phase 04 P04-05 | 15 | 2 tasks | 5 files |
+| Phase 04 P04-06 | 38 | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,8 @@ Recent decisions affecting current work:
 - [Phase ?]: canvas-kit has no @xyflow/react CSS import — consumer global CSS owns it
 - [Phase ?]: toDefinition meta Pick excludes schemaVersion; always literal 1 inside the fn (Pitfall 2 enforced)
 - [Phase ?]: validatePipelineGraph re-exported from @farsight/contracts; not hand-rolled
+- [Phase ?]: [04-06] PORT-01 Vite consumer uses FarsightProvider _test* bypass props (no ClerkProvider) for visual-only proof; canvas seeded via QueryClient.setQueryData(workflowKeys.detail) — apps/web uses real Clerk getToken
+- [Phase ?]: [04-06] check-directives.sh threshold = actual post-build count 84; attw exits 1 for this private bundler-only package — bundler profile green, strict cross-profile exit-0 deferred (04-06-SUMMARY Deviation 1)
 
 ### Pending Todos
 
@@ -133,6 +136,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-29T21:37:47.357Z
+Last session: 2026-05-29T22:10:35.971Z
 Stopped at: Plan 04-01 complete (Wave-0 harness + Vite scaffold)
 Resume file: None

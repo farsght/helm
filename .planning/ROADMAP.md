@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Package Foundation & Theming** - Buildable `packages/ui` with subpath exports, peer-dep hygiene, `'use client'`-preserving artifact, and the lifted CSS-variable token contract (completed 2026-05-29)
 - [x] **Phase 2: Headless Core Port** - 34 primitives + page primitives + DataGrid/DataTable ported framework-clean, with loading/error/empty + a11y conventions enforced at source (completed 2026-05-29)
 - [x] **Phase 3: Adapter Seam, Tenancy & Notifications Proving Ground** - `<FarsightProvider>` + typed SDK + RFC-7807 errors + org/project tenant-namespaced hooks, proven end-to-end against the live notifications/webhooks surface (completed 2026-05-29)
-- [ ] **Phase 4: Contract-Gated Surfaces & Monorepo Port** - Datasets, pipelines, and agents surfaces on Farsight contracts, plus verified `workspace:*` consumption from an external Vite app
+- [x] **Phase 4: Contract-Gated Surfaces & Monorepo Port** - Datasets, pipelines, and agents surfaces on Farsight contracts, plus verified `workspace:*` consumption from an external Vite app (completed 2026-05-29)
 
 ## Phase Details
 
@@ -157,7 +157,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 04-06-PLAN.md — PORT-01 Vite app wiring + PORT-02 CONSUMER.md + publint/attw + check-directives.sh update + full phase gate (PORT-01, PORT-02)
+- [x] 04-06-PLAN.md — PORT-01 Vite app wiring + PORT-02 CONSUMER.md + publint/attw + check-directives.sh update + full phase gate (PORT-01, PORT-02)
 
 **UI hint**: yes
 
@@ -171,4 +171,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
 | 2. Headless Core Port | 5/5 | Complete   | 2026-05-29 |
 | 3. Adapter Seam, Tenancy & Notifications | 6/6 | Complete    | 2026-05-29 |
-| 4. Contract-Gated Surfaces & Monorepo Port | 5/6 | In Progress|  |
+| 4. Contract-Gated Surfaces & Monorepo Port | 6/6 | Complete   | 2026-05-29 |

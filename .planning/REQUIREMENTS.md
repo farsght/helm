@@ -56,8 +56,8 @@ Requirements for the initial portable library. Each maps to a roadmap phase.
 
 ### Monorepo Integration
 
-- [ ] **PORT-01**: Verified `workspace:*` consumption from a minimal external Vite consumer — utility classes resolve via `@source`, tokens apply, canvases render (not validated only inside Helm)
-- [ ] **PORT-02**: Consumer-setup README — required peer versions, `@source` config, xyflow CSS import order, and `<FarsightProvider>` mount
+- [x] **PORT-01**: Verified `workspace:*` consumption from a minimal external Vite consumer — utility classes resolve via `@source`, tokens apply, canvases render (not validated only inside Helm)
+- [x] **PORT-02**: Consumer-setup README — required peer versions, `@source` config, xyflow CSS import order, and `<FarsightProvider>` mount
 
 ## v2 Requirements
 
@@ -118,8 +118,8 @@ Each requirement maps to exactly one phase. See `.planning/ROADMAP.md` for phase
 | DSET-01 | Phase 4 | Complete |
 | PIPE-01 | Phase 4 | Complete |
 | AGNT-01 | Phase 4 | Complete |
-| PORT-01 | Phase 4 | Pending |
-| PORT-02 | Phase 4 | Pending |
+| PORT-01 | Phase 4 | Complete |
+| PORT-02 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 24 total
