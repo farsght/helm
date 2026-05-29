@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Roadmap and STATE created; REQUIREMENTS traceability populated.
-last_updated: "2026-05-29T07:18:18.938Z"
-last_activity: 2026-05-29 -- Phase 1 planning complete
+stopped_at: "Completed Phase 01 Plan 01: packages/ui scaffold with tsdown build config and cn() utility"
+last_updated: "2026-05-29T07:32:04.635Z"
+last_activity: 2026-05-29
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-29)
 
 **Core value:** Farsight's `apps/web` can install one package and get a working, themed, data-wired UI for its core domain — decoupled from Helm's Next.js/Clerk-server/Drizzle stack and wired to the typed `@farsight/contracts`.
-**Current focus:** Phase 1 — Package Foundation & Theming
+**Current focus:** Phase 01 — package-foundation-theming
 
 ## Current Position
 
-Phase: 1 of 4 (Package Foundation & Theming)
-Plan: 0 of TBD in current phase
+Phase: 01 (package-foundation-theming) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-05-29 -- Phase 1 planning complete
+Last activity: 2026-05-29
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 01 P01 | 3 | - tasks | - files |
 
 ## Accumulated Context
 
@@ -62,6 +63,9 @@ Recent decisions affecting current work:
 
 - Roadmap: Foundation-first ordering adopted (research strongly converged) — headless core moves before the adapter seam; adapter seam proven against the live notifications/webhooks domain before contract-gated surfaces.
 - Roadmap: Coupling-to-shed is shallow (design system + DataGrid have zero `next/` imports; only 3 components use `next/navigation`) — the real work is the adapter seam + packaging discipline, not rewriting components.
+- [Phase ?]: BRANCH A selected: tsdown 0.22.1 supports unbundle:true
+- [Phase ?]: deps.neverBundle used over external in tsdown.config.ts — external is deprecated in tsdown 0.22.x
+- [Phase ?]: CSS stub files created for theme.css/globals.css and dist copy step added — publishConfig.exports satisfied, publint passes
 
 ### Pending Todos
 
@@ -89,6 +93,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-29
-Stopped at: Roadmap and STATE created; REQUIREMENTS traceability populated.
+Last session: 2026-05-29T07:32:04.629Z
+Stopped at: Completed Phase 01 Plan 01: packages/ui scaffold with tsdown build config and cn() utility
 Resume file: None

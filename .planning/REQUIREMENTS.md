@@ -9,10 +9,10 @@ Requirements for the initial portable library. Each maps to a roadmap phase.
 
 ### Package Foundation
 
-- [ ] **PKG-01**: Package builds with subpath `exports` + ESM and `sideEffects: ["**/*.css"]`, tree-shakeable so importing one primitive does not pull in the xyflow canvas or Recharts
-- [ ] **PKG-02**: `react`, `react-dom`, `@clerk/clerk-react`, `@xyflow/react`, `@tanstack/react-query` declared as `peerDependencies` with root `pnpm.overrides`; `pnpm list react -r` resolves exactly one version
+- [x] **PKG-01**: Package builds with subpath `exports` + ESM and `sideEffects: ["**/*.css"]`, tree-shakeable so importing one primitive does not pull in the xyflow canvas or Recharts
+- [x] **PKG-02**: `react`, `react-dom`, `@clerk/clerk-react`, `@xyflow/react`, `@tanstack/react-query` declared as `peerDependencies` with root `pnpm.overrides`; `pnpm list react -r` resolves exactly one version
 - [ ] **PKG-03**: `'use client'` directive is preserved in built output (per-module / `preserveModules`) and asserted in CI
-- [ ] **PKG-04**: A publish/port artifact build (tsdown or tsup) externalizes all peers and emits `.d.ts`
+- [x] **PKG-04**: A publish/port artifact build (tsdown or tsup) externalizes all peers and emits `.d.ts`
 
 ### Theming
 
@@ -95,10 +95,10 @@ Each requirement maps to exactly one phase. See `.planning/ROADMAP.md` for phase
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PKG-01 | Phase 1 | Pending |
-| PKG-02 | Phase 1 | Pending |
+| PKG-01 | Phase 1 | Complete |
+| PKG-02 | Phase 1 | Complete |
 | PKG-03 | Phase 1 | Pending |
-| PKG-04 | Phase 1 | Pending |
+| PKG-04 | Phase 1 | Complete |
 | THEME-01 | Phase 1 | Pending |
 | THEME-02 | Phase 1 | Pending |
 | THEME-03 | Phase 1 | Pending |

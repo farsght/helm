@@ -39,7 +39,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 **Wave 1**
 
-- [ ] 01-01-PLAN.md — Package scaffold: package.json (exports, sideEffects, peerDeps) + tsdown config + cn() utility (PKG-01, PKG-02, PKG-04)
+- [x] 01-01-PLAN.md — Package scaffold: package.json (exports, sideEffects, peerDeps) + tsdown config + cn() utility (PKG-01, PKG-02, PKG-04)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -106,7 +106,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Package Foundation & Theming | 0/3 | Not started | - |
+| 1. Package Foundation & Theming | 1/3 | In Progress|  |
 | 2. Headless Core Port | 0/TBD | Not started | - |
 | 3. Adapter Seam, Tenancy & Notifications | 0/TBD | Not started | - |
 | 4. Contract-Gated Surfaces & Monorepo Port | 0/TBD | Not started | - |
