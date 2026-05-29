@@ -55,6 +55,19 @@ export { DataTableViewOptions } from './components/data-table/data-table-view-op
 export type { QueryKeys, Option, FilterVariant, JoinOperator, ExtendedColumnSort, DataTableRowAction } from './types/data-table'
 // Note: FilterOperator from types/data-table is intentionally omitted — types/data-grid exports a same-named but different type; consumers import directly from the relevant types file if needed
 
+// Notification hooks (Phase 3)
+export { notificationKeys, useNotificationsQueryOptions, useMarkReadMutation, useMarkAllReadMutation } from './hooks/use-notifications'
+export { preferenceKeys, useNotificationPreferencesQuery, useUpdateNotificationPreferences } from './hooks/use-notification-preferences'
+
+// Notification surfaces (Phase 3)
+export { NotificationItem } from './components/notifications/notification-item'
+export type { NotificationItemProps } from './components/notifications/notification-item'
+export { NotificationBell } from './components/notifications/notification-bell'
+export type { NotificationBellProps } from './components/notifications/notification-bell'
+export { NotificationInbox } from './components/notifications/notification-inbox'
+export type { NotificationInboxProps } from './components/notifications/notification-inbox'
+export { NotificationPreferences } from './components/notifications/notification-preferences'
+
 // Provider & adapter seam (Phase 3)
 export { FarsightProvider, useFarsightContext, FarsightContext } from './provider/farsight-provider'
 export type { FarsightProviderProps, TenantContext, FarsightContextValue } from './provider/farsight-provider'

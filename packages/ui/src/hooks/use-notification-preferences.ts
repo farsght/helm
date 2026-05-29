@@ -7,7 +7,11 @@
  * No "use client" — hook files do not carry the directive; the component that calls them does.
  */
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
+import type { NotificationPreferencesUpdateBody, NotificationPreferencesResponse } from "@farsight/contracts"
 import { useFarsightContext } from "../provider/farsight-provider"
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyFn = (...args: any[]) => Promise<any>
 
 // ─── Key factory ──────────────────────────────────────────────────────────────
 
@@ -27,7 +31,8 @@ export function useNotificationPreferencesQuery() {
   const { client, tenant } = useFarsightContext()
   return queryOptions({
     queryKey: preferenceKeys.get(tenant.userId),
-    queryFn: () => client.me.getNotificationPreferences(),
+    queryFn: (): Promise<NotificationPreferencesResponse> =>
+      (client.me.getNotificationPreferences as AnyFn)(),
     staleTime: 60_000,
     enabled: !!tenant.userId,
   })
@@ -43,8 +48,8 @@ export function useUpdateNotificationPreferences() {
   const { client, tenant } = useFarsightContext()
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (body: Parameters<typeof client.me.updateNotificationPreferences>[0]["body"]) =>
-      client.me.updateNotificationPreferences({ body }),
+    mutationFn: (body: NotificationPreferencesUpdateBody) =>
+      (client.me.updateNotificationPreferences as AnyFn)({ body }),
     onSettled: () =>
       qc.invalidateQueries({ queryKey: preferenceKeys.all(tenant.userId) }),
   })
