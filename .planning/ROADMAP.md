@@ -123,6 +123,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
-| 2. Headless Core Port | 1/5 | Executing | 2026-05-29 |
+| 2. Headless Core Port | 1/5 | In Progress|  |
 | 3. Adapter Seam, Tenancy & Notifications | 0/TBD | Not started | - |
 | 4. Contract-Gated Surfaces & Monorepo Port | 0/TBD | Not started | - |
