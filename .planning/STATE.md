@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: "Completed Phase 01 Plan 01: packages/ui scaffold with tsdown build config and cn() utility"
-last_updated: "2026-05-29T07:38:51.177Z"
+status: verifying
+stopped_at: "Completed Phase 01 Plan 03: Button+Label port, per-module build verified, Phase 1 complete"
+last_updated: "2026-05-29T07:50:53.927Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 0
+  completed_plans: 3
+  percent: 25
 ---
 
 # Project State
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-05-29)
 
 Phase: 01 (package-foundation-theming) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-05-29
 
-Progress: [███████░░░] 67%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Progress: [███████░░░] 67%
 
 *Updated after each plan completion*
 | Phase 01 P01 | 3 | - tasks | - files |
+| Phase 01 P03 | 35 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Recent decisions affecting current work:
 - [Phase ?]: BRANCH A selected: tsdown 0.22.1 supports unbundle:true
 - [Phase ?]: deps.neverBundle used over external in tsdown.config.ts — external is deprecated in tsdown 0.22.x
 - [Phase ?]: CSS stub files created for theme.css/globals.css and dist copy step added — publishConfig.exports satisfied, publint passes
+- [Phase ?]: Phase 2 alias rewrite rule correction: PATTERNS.md says '../lib/utils' but correct depth from src/components/ui/ is '../../lib/utils' — all 34 Phase 2 component ports must use the two-level path
+- [Phase ?]: radix-ui and class-variance-authority added to deps.neverBundle in tsdown.config.ts — prevents peer vendoring into dist/node_modules despite peerDependencies declaration
 
 ### Pending Todos
 
@@ -93,6 +96,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-29T07:38:51.172Z
-Stopped at: Completed Phase 01 Plan 01: packages/ui scaffold with tsdown build config and cn() utility
+Last session: 2026-05-29T07:50:53.921Z
+Stopped at: Completed Phase 01 Plan 03: Button+Label port, per-module build verified, Phase 1 complete
 Resume file: None

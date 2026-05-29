@@ -13,7 +13,7 @@ This roadmap extracts Helm's mature React UI into a framework-agnostic `packages
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Package Foundation & Theming** - Buildable `packages/ui` with subpath exports, peer-dep hygiene, `'use client'`-preserving artifact, and the lifted CSS-variable token contract
+- [x] **Phase 1: Package Foundation & Theming** - Buildable `packages/ui` with subpath exports, peer-dep hygiene, `'use client'`-preserving artifact, and the lifted CSS-variable token contract (completed 2026-05-29)
 - [ ] **Phase 2: Headless Core Port** - 34 primitives + page primitives + DataGrid/DataTable ported framework-clean, with loading/error/empty + a11y conventions enforced at source
 - [ ] **Phase 3: Adapter Seam, Tenancy & Notifications Proving Ground** - `<FarsightProvider>` + typed SDK + RFC-7807 errors + org/project tenant-namespaced hooks, proven end-to-end against the live notifications/webhooks surface
 - [ ] **Phase 4: Contract-Gated Surfaces & Monorepo Port** - Datasets, pipelines, and agents surfaces on Farsight contracts, plus verified `workspace:*` consumption from an external Vite app
@@ -47,7 +47,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 01-03-PLAN.md — Button + Label primitive port + full build verification: 'use client' preservation, publint clean, walking skeleton import smoke (PKG-01, PKG-03, PKG-04)
+- [x] 01-03-PLAN.md — Button + Label primitive port + full build verification: 'use client' preservation, publint clean, walking skeleton import smoke (PKG-01, PKG-03, PKG-04)
 
 ### Phase 2: Headless Core Port
 
@@ -106,7 +106,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Package Foundation & Theming | 2/3 | In Progress|  |
+| 1. Package Foundation & Theming | 3/3 | Complete   | 2026-05-29 |
 | 2. Headless Core Port | 0/TBD | Not started | - |
 | 3. Adapter Seam, Tenancy & Notifications | 0/TBD | Not started | - |
 | 4. Contract-Gated Surfaces & Monorepo Port | 0/TBD | Not started | - |
