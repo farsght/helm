@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-29)
 Phase: 04 (contract-gated-surfaces-monorepo-port) — COMPLETE
 Plan: 6 of 6 (04-06 complete)
 Status: Phase complete — ready for verification
-Last activity: 2026-05-29
+Last activity: 2026-05-29 - Completed quick task 260529-oj4 (@farsight/ui attw exits 0 + plugin-react vite-6 fix)
 
 Progress: [██████████] 100%
 
@@ -122,6 +122,12 @@ None yet.
 - **Phase 2:** `lucide-react` major bump (Helm `^0.576.0` → 1.x) — audit icon imports during the port.
 - **Cross-cutting hard gates:** (1) org/project cache-key correctness, (2) `'use client'` preservation, (3) Tailwind v4 `@source` distribution, (4) peer-dep dedupe, (5) contracts-ahead-of-endpoints sequencing — each mapped to the phase where it is cheapest to get right.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260529-oj4 | @farsight/ui attw check honestly exits 0 (files allowlist + check:attw script, attw 0.18.3, zod neverBundle); also fixed surfaced plugin-react@6-vs-vite-6 latent bug | 2026-05-29 | 77397d4 | [260529-oj4-make-farsight-ui-attw-check-honestly-exi](./quick/260529-oj4-make-farsight-ui-attw-check-honestly-exi/) |
+
 ## Deferred Items
 
 Items acknowledged and carried forward from previous milestone close:
@@ -130,7 +136,7 @@ Items acknowledged and carried forward from previous milestone close:
 |----------|------|--------|-------------|
 | Manual UAT (D-03) | Live-endpoint round-trip: DatasetList / WorkflowCanvas run / AgentChatView submit+poll against a real Clerk session + api.farsght.com | Pending human test | Phase 04 |
 | Monorepo port (D-06) | Physical copy of packages/ui into ~/Projects/farsight-platform + workspace wire + single-React verify — follow packages/ui/CONSUMER.md runbook | Pending human run | Phase 04 |
-| Packaging (PORT-02) | attw exits 1: bundler profile 🟢 (the consumer that matters) but node10/node16-CJS + ./theme.css/./styles/globals.css subpaths fail — pre-existing ESM-only/CSS-subpath limitation. Follow-up only if node/CJS consumer support needed (CJS build + per-subpath .d.ts, or drop CSS subpaths from attw scope) | Acknowledged limitation | Phase 04 |
+| Packaging (PORT-02) | attw cross-profile validation: bundler + node16-ESM 🟢; node10/node16-CJS + CSS subpaths intentionally out of scope (ESM-only lib, typeless CSS assets) | RESOLVED — quick 260529-oj4: `npm run check:attw` exits 0 (files allowlist + attw 0.18.3 + zod neverBundle) | Phase 04 |
 
 ## Transition Notes
 
