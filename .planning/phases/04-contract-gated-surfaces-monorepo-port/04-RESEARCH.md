@@ -20,7 +20,7 @@
 - **D-07:** **publint + `@arethetypeswrong/cli`** re-run on built dist as part of Phase 4.
 - **D-08:** Pipeline canvas binds **Farsight `workflows` + `pipeline-definition`/node contracts**: CRUD + `run` + run view. Core source→transform→sink editable node subset.
 - **D-09:** xyflow **CSS import-order contract locked** by: documented order, jsdom vitest render-smoke (nodes+edges in DOM), real-browser visual in Vite app.
-- **D-10:** **Shared canvas-kit + per-surface nodes.** Extract xyflow wiring into reusable canvas-kit consumed by both pipelines and agents.
+- **D-10 (amended per R-04):** **Canvas-kit is pipelines-only.** Extract the xyflow wiring into a reusable canvas-kit for the pipelines surface; agents is a **chat** surface (message list + composer), NOT a node canvas, and does not consume the xyflow canvas-kit.
 
 ### Claude's Discretion
 
@@ -877,22 +877,16 @@ export function useSubmitAgentMessage(agentDefinitionId: string) {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **What are the live Farsight NodeId strings for the Phase-4 MVP pipeline node subset?**
-   - What we know: The Farsight node registry is not in the contracts package. `PipelineNode.type` must be a valid NodeId matching the pattern.
-   - What's unclear: Which NodeIds (e.g. `core.source.dataset@1.0.0`, `core.transform.filter@1.0.0`) exist in the live registry.
-   - Recommendation: The planner should either (a) define placeholder NodeIds in a constants file with a comment that they must match the live registry, or (b) check `~/Projects/farsight-platform/apps/api/src/` for registered node modules before planning the node subset. If the registry is empty or the nodes don't exist yet, the canvas can still render using any valid NodeId string — only execution fails.
+   - **RESOLVED:** Verified by reading `~/Projects/farsight-platform/apps/api/src/nodes/` — the MVP subset is `core.source.manual@1.0.0`, `core.transform.set@1.0.0`, `core.sink.dataset@1.0.0`. Hardcoded in `node-ids.ts` (plan 04-03) with a comment documenting the registry source.
 
 2. **`projectSlug` source for the `examples/` Vite consumer app**
-   - What we know: The `FarsightProvider` takes `projectSlug` as a consumer prop. The examples app needs to supply one.
-   - What's unclear: Whether a hardcoded test slug is acceptable or whether the examples app needs a project picker.
-   - Recommendation: Hardcode a test `projectSlug` in the examples app (sufficient for PORT-01 proof); document that the real `apps/web` needs a project selector.
+   - **RESOLVED:** Hardcode a test `projectSlug` (+ `orgSlug`) as dev constants in the examples app (sufficient for the PORT-01 proof); the consumer README documents that the real `apps/web` supplies these from its own routing/project selector.
 
-3. **Agent surface scope clarification (Option A vs B)**
-   - What we know: Farsight `agentsRoutes` is a chat API, not a definitions management API.
-   - What's unclear: Whether the planner interprets AGNT-01 "agents definitions list + canvas + run history" as (A) a Farsight-native chat surface per agent definition, or (B) a presentational card list with no contract binding.
-   - Recommendation: Option A — build a chat surface for a named `agentDefinitionId`. This is the only meaningful contract binding available. "Run history" = message thread. Document the reconciliation in the plan.
+3. **Agent surface scope clarification**
+   - **RESOLVED (user-confirmed, R-04):** Build the **chat surface** for a consumer-provided `agentDefinitionId` (`submit` + poll `messages`) — the only contract-supported binding. AGNT-01 "definitions/canvas/run-history" is reconciled to an agent chat view. Canvas-kit is pipelines-only (D-10 amended).
 
 ---
 
