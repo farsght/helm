@@ -6,6 +6,13 @@
   "sideEffects": [
     "**/*.css"
   ],
+  "files": [
+    "dist",
+    "!dist/node_modules",
+    "src/styles",
+    "README.md",
+    "CONSUMER.md"
+  ],
   "exports": {
     ".": {
       "types": "./src/index.ts",
@@ -29,7 +36,8 @@
   "scripts": {
     "build": "tsdown -c tsdown.config.ts && mkdir -p dist/styles && cp src/styles/theme.css dist/styles/theme.css && cp src/styles/globals.css dist/styles/globals.css",
     "test": "vitest run",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "check:attw": "npm run build && TARBALL=$(pnpm pack --pack-destination /tmp 2>&1 | grep '\\.tgz' | tail -1 | tr -d '[:space:]') && npx @arethetypeswrong/cli $TARBALL --profile esm-only --exclude-entrypoints theme.css styles/globals.css; STATUS=$?; rm -f $TARBALL; exit $STATUS"
   },
   "dependencies": {
     "@farsight/contracts": "workspace:*",
@@ -44,7 +52,7 @@
     "tailwind-merge": "^3.0.0"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "0.18.2",
+    "@arethetypeswrong/cli": "0.18.3",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@typescript-eslint/eslint-plugin": "^8.60.0",

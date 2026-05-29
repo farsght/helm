@@ -41,6 +41,12 @@ export default defineConfig({
       'react-day-picker',
       '@radix-ui/react-direction',
       '@radix-ui/react-slot',
+      // Externalize zod so dist/node_modules is not created — zod is resolved
+      // transitively through @farsight/sdk → @farsight/contracts at install time.
+      // Without this, tsdown bundles zod into dist/node_modules and the generated
+      // farsight-error.d.ts contains relative paths to dist/node_modules that attw
+      // cannot resolve when inspecting the published tarball (InternalResolutionError).
+      'zod',
     ],
   },
 })
