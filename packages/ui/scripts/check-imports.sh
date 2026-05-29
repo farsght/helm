@@ -6,9 +6,10 @@ SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/src"
 fail=0
 
 # Rule 1: No next/* imports (next-themes is NOT next/* — does not match "next/")
-# "from "next/" matches next/navigation, next/server, next/headers etc.
-# next-themes imports as 'from "next-themes"' — no trailing slash, does not match.
-NEXT_HITS=$(grep -rn 'from "next/' "$SRC" --include="*.ts" --include="*.tsx" 2>/dev/null || true)
+# Matches both single- and double-quoted forms: from 'next/...' or from "next/..."
+# The trailing slash is the discriminator: next-themes imports as 'next-themes' (no slash)
+# so it does NOT match. next/navigation, next/server, next/headers etc. all DO match.
+NEXT_HITS=$(grep -rn "from ['\"]next/" "$SRC" --include="*.ts" --include="*.tsx" 2>/dev/null || true)
 if [ -n "$NEXT_HITS" ]; then
   echo "FAIL [CORE-01]: next/* import found (next-themes IS allowed; next/anything is not):"
   printf '%s\n' "$NEXT_HITS"
