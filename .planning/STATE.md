@@ -98,6 +98,10 @@ Items acknowledged and carried forward from previous milestone close:
 |----------|------|--------|-------------|
 | *(none)* | | | |
 
+## Transition Notes
+
+**D-11 (/gsd-transition flag):** PROJECT.md out-of-scope line "Library owning theme toggle + persistence" requires a clarifying note. As of Phase 2, the library carries a READ-ONLY next-themes peer dependency for the Toaster component. The Toaster reads the active theme via useTheme() and passes it to Sonner — it does NOT own the ThemeProvider, toggle UI, or persistence logic. Those remain the consumer's (apps/web) responsibility. The "library owning theme toggle + persistence" exclusion remains accurate; the read-only peer is not a violation of that boundary.
+
 ## Session Continuity
 
 Last session: 2026-05-29T10:34:41.066Z
