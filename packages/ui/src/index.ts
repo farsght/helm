@@ -55,6 +55,16 @@ export { DataTableViewOptions } from './components/data-table/data-table-view-op
 export type { QueryKeys, Option, FilterVariant, JoinOperator, ExtendedColumnSort, DataTableRowAction } from './types/data-table'
 // Note: FilterOperator from types/data-table is intentionally omitted — types/data-grid exports a same-named but different type; consumers import directly from the relevant types file if needed
 
+// Provider & adapter seam (Phase 3)
+export { FarsightProvider, useFarsightContext, FarsightContext } from './provider/farsight-provider'
+export type { FarsightProviderProps, TenantContext, FarsightContextValue } from './provider/farsight-provider'
+export { useTenant } from './provider/use-tenant'
+export { useApiClient } from './provider/use-api-client'
+export { createApiClient, ApiClientError, ApiClientSchemaError } from './client/create-client'
+export type { ApiClient, CreateApiClientOptions } from './client/create-client'
+export { toFarsightError, isFarsightError, matchCode } from './errors/farsight-error'
+export type { FarsightError, FarsightSchemaError } from './errors/farsight-error'
+
 // UI primitives
 export { Button, buttonVariants } from './components/ui/button'
 export { Label } from './components/ui/label'
