@@ -1,6 +1,6 @@
 # Helm
 
-The operating layer for Bitwage / Paystand marketing. A unified workspace for outbound campaigns, audience and CRM, content pipelines, and AI agents — all running on the same data plane.
+A unified workspace for outbound campaigns, audience and CRM, content pipelines, and AI agents — all running on the same data plane.
 
 **Live:** https://helm.gs
 
