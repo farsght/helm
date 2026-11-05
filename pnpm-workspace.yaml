@@ -1,0 +1,5 @@
+packages:
+  - 'packages/*'
+  - 'examples/*'
+  - '../farsight-platform/packages/sdk'
+  - '../farsight-platform/packages/contracts'

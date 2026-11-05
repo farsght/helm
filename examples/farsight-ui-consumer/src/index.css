@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@import "@farsight/ui/theme.css";
+@import "@xyflow/react/dist/style.css";
+
+/* R-05: @source fix — theme.css @source path resolves to dist/src after tsdown build
+   (which does not exist). Add explicit @source pointing at the monorepo workspace source. */
+@source "../../../packages/ui/src";
+/* For published npm consumers: @source "./node_modules/@farsight/ui/dist" */

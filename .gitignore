@@ -2,6 +2,10 @@
 
 # dependencies
 /node_modules
+/packages/*/node_modules
+
+# packages/ui build artifacts
+/packages/*/dist
 /.pnp
 .pnp.*
 .yarn/*
@@ -52,3 +56,6 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
+/examples/*/node_modules
+/examples/*/dist
+/examples/*/dist-treeshake
